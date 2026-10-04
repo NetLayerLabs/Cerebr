@@ -1,0 +1,254 @@
+# Cerebr subgraph schema.
+# All OKB amounts are in wei (BigInt); all CBR amounts are 18-decimal base units (BigInt).
+
+enum Tier {
+  Basic
+  Pro
+  Quantum
+  Singularity
+}
+
+enum TradeType {
+  BUY
+  SELL
+}
+
+enum CircuitOrigin {
+  TAPE_OUT
+  FUSION
+}
+
+"""
+Protocol-wide singleton (id = "cerebr").
+Reserve stats are computed from the curve parameters exactly like CerebrProcessor:
+reserveRequired = ceil(BASE_PRICE*S/1e18) + ceil(SLOPE*S*S/2e36).
+okbBalance is tracked from event flows (buys in, sells/fee withdrawals out); OKB force-sent to the
+processor (selfdestruct) is not visible to the indexer, so the on-chain surplusReserve() can read
+slightly higher than the indexed value.
+"""
+type Protocol @entity(immutable: false) {
+  id: ID!
+  processor: Bytes!
+  circuit: Bytes!
+  owner: Bytes
+  pendingOwner: Bytes
+  paused: Boolean!
+
+  "Curve parameters (immutables), read once via eth_call"
+  basePrice: BigInt!
+  slope: BigInt!
+
+  "CBR"
+  totalSupply: BigInt!
+  currentPrice: BigInt!
+  totalCbrBought: BigInt!
+  totalCbrSold: BigInt!
+  "Cumulative CBR destroyed by sinks (tape-outs + fusions); mirrors totalCbrBurned() on-chain"
+  totalCbrBurned: BigInt!
+  holderCount: Int!
+
+  "OKB (wei)"
+  okbBalance: BigInt!
+  reserveRequired: BigInt!
+  surplusReserve: BigInt!
+  protocolFees: BigInt!
+  totalFeesCollected: BigInt!
+  totalFeesWithdrawn: BigInt!
+  totalOkbIn: BigInt!
+  totalOkbOut: BigInt!
+
+  "Activity"
+  tradeCount: Int!
+  buyCount: Int!
+  sellCount: Int!
+  tapeOutCount: Int!
+  fusionCount: Int!
+
+  "Circuits"
+  circuitsMinted: Int!
+  circuitsBasic: Int!
+  circuitsPro: Int!
+  circuitsQuantum: Int!
+  circuitsSingularity: Int!
+  circuitsRevealed: Int!
+  recommitCount: Int!
+  brainWalletsActivated: Int!
+
+  lastUpdatedBlock: BigInt!
+  lastUpdatedTimestamp: BigInt!
+}
+
+"Any address that holds CBR, trades, or holds Circuits (EOAs, contracts and Circuit token-bound accounts)."
+type Account @entity(immutable: false) {
+  id: Bytes!
+  cbrBalance: BigInt!
+  cbrBought: BigInt!
+  cbrSold: BigInt!
+  cbrBurned: BigInt!
+  okbSpent: BigInt!
+  okbReceived: BigInt!
+  feesPaid: BigInt!
+  tradeCount: Int!
+  tapeOutCount: Int!
+  fusionCount: Int!
+  circuitCount: Int!
+  "Set when this address is the canonical token-bound account of a Circuit"
+  tokenBoundAccountOf: Circuit
+  "True once the ERC-6551 registry deployed an account at this address for the Circuit collection"
+  registryDeployed: Boolean!
+  registryDeployedAt: BigInt
+  circuits: [Circuit!]! @derivedFrom(field: "owner")
+  trades: [Trade!]! @derivedFrom(field: "account")
+  tapeOuts: [TapeOut!]! @derivedFrom(field: "owner")
+  fusions: [Fusion!]! @derivedFrom(field: "owner")
+  firstSeenTimestamp: BigInt!
+}
+
+type Trade @entity(immutable: true) {
+  id: Bytes!
+  type: TradeType!
+  account: Account!
+  amountCbr: BigInt!
+  "BUY: OKB paid (excess refunded already excluded). SELL: net OKB received."
+  okbAmount: BigInt!
+  "SELL only: 1% protocol fee; 0 for buys"
+  fee: BigInt!
+  "Average execution price, wei per whole CBR"
+  avgPrice: BigInt!
+  priceAfter: BigInt!
+  supplyAfter: BigInt!
+  blockNumber: BigInt!
+  timestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type Circuit @entity(immutable: false) {
+  "tokenId as decimal string"
+  id: ID!
+  tokenId: BigInt!
+  tier: Tier!
+  origin: CircuitOrigin!
+  "Current ERC-721 owner (for fused parents this is the child's token-bound account)"
+  owner: Account!
+  "Set when the owner is another Circuit's token-bound account"
+  heldBy: Circuit
+  minter: Account!
+  cbrBurned: BigInt!
+
+  "Commit-reveal"
+  revealed: Boolean!
+  commitBlock: BigInt!
+  revealReadyBlock: BigInt!
+  recommitCount: Int!
+  seed: BigInt
+  revealedAt: BigInt
+  revealedBy: Bytes
+  revealTx: Bytes
+
+  "Traits (null until revealed)"
+  architecture: String
+  cores: Int
+  clockTenthsGHz: Int
+  nodeNm: Int
+  rarity: String
+
+  "ERC-6551 token-bound account (brain wallet); counterfactual address, deployed lazily"
+  tba: Bytes
+  tbaDeployed: Boolean!
+  tbaDeployedAt: BigInt
+
+  "Fusion lineage"
+  parentA: Circuit
+  parentB: Circuit
+  "Child this Circuit was fused into (mirrors CerebrCircuit.fusedInto; a Circuit can be a fusion parent only once)"
+  fusedInto: Circuit
+  fusion: Fusion
+
+  holdings: [Circuit!]! @derivedFrom(field: "heldBy")
+  transfers: [CircuitTransfer!]! @derivedFrom(field: "circuit")
+
+  mintedAtBlock: BigInt!
+  mintedAtTimestamp: BigInt!
+  mintTx: Bytes!
+}
+
+type CircuitTransfer @entity(immutable: true) {
+  id: Bytes!
+  circuit: Circuit!
+  from: Bytes!
+  to: Bytes!
+  blockNumber: BigInt!
+  timestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type TapeOut @entity(immutable: true) {
+  id: Bytes!
+  owner: Account!
+  circuit: Circuit!
+  tier: Tier!
+  cbrBurned: BigInt!
+  supplyAfter: BigInt!
+  blockNumber: BigInt!
+  timestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type Fusion @entity(immutable: true) {
+  id: Bytes!
+  owner: Account!
+  child: Circuit!
+  parentA: Circuit!
+  parentB: Circuit!
+  inputTier: Tier!
+  outputTier: Tier!
+  cbrBurned: BigInt!
+  "Token-bound account of the child, where both parents now sit"
+  childTba: Bytes
+  blockNumber: BigInt!
+  timestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type FeeWithdrawal @entity(immutable: true) {
+  id: Bytes!
+  to: Bytes!
+  amount: BigInt!
+  blockNumber: BigInt!
+  timestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+"Per-UTC-day activity plus end-of-day protocol state (id = day number = timestamp / 86400)."
+type DailySnapshot @entity(immutable: false) {
+  id: ID!
+  dayStartTimestamp: BigInt!
+
+  "Activity during the day"
+  buyCount: Int!
+  sellCount: Int!
+  cbrBought: BigInt!
+  cbrSold: BigInt!
+  okbIn: BigInt!
+  okbOut: BigInt!
+  feesCollected: BigInt!
+  cbrBurned: BigInt!
+  tapeOuts: Int!
+  fusions: Int!
+  reveals: Int!
+  circuitsMinted: Int!
+  openPrice: BigInt!
+  highPrice: BigInt!
+  lowPrice: BigInt!
+
+  "State at the last event of the day"
+  closePrice: BigInt!
+  totalSupply: BigInt!
+  totalCbrBurned: BigInt!
+  okbBalance: BigInt!
+  reserveRequired: BigInt!
+  surplusReserve: BigInt!
+  protocolFees: BigInt!
+  holderCount: Int!
+  totalCircuits: Int!
+}

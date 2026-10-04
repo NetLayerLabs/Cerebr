@@ -1,0 +1,21 @@
+{
+  "name": "cerebr-subgraph",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "description": "Subgraph for the Cerebr protocol on X Layer (CBR bonding curve, Neural Circuit NFTs, fusion, ERC-6551 brain wallets)",
+  "scripts": {
+    "abis": "cd .. && forge build src/CerebrProcessor.sol src/CerebrCircuit.sol src/erc6551/IERC6551Registry.sol --out out-indexer --cache-path cache-indexer && jq '.abi' out-indexer/CerebrProcessor.sol/CerebrProcessor.json > indexer/abis/CerebrProcessor.json && jq '.abi' out-indexer/CerebrCircuit.sol/CerebrCircuit.json > indexer/abis/CerebrCircuit.json && jq '.abi' out-indexer/IERC6551Registry.sol/IERC6551Registry.json > indexer/abis/ERC6551Registry.json && rm -rf out-indexer cache-indexer",
+    "codegen": "graph codegen",
+    "build": "graph build",
+    "build:xlayer": "graph build --network xlayer",
+    "build:xlayer-testnet": "graph build --network xlayer-testnet",
+    "deploy:goldsky": "graph build --network x1 && goldsky subgraph deploy cerebr/$npm_package_version --path .",
+    "build:goldsky": "graph build --network x1",
+    "deploy:local": "graph create --node http://localhost:8020 cerebr && graph deploy --node http://localhost:8020 --ipfs http://localhost:5001 cerebr"
+  },
+  "devDependencies": {
+    "@graphprotocol/graph-cli": "^0.98.1",
+    "@graphprotocol/graph-ts": "^0.38.2"
+  }
+}
