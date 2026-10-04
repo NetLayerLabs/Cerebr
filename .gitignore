@@ -1,0 +1,36 @@
+# Compiler files
+cache/
+out/
+
+# Commonly ignored directories
+.logs/
+.ignore/
+
+# Ignores development broadcast logs
+!/broadcast
+/broadcast/*/31337/
+/broadcast/**/dry-run/
+
+# Docs
+docs/
+
+# Dotenv file
+.env
+.env.*
+!.env.example
+
+# Per-agent / scratch build dirs and broadcasts
+out-*/
+cache-*/
+broadcast/
+
+# dApp / indexer build output and dependencies
+app/node_modules/
+app/dist/
+indexer/node_modules/
+indexer/build/
+indexer/generated/
+
+# Local-only deployment records (anvil) and simulations
+deployments/31337.json
+deployments/*.dry-run.json
