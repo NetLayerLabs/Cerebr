@@ -567,7 +567,7 @@ const USES = [
   },
   {
     t: 'Verifiable inference for agents',
-    b: 'DeAI agents can call a small, fixed classifier on-chain and prove which model made the decision. No oracle, no trusted server.',
+    b: 'DeAI agents can call a small, fixed classifier on-chain and check exactly which circuit made the decision. No oracle, no trusted server.',
   },
   {
     t: 'Composable neurons',
@@ -627,7 +627,7 @@ function Builders() {
           </li>
           <li>
             <b>CerebrScope.</b> An on-chain lens that draws each circuit as an SVG die shot from its actual gates,
-            serves its metadata and runs truth tables in one call. TapeOut circuits return an empty{' '}
+            serves its metadata and runs small truth tables in one call. TapeOut circuits return an empty{' '}
             <code>tokenURI</code> today; Scope fills that gap.
           </li>
           <li>

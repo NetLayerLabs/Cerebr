@@ -33,7 +33,7 @@ FORK_RPC=http://127.0.0.1:8564 npm run smoke     # createCPU, tape out the catal
 
 | Script | |
 |---|---|
-| `npm run dev` | Vite dev server (offers the local fork and dev account #2) |
+| `npm run dev` | Vite dev server (X Layer mainnet; add `VITE_ENABLE_ANVIL=true` for the local fork and dev account #2) |
 | `npm run build` | `tsc --noEmit` and a production build to `dist/` |
 | `npm run sync` | `../launch/out/*.json` -> `src/generated/cpus.ts` |
 | `npm run smoke` | end-to-end fork test (`FORK_RPC`, loopback only; `CPU=0x..` reuses an existing CPU) |

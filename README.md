@@ -29,7 +29,7 @@ How it maps to the judging criteria:
 | Innovation | A neural compiler for TapeOut. Gates become neurons, `REF` becomes synapses between them, and `eval` becomes inference. |
 | Depth of TapeOut integration | Uses every TapeOut primitive: `createCPU`, `mint`, `tapeout`, `REF`, `eval`, `step` (LATCH-based spiking neuron), the circuit NFTs and native accounts (`opener.open`, `accountOf`). Each was verified on a mainnet fork ([TAPEOUT.md](TAPEOUT.md)). |
 | Product completeness and UX | A dApp to mint, build a neuron, tape it out, test it live and browse the gallery, plus a landing page, an SDK and a one-command launch script. |
-| Asset issuance design | One asset, the transistor: 1,000,000 at 0.00001 OKB, fixed by Cerebr at `createCPU` (enforced by TapeOut's upgradeable contracts), burned by use. REF makes reuse free. No reserved allocation and no curve; the creator's 1,100 publicly minted transistors are disclosed ([ISSUANCE.md](ISSUANCE.md)). |
+| Asset issuance design | One asset, the transistor: 1,000,000 at 0.00001 OKB, fixed by Cerebr at `createCPU` (enforced by TapeOut's upgradeable contracts), burned by use. REF makes reuse free. No reserved allocation and no curve; the creator's 1,100 kept transistors (of 1,241 publicly minted, 141 burned into the catalog) are disclosed ([ISSUANCE.md](ISSUANCE.md)). |
 | X Layer integration | Native OKB fees, OKX Wallet support, OKLink links, and around 1-second blocks that make a live tape-out-and-test flow possible. |
 | Growth potential | Public, composable neurons. Every network built on them by `REF` adds to the graph. |
 | Security and economic model | No custody, a no-admin, no-funds Scope (its only state is an owner-written label registry), exact-fee sends, fork-verified behaviour, and TapeOut's risks disclosed ([AUDIT.md](AUDIT.md)). |
@@ -69,7 +69,7 @@ flowchart LR
 - **`sdk/src/tapeout`** is a typed viem client for the factory, transistors, circuits, opener and accounts. It covers fee reads, cost quotes and gas estimates.
 - **`src/scope/CerebrScope.sol`** is a lens over any TapeOut processor. It has batch views, parses the gate mix from the netlist bytes, renders on-chain SVG die shots and ERC-721 JSON metadata, computes truth tables, and keeps an optional label registry that only a circuit's owner can write. It holds no funds and has no admin.
 - **`app/`** contains the landing page (`/`) and the dApp (`/app`): mint transistors, build a neural circuit, tape it out, test it live, open its wallet and browse the gallery.
-- **`sdk/scripts/launch.ts`** is the resumable launch runbook. It runs createCPU, mints exactly what the catalog burns, tapes the circuits out in dependency order, verifies each against the simulator, and writes `launch/out/<chainId>.json`.
+- **`sdk/scripts/launch.ts`** is the resumable launch runbook. It runs createCPU, mints what the catalog burns plus the configured `keep`, tapes the circuits out in dependency order, verifies each against the simulator, and writes `launch/out/<chainId>.json`.
 
 ## Quickstart
 
@@ -91,9 +91,9 @@ anvil --fork-url https://rpc.xlayer.tech --chain-id 31337 --auto-impersonate --p
 SCOPE_FORK_RPC=http://127.0.0.1:8545 forge test                       # + 15 CerebrScope fork tests
 cd sdk && FORK_RPC=http://127.0.0.1:8545 node scripts/fork-smoke.ts   # every TapeOut fact, checked
 node scripts/launch.ts --dry-run && node scripts/launch.ts --yes      # full launch rehearsal on the fork
-cd ../app && npm install && npm run sync                               # launch/out -> the dApp's config
+cd ../app && npm install && npm run sync -- --fork                     # launch/out (incl. fork records) -> the dApp's config
 FORK_RPC=http://127.0.0.1:8545 npm run smoke                           # dApp code paths end to end
-npm run dev                                                            # pick "X Layer fork (local)"
+VITE_ENABLE_ANVIL=true npm run dev                                     # the fork is a developer opt-in; pick "X Layer fork (local)"
 ```
 
 The mainnet launch is signed only by the deployment wallet's owner. [LAUNCH.md](LAUNCH.md) has the checklist.

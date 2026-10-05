@@ -79,12 +79,12 @@ The "buffered" output mode, which matches TapeOut's own compiler, adds 2 NAND pe
 | Mint 1,139 NAND (139 burned + 1,000 kept): 1,139 × 0.00001 + 0.00066 | 0.01205 |
 | Mint 102 LATCH (2 burned + 100 kept): 102 × 0.00001 + 0.00066 | 0.00168 |
 | 14 tape-outs × 0.0013 | 0.0182 |
-| Gas (19 transactions) | 0.0000975 |
+| Gas (18 transactions) | 0.0000975 |
 | **Gross** | **0.0386275** |
 | Creator revenue returned via `withdraw()` (1,241 × 0.00001) | −0.01241 |
 | **Net** | **0.02621748** |
 
-Still to do: opening the flagship `xor-net-ref` brain wallet (0.08 OKB, deferred until the wallet is topped up).
+Brain wallet #5 opened afterwards (0.08 OKB, tx [0x8781…dad3](https://www.oklink.com/xlayer/tx/0x8781ed8467f4cef1d10dce3ec48cf1da99cfea615b250da8a352eda7a538dad3)).
 
 ## 4. Where the OKB goes
 

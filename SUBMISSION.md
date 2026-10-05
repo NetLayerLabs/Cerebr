@@ -55,7 +55,7 @@ The product around it:
 - **CerebrScope.** An on-chain renderer that draws every circuit as an SVG die shot from its real gates. TapeOut's own `tokenURI` is empty.
 - **An SDK** that other teams can build with.
 
-**Issuance is simple.** There is one asset, the transistor: 1,000,000 at 0.00001 OKB, a cap and price fixed by Cerebr at `createCPU` (enforced by TapeOut's upgradeable contracts), no reserved allocation (the creator's 1,100 publicly minted transistors are disclosed) and no curve. Burns never refill the cap. REF makes reuse free, so every network built on our neurons grows the graph instead of copying it.
+**Issuance is simple.** There is one asset, the transistor: 1,000,000 at 0.00001 OKB, a cap and price fixed by Cerebr at `createCPU` (enforced by TapeOut's upgradeable contracts), no reserved allocation (the creator's 1,100 kept transistors (of 1,241 publicly minted, 141 burned into the catalog) are disclosed) and no curve. Burns never refill the cap. REF makes reuse free, so every network built on our neurons grows the graph instead of copying it.
 
 **Use cases:**
 - On-chain game AI that anyone can audit.
@@ -71,7 +71,7 @@ Small, verifiable intelligence that lives entirely on-chain. A game, a DAO or an
 | Criterion | What we show |
 |---|---|
 | Innovation | A neural compiler for TapeOut: neurons become NAND netlists, synapses become REF, inference becomes `eval`. A spiking neuron uses LATCH and `step()`. |
-| Depth of TapeOut integration | `createCPU`, `mint` (NAND and LATCH), `tapeout`, REF composition, `eval`, `step`, circuit NFTs, `opener.open` and `accountOf`. Every behaviour was verified on a mainnet fork and documented in TAPEOUT.md, including corrections to the public hints. |
+| Depth of TapeOut integration | `createCPU`, `mint` (NAND and LATCH), `tapeout`, REF composition, `eval`, `step`, circuit NFTs, `opener.open` and `accountOf`. Every behaviour was verified on a mainnet fork and then on mainnet itself, and is documented in TAPEOUT.md. |
 | Product completeness and UX | Landing page, a dApp with Studio, Playground and Gallery, live fee quotes, guards against fund-locking mistakes, an SDK and a resumable launch script. |
 | Asset issuance design | A single transistor asset with a disclosed cap and price, burned by use, no allocation, and REF-driven reuse. The options and reasoning are in ISSUANCE.md. |
 | X Layer integration quality | Native OKB, OKX Wallet, OKLink links, and fast blocks that make tape-out-then-test feel live. |
