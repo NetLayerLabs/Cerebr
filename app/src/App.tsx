@@ -1,65 +1,60 @@
-import { useCallback, useState } from 'react'
-import { useCerebr } from './hooks/useCerebr.ts'
+import { useCpu, useNet } from './hooks/useCpu.ts'
+import { VIEWS, href, useRoute } from './hooks/useRoute.ts'
 import { Header } from './components/Header.tsx'
-import { Stats } from './components/Stats.tsx'
-import { CurveChart } from './components/CurveChart.tsx'
-import { TradePanel } from './components/TradePanel.tsx'
-import { TapeOutPanel } from './components/TapeOutPanel.tsx'
-import { FusionPanel } from './components/FusionPanel.tsx'
-import { Gallery } from './components/Gallery.tsx'
 import { Footer } from './components/Footer.tsx'
 import { Toasts } from './components/Toasts.tsx'
+import { ProcessorView } from './views/ProcessorView.tsx'
+import { StudioView } from './views/StudioView.tsx'
+import { PlaygroundView } from './views/PlaygroundView.tsx'
+import { GalleryView } from './views/GalleryView.tsx'
 
 export function App() {
-  const { deployment, chain, stateError, state } = useCerebr()
-  const [preview, setPreview] = useState<bigint | undefined>()
-  const onPreview = useCallback((d: bigint | undefined) => setPreview(d), [])
+  const route = useRoute()
+  const { chain, isFork } = useNet()
+  const { cfg, cpu, error } = useCpu()
 
   return (
     <div className="shell">
       <div className="bg-grid" aria-hidden />
       <Header />
+      <nav className="nav" aria-label="Sections">
+        {VIEWS.map(([id, label]) => (
+          <a key={id} href={href(id)} className={route.view === id ? 'on' : ''} aria-current={route.view === id ? 'page' : undefined}>
+            {label}
+          </a>
+        ))}
+      </nav>
       <main>
-        {!deployment ? (
+        {!cfg ? (
           <div className="card notice">
-            <h2>Not deployed on {chain?.name ?? 'this network'} yet</h2>
+            <h2>No Cerebr processor on {chain?.name ?? 'this network'} yet</h2>
             <p className="muted">
-              Pick another network, or run the local demo (<code>app/README.md</code>) and <code>npm run sync</code>.
+              {isFork ? (
+                <>
+                  Start a fork (<code>anvil --fork-url https://rpc.xlayer.tech --chain-id 31337</code>), run the launch
+                  script against it, then <code>npm run sync</code>. Or open any TapeOut CPU with <code>?cpu=0x…</code>.
+                </>
+              ) : (
+                <>
+                  The processor is created through the TapeOut factory at launch. Pick the local fork, or open any TapeOut CPU
+                  with <code>?cpu=0x…</code> (its circuits address).
+                </>
+              )}
             </p>
           </div>
-        ) : stateError && !state ? (
+        ) : error && !cpu ? (
           <div className="card notice">
-            <h2>Can't reach the Cerebr lens</h2>
-            <p className="muted small mono">{stateError.message.split('\n')[0]}</p>
+            <h2>Can't read the processor from TapeOut</h2>
+            <p className="muted small mono">{error.message.split('\n')[0]}</p>
           </div>
+        ) : route.view === 'studio' ? (
+          <StudioView key={route.arg} initial={route.arg} />
+        ) : route.view === 'playground' ? (
+          <PlaygroundView key={route.arg} circuitId={route.arg} />
+        ) : route.view === 'gallery' ? (
+          <GalleryView />
         ) : (
-          <>
-            <section className="hero">
-              <h1>
-                Mint compute. <span className="grad">Burn it into brains.</span>
-              </h1>
-              <p className="muted">
-                Transistors ($CBR) are issued on a linear bonding curve backed by OKB. Tape-outs and fusion burn them for
-                on-chain Neural Circuit NFTs, and every burn leaves its OKB locked in the reserve forever.
-              </p>
-            </section>
-            <Stats />
-            <section className="grid-2">
-              <div className="card">
-                <div className="card-head">
-                  <h2>Bonding curve</h2>
-                  <span className="small muted">price = base + slope × supply</span>
-                </div>
-                <CurveChart preview={preview} />
-              </div>
-              <TradePanel onPreview={onPreview} />
-            </section>
-            <section className="grid-2 tape">
-              <TapeOutPanel />
-              <FusionPanel />
-            </section>
-            <Gallery />
-          </>
+          <ProcessorView />
         )}
       </main>
       <Footer />
