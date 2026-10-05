@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {
   CATALOG, getCircuit, verifyCircuit, programFor, catalogResolver, catalogSummary, LOCAL_CPU,
   Logic, NetlistBuilder, encode, prepare, run, runSequence, truthTable, bitsOf,
-  canonicalNeuron, compileNeuron, compileNetwork, evalNetwork, evalNeuron, neuronKey, refNetwork, threshold,
+  canonicalNeuron, compileNeuron, compileNetwork, evalNetwork, evalNeuron, neuronKey, refNetwork, threshold, MAX_NEURON_WEIGHT,
   type NeuronSpec, type CircuitResolver, type Program,
 } from '../src/neuro/index.ts';
 
@@ -169,4 +169,46 @@ test('catalogResolver maps deployed circuits to real targets', () => {
   assert.equal(refs('and-neuron').cpu, LOCAL_CPU);
   const bytes = encode(getCircuit('xor-net-ref').build({ mode: 'direct' }), refs);
   assert.ok(bytes.length > 0);
+});
+
+test('neuron compiler rejects unsafe or oversized weights instead of miscompiling or hanging', () => {
+  const unsafe: NeuronSpec[] = [
+    { weights: [2 ** 53, 1], theta: 1 }, // not a safe integer: would round to a different neuron
+    { weights: [1, 1], theta: 2 ** 53 + 2 },
+    { weights: [1.5, 1], theta: 1 },
+    { weights: [Number.NaN], theta: 0 },
+  ];
+  for (const s of unsafe) {
+    assert.throws(() => compileNeuron(s), /safe integers/);
+    assert.throws(() => canonicalNeuron(s), /safe integers/);
+  }
+  const t0 = Date.now();
+  for (const w of [MAX_NEURON_WEIGHT + 1, -(MAX_NEURON_WEIGHT + 1), 1e9, -(2 ** 52)]) {
+    assert.throws(() => compileNeuron({ weights: [w, 1, 1], theta: 1 }), /out of range/);
+    assert.throws(() => compileNeuron({ weights: [w, 1, 1], theta: 1 }, { strategy: 'count' }), /out of range/);
+    const c = new Logic(3);
+    assert.throws(() => threshold(c, c.inputs(), [1, w, 1], 1), /out of range/);
+  }
+  assert.ok(Date.now() - t0 < 1000, 'rejection is immediate');
+  // threshold() validates arity as well
+  const c = new Logic(2);
+  assert.throws(() => threshold(c, c.inputs(), [1], 1), /weights for 2 inputs/);
+});
+
+test('neuron compiler is exact at the weight bound', () => {
+  const W = MAX_NEURON_WEIGHT;
+  const specs: NeuronSpec[] = [
+    { weights: [W, -W, 3, 1], theta: 2 },
+    { weights: [W, W - 1, -W, 1], theta: W },
+    { weights: [-W, -W, 2], theta: -W },
+  ];
+  for (const spec of specs) {
+    for (const strategy of ['auto', 'bdd', 'count'] as const) {
+      const prog = prepare(encode(compileNeuron(spec, { strategy })), spec.weights.length, 1);
+      for (let v = 0; v < 1 << spec.weights.length; v++) {
+        const x = bitsOf(v, spec.weights.length);
+        assert.equal(run(prog, [], x).outputs[0], evalNeuron(spec, x), `${neuronKey(spec)} ${strategy} x=${v}`);
+      }
+    }
+  }
 });

@@ -24,8 +24,24 @@ export interface NeuronSpec {
 
 export type ThresholdStrategy = 'auto' | 'bdd' | 'count';
 
+/**
+ * Largest |weight| the compiler accepts. The 'count' strategy emits |w| literals per input and the
+ * BDD's state space grows with the weight range, so unbounded weights could hang compilation (and
+ * non-safe integers would silently round to a different neuron). Binarized networks use {-1,0,+1};
+ * 64 leaves ample room for small integer weights.
+ */
+export const MAX_NEURON_WEIGHT = 64;
+
+function checkWeights(weights: readonly number[], theta: number) {
+  if (!Array.isArray(weights) || !weights.every((w) => Number.isSafeInteger(w)) || !Number.isSafeInteger(theta)) {
+    throw new Error('neuron weights and theta must be safe integers');
+  }
+  const big = weights.findIndex((w) => Math.abs(w) > MAX_NEURON_WEIGHT);
+  if (big >= 0) throw new Error(`neuron weight w${big} = ${weights[big]} is out of range: |w| must be <= ${MAX_NEURON_WEIGHT}`);
+}
+
 function checkSpec(spec: NeuronSpec, nIn?: number) {
-  if (!spec.weights.every(Number.isInteger) || !Number.isInteger(spec.theta)) throw new Error('neuron weights and theta must be integers');
+  checkWeights(spec.weights, spec.theta);
   if (nIn !== undefined && spec.weights.length !== nIn) throw new Error(`neuron has ${spec.weights.length} weights for ${nIn} inputs`);
 }
 
@@ -99,6 +115,8 @@ function cost(s: Strategy, ws: number[], theta: number): number {
 
 /** Emit [Σ w_i·x_i ≥ θ] into an existing circuit. */
 export function threshold(c: Logic, xs: Signal[], weights: number[], theta: number, strategy: ThresholdStrategy = 'auto'): Signal {
+  checkWeights(weights, theta);
+  if (weights.length !== xs.length) throw new Error(`threshold has ${weights.length} weights for ${xs.length} inputs`);
   const keep = weights.map((w, i) => i).filter((i) => weights[i] !== 0);
   const ws = keep.map((i) => weights[i]);
   const ins = keep.map((i) => xs[i]);
