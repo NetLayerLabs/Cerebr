@@ -52,9 +52,9 @@ All 14 circuits were taped out once each and every one passed the on-chain check
 | #13 | adder-2bit | 14 NAND | 14 | 16 inputs | [0xdbbe…f3f3](https://www.oklink.com/xlayer/tx/0xdbbec9cd6b0909f3e505e3927f6f9e8e3f60e63039fd2aaae9ac01a141dbf3f3) |
 | #14 | spiking-neuron | 17 NAND + 2 LATCH | 19 | 16 state × input | [0x91e5…7016](https://www.oklink.com/xlayer/tx/0x91e5a6585576e608318a33d7d616b0e6fe769bce3aa3510b9e08782ca11d7016) |
 
-**Pending:**
-- Open the flagship `xor-net-ref` brain wallet, [`0x9E1d…3166`](https://www.oklink.com/xlayer/address/0x9E1d3eC3B3D0fe84997df0E065a96a7c93c13166) (0.08 OKB). Top up the wallet (≥ 0.09 OKB), then rerun the step 6 command; the run resumes from `launch/state.196.json` and opens the account without repeating finished steps.
-- Deploy CerebrScope (step 6b).
+**Completed after the initial run (2026-10-05):**
+- Flagship brain wallet opened: Open: `xor-net-ref` (#5) native account [`0x9E1d3eC3B3D0fe84997df0E065a96a7c93c13166`](https://www.oklink.com/xlayer/address/0x9E1d3eC3B3D0fe84997df0E065a96a7c93c13166) (open tx [0x8781…dad3](https://www.oklink.com/xlayer/tx/0x8781ed8467f4cef1d10dce3ec48cf1da99cfea615b250da8a352eda7a538dad3), 0.08 OKB).
+- CerebrScope deployed: [`0x2640F8E89b2B107919568FFd42dFb46A1866e528`](https://www.oklink.com/xlayer/address/0x2640F8E89b2B107919568FFd42dFb46A1866e528) (deploy tx [0x17d0…9cfd](https://www.oklink.com/xlayer/tx/0x17d01f5dbdc49a9dc88d6fc2f7b347dd55bc903e17fa70cfd2d34ea036359cfd); source verified on [Sourcify](https://repo.sourcify.dev/contracts/full_match/196/0x2640F8E89b2B107919568FFd42dFb46A1866e528/), exact match).
 
 ## Issuance terms (disclosed on chain at `createCPU`)
 
@@ -102,7 +102,7 @@ node scripts/launch.ts --as 0xYOUR_DEPLOYMENT_WALLET --yes --fresh
 
 `--as` impersonates your address on the fork using its **real** mainnet balance, so this also proves the wallet has enough funds. Leave out `--as` to use a synthetic, auto-funded wallet. Use `--rpc http://127.0.0.1:<port>` if anvil runs on another port. The run must end with `ALL CIRCUITS VERIFIED`.
 
-### 3. Fund the deployment wallet (done; top up ≥ 0.09 OKB for the pending brain-wallet open)
+### 3. Fund the deployment wallet (done)
 
 Send at least 0.13 OKB on **X Layer** (chain 196) to the wallet you will name in the submission. This wallet becomes the processor's `creator` and the author of every launch circuit.
 
@@ -132,7 +132,7 @@ node --env-file=.env scripts/launch.ts --network xlayer --yes
 
 Mainnet needs all three of `--network xlayer`, `PRIVATE_KEY` and `--yes`, and the RPC must not be local. The run takes about a minute on X Layer (19 transactions). If it stops for any reason, run **the same command** again.
 
-### 6b. Deploy CerebrScope (pending; recommended for the Gallery's on-chain die shots and `tokenURI` metadata)
+### 6b. Deploy CerebrScope (done: [`0x2640…e528`](https://www.oklink.com/xlayer/address/0x2640F8E89b2B107919568FFd42dFb46A1866e528), Sourcify-verified)
 
 CerebrScope is a separate, no-admin lens contract (about 6M gas, roughly 0.0003 OKB). It is not part of the hackathon's required deployment, but the demo shows its on-chain images. From the repo root, rehearse on a fork first, then sign on mainnet yourself:
 

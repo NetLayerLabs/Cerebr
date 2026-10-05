@@ -13,8 +13,8 @@ IGNIX X Layer "TapeOut Genesis Transistor" hackathon. Deadline: **2026-10-09 06:
 | Deployment wallet | [`0xc742AdA2872a042dD36D2E706907b4036968960C`](https://www.oklink.com/xlayer/address/0xc742AdA2872a042dD36D2E706907b4036968960C) (= `creator`) |
 | Transistor supply cap / unit price | 1,000,000 at 0.00001 OKB per transistor; 1,241 minted at launch ([ISSUANCE.md](ISSUANCE.md)) |
 | Circuits taped out | 14, ids #1–#14, all verified on mainnet (table below) |
-| Flagship brain wallet | **TODO (pending)**: open the `xor-net-ref` (#5) native account, [`0x9E1d…3166`](https://www.oklink.com/xlayer/address/0x9E1d3eC3B3D0fe84997df0E065a96a7c93c13166) (0.08 OKB; rerun the launch command after topping up the wallet) |
-| CerebrScope | **TODO (pending)**: deploy per LAUNCH.md step 6b, then set `scope` in `launch/config.json` |
+| Flagship brain wallet | Open: `xor-net-ref` (#5) native account [`0x9E1d3eC3B3D0fe84997df0E065a96a7c93c13166`](https://www.oklink.com/xlayer/address/0x9E1d3eC3B3D0fe84997df0E065a96a7c93c13166) (open tx [0x8781…dad3](https://www.oklink.com/xlayer/tx/0x8781ed8467f4cef1d10dce3ec48cf1da99cfea615b250da8a352eda7a538dad3), 0.08 OKB) |
+| CerebrScope | [`0x2640F8E89b2B107919568FFd42dFb46A1866e528`](https://www.oklink.com/xlayer/address/0x2640F8E89b2B107919568FFd42dFb46A1866e528) (deploy tx [0x17d0…9cfd](https://www.oklink.com/xlayer/tx/0x17d01f5dbdc49a9dc88d6fc2f7b347dd55bc903e17fa70cfd2d34ea036359cfd); source verified on [Sourcify](https://repo.sourcify.dev/contracts/full_match/196/0x2640F8E89b2B107919568FFd42dFb46A1866e528/), exact match) |
 | Demo video | **TODO (pending)** (2 minutes; script below) |
 | dApp / landing page | **TODO (pending)** (hosting URL) |
 | Repository | https://github.com/NetLayerLabs/Cerebr (**currently private: make it public before submitting**) |
@@ -103,10 +103,10 @@ Before recording, check that:
 - [x] The user has confirmed the supply cap and unit price in `launch/config.json` (`issuance.confirmed: true`): 1,000,000 at 0.00001 OKB.
 - [x] The launch has been rehearsed on a fork.
 - [x] Mainnet launch signed by the deployment wallet (2026-10-05); `launch/out/196.json` written and synced into the app. Commit it with `launch/state.196.json`.
-- [ ] Open the flagship `xor-net-ref` brain wallet (0.08 OKB): top up the wallet and rerun the launch command (LAUNCH.md).
-- [ ] CerebrScope is deployed (LAUNCH.md step 6b) and `scope` appears in `launch/out/196.json`. If it isn't, change the Gallery voice-over to "Each circuit is drawn from its real gates" (the dApp then renders client-side).
+- [x] The flagship `xor-net-ref` brain wallet is open (0x9E1d…3166).
+- [x] CerebrScope is deployed (0x2640…e528, Sourcify-verified) and `scope` appears in `launch/out/196.json`.
 - [x] The processor address, deployment wallet and circuit tx links are filled in above and in README.md.
-- [ ] The landing page's live strip shows the mainnet CPU, and the issuance cards show the real values.
+- [x] The landing page's live strip shows the mainnet CPU, and the issuance cards show the real values.
 - [ ] The demo video is uploaded and linked.
 - [x] The deadline is confirmed: 2026-10-09 06:00 UTC+2.
 - [ ] The repository is public.
