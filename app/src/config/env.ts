@@ -17,8 +17,13 @@ const allChains: Chain[] = anvilEnabled ? [xLayer, xLayerFork] : [xLayer]
 
 const addr = (v: string | null | undefined): Address | undefined => (v && isAddress(v) ? v : undefined)
 
-/** `?cpu=0x…` (a CPU's circuits address) overrides the configured CPU, for exploring any TapeOut CPU. */
-const urlCpu = typeof window !== 'undefined' ? addr(new URLSearchParams(window.location.search).get('cpu')) : undefined
+/**
+ * `?cpu=0x…` (a CPU's circuits address) overrides the configured CPU, for exploring any TapeOut CPU.
+ * Developer opt-in only (VITE_ENABLE_ANVIL): in the public app a crafted link could otherwise present
+ * an attacker's CPU under Cerebr branding and have users pay it.
+ */
+const urlCpu =
+  anvilEnabled && typeof window !== 'undefined' ? addr(new URLSearchParams(window.location.search).get('cpu')) : undefined
 
 /**
  * The Cerebr CPU on `chainId`: launch/out (generated), overridden by VITE_CPU_<chainId> /

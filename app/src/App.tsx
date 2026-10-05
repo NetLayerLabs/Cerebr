@@ -35,10 +35,7 @@ export function App() {
                   script against it, then <code>npm run sync</code>. Or open any TapeOut CPU with <code>?cpu=0x…</code>.
                 </>
               ) : (
-                <>
-                  The processor is created through the TapeOut factory at launch. Pick the local fork, or open any TapeOut CPU
-                  with <code>?cpu=0x…</code> (its circuits address).
-                </>
+                <>The processor is created through the TapeOut factory at launch.</>
               )}
             </p>
           </div>
