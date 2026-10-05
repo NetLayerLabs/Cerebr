@@ -1,244 +1,101 @@
 # Cerebr Security Review
 
-This is an internal review for the IGNIX X Layer TapeOut hackathon. It was done by independent AI review agents plus automated testing. **It is not a professional third-party audit.** Read the [known risks and trust assumptions](#known-risks-and-trust-assumptions) before you put real value into the contracts.
+This is an **internal review** for the IGNIX X Layer TapeOut hackathon, done by AI review agents, an integrator who checked every finding against the code, and automated tests on local forks of X Layer mainnet. **It is not a professional third-party audit.** Nothing in this review was broadcast to a public chain, and no real keys were used. The mainnet launch came afterwards (2026-10-05): the launch script's on-chain checks passed for all 14 circuits on X Layer mainnet ([LAUNCH.md](LAUNCH.md#mainnet-launch-record-2026-10-05)).
 
-## Scope
+The earlier $CBR design (bonding curve, Circuit ERC-721, our own ERC-6551 accounts, lens, indexer) has been removed from the repository; its review no longer applies and is not repeated here.
 
-| File | Purpose | Runtime size |
+## 1. Scope: what we own vs. what we depend on
+
+**What Cerebr owns (in scope):**
+
+| Component | Path | What could go wrong |
 |---|---|---|
-| `src/CerebrProcessor.sol` | $CBR ERC-20, linear bonding curve (buy/sell), tape-out and fusion sinks, fair-launch guard, fees | 9,318 B |
-| `src/CerebrCircuit.sol` | Circuit ERC-721: tiers, commit-reveal traits, FIFO auto-reveal queue, on-chain SVG/JSON, fusion, TBA cycle and operator guards | 15,395 B |
-| `src/erc6551/CerebrAccount.sol` | ERC-6551 token-bound account implementation ("brain wallet") | 3,167 B |
-| `src/erc6551/ERC6551Registry.sol` | Vendored reference ERC-6551 registry (testnet and local only; mainnet uses the canonical one) | 551 B |
-| `src/erc6551/IERC6551*.sol` | Interfaces | — |
-| `src/CerebrLens.sol` | Read-only helper for the dApp (quotes, snapshots, curve points) | 10,975 B |
+| CerebrScope | `src/scope/CerebrScope.sol`, `ITapeOut.sol`, `LibBuffer.sol` (21,019 B runtime) | label-registry authorization, SVG/JSON injection, view gas, malformed-netlist parsing |
+| Deploy script | `script/DeployScope.s.sol` | key handling, wrong-chain deploys |
+| SDK | `sdk/src/neuro` (compiler, simulator, catalog), `sdk/src/tapeout` (client) | wrong netlists (wasted transistors), wrong `msg.value` (lost OKB) |
+| Launch script | `sdk/scripts/launch.ts`, `sdk/scripts/lib/*` | accidental mainnet sends, key leaks, paying twice, launching against upgraded TapeOut code |
+| dApp + landing | `app/` | wrong-chain or wrong-value transactions, misleading claims |
 
-Toolchain: solc 0.8.28, `evm_version = cancun`, optimizer with 200 runs, OpenZeppelin Contracts v5.7.0, forge-std v1.17.0, Foundry 1.7.1.
+**What Cerebr depends on (out of scope, external):** TapeOut's X Layer contracts: the factory (`0x1f09…0761`, an EIP-1967 proxy), the per-processor transistors and circuits contracts (beacon proxies), the opener (`0x536a…0106`) and its native ERC-6551 accounts (canonical registry `0x0000…5758`). TapeOut states they are in a test phase, **upgradeable and unaudited**. Our fork checks (`isSealed() == false`, live `readFees()`) confirm TapeOut's owner can change fees and code at any time, including the logic that enforces our supply cap, unit price, burns and `eval`. Cerebr cannot change any of it. Every TapeOut behaviour we rely on is documented with evidence in [TAPEOUT.md](TAPEOUT.md).
 
-Out of scope: `script/`, `app/`, `indexer/`, and the X Layer chain and sequencer themselves.
+Cerebr deploys **no contract that holds funds** and has **no admin keys**. The processor is a TapeOut CPU; the only value flows are users paying TapeOut directly (mints, tapeouts, account opens) and the creator withdrawing mint revenue from TapeOut.
 
-## Methodology
+## 2. Methodology
 
-1. **Independent multi-agent reviews.** Each round, several agents reviewed the code on their own, each with a different focus:
-   - Round 1: security, curve math, spec and gas.
-   - Round 2: security (including ERC-6551) and economics and gas.
-   
-   Every finding came with a concrete exploit scenario, and most were reproduced in throwaway scratch tests (since deleted). An integrator then checked each finding against the code, fixed it or rejected it with reasons, and added a regression test for every fix.
-2. **Unit tests** for every function, revert path, event and boundary.
-3. **Fuzz tests**, 1,000 runs each:
-   - curve math against a reference model
-   - rounding direction
-   - `quoteBuyExactOKB` optimality on random curves
-   - trait ranges per tier
-   - the launch-cap reference model, including sells
-   - the vendored registry checked against the canonical registry bytecode fetched from X Layer mainnet
-4. **Stateful invariant testing.** Two suites (fair launch off, and fair launch on) each run 256 runs × depth 50, which is 12,800 calls per invariant, with `fail-on-revert = true`. The handler mixes these actions:
-   - buys, sells and round trips
-   - tiered tape-outs and Singularity attempts
-   - reveals, including expiry and re-commit
-   - permissionless reveal-queue pokes; **every** buy, sell, tape-out, fusion and poke is checked against an independent FIFO model of the auto-reveal queue (exact ids revealed / re-committed, seeds, head)
-   - fusions, invalid fusions and **recycled-parent fusions**
-   - nesting into token-bound accounts (TBAs), un-nesting, and **operator pulls from TBAs**
-   - fee withdrawals, pause toggles, attacker withdrawals and block advances
+1. **Fork verification of every TapeOut fact** (`sdk/scripts/fork-smoke.ts`, 18 checks): factory, fees, mint/burn accounting, tapeout rules, REF semantics, eval/step encoding, native accounts. Several facts in TapeOut's client bundle turned out wrong and were corrected (TAPEOUT.md, "corrections").
+2. **Compiler cross-checks** (`sdk/test/neuro-*.test.ts`): our encoder, decoder and simulator are compared byte for byte with TapeOut's own shipped client code on hundreds of random netlists, including LATCH feedback and REF. Every catalog circuit is exhaustively checked against its neural reference model in both output modes.
+3. **Independent on-chain check**: a reviewer taped out the whole catalog on two fresh processors (direct and buffered modes) and compared every `eval`/`step` with hand-written references, not the SDK's model.
+4. **CerebrScope tests**: 15 fork tests against the real TapeOut contracts and 6 non-fork tests, including a 1,000-run fuzz test that `scan()` never reverts on arbitrary bytes. All 103 circuits of TapeOut's own CPU #0 were rendered and parsed.
+5. **End-to-end rehearsals**: the launch script and the dApp's smoke test run against a fresh fork (section 5).
+6. **Multi-agent code review** of all components, followed by integrator verification (section 4).
 
-   A third suite (`CerebrRevealLivenessInvariantTest`) drives ongoing activity only (a buy, tape-out or fusion at least every 64 blocks, with sells mixed in) and checks that no Circuit ever expires or re-commits.
-5. **Live-chain checks (read-only RPC only; nothing was ever broadcast to a public chain):**
-   - Cancun opcodes (`MCOPY`, `TSTORE`/`TLOAD`) work on X Layer 196 and 1952.
-   - `blockhash(n-1)` and `blockhash(n-2)` are non-zero on both chains.
-   - The canonical ERC-6551 registry is deployed on 196 and is missing on 1952.
-   - Blocks are about 1.0 s apart (1,000 blocks took 1,000 s on both chains).
-6. **End-to-end run on local anvil:**
-   - `script/LocalDemo.s.sol` deploys the contracts and seeds activity.
-   - `app/scripts/smoke.ts` runs 33 checks through the dApp's own ABIs and config.
-   - `app/scripts/keeper.ts` reveals every ready Circuit (now an optional backup; see 2-6).
+## 3. Component analysis
 
-## Core invariant
+### CerebrScope
 
-`address(processor).balance >= reserveRequired() + protocolFees` holds after every operation.
+- **No funds, no admin, no upgrade.** No payable functions, no owner, immutable `FACTORY` and `OPENER`. Its only state is the label registry.
+- **Label authorization.** `setLabel` requires `FACTORY.isCPU(circuits)` and `ownerOf(id) == msg.sender`, so a fake "circuits" contract cannot spoof ownership. Labels survive NFT transfers (they describe immutable logic); the new owner can overwrite or clear them and the old owner loses access (tested). `clearLabel` skips `isCPU`, which only lets a fake contract delete labels stored under its own address: harmless.
+- **Injection.** User-controlled text (labels, processor name/story) is XML-escaped with control characters dropped and cut on UTF-8 boundaries in the SVG, and JSON-escaped in the metadata. A test checks that `<script>` is neutralised. The dApp additionally renders only `data:image/svg+xml;base64` images from `tokenURI`.
+- **Malformed netlists.** `scan()` stops at the first truncated or unknown element and reports `wellFormed = false`; REF headers are bounds-checked before reading `nIns` at offset 29. Fuzzed (1,000 runs) for no reverts and consistent counts.
+- **Gas.** All rendering functions are views meant for `eth_call`. Drawing is capped at 256 cells and 32 pins per side, label fields have length limits, `page()` is capped at 100 and `truthTable` at 10 inputs. Parsing is linear in netlist size, so `tokenURI` of a very large circuit (thousands of gates) can exceed an RPC's `eth_call` gas cap; measured: 909k gas for the 37-gate line detector, 3.82M for a 300-gate chain. The dApp falls back to client-side rendering on any Scope error.
+- **Trust in TapeOut.** Scope reads `ownerOf`, `circuitInfo`, `netlist`, `eval` and `step` from TapeOut; if TapeOut upgrades those, Scope reports what TapeOut says.
 
-- Buys round each of the two curve terms **up**. Sells round each term **down**.
-- `ceil` is superadditive and `floor(X−Y) ≤ ceil(X) − ceil(Y)`, so no sequence of buys and sells can leave the curve under-collateralised.
-- Sink burns (tape-out and fusion) only increase the surplus.
-- The owner can withdraw `protocolFees` and nothing else.
+### SDK and compiler
 
-## Round 1 findings (base protocol)
+- Pure functions; no keys. The netlist encoder reproduces TapeOut's own client byte for byte, and `scanNetlist` enforces the same output rules as `tapeout()` (no raw input or constant as output, no forward NAND references, `nOut > 0`), so malformed designs fail locally before paying.
+- Fee helpers send **exact** values: `createCPU` (overpayment is kept by TapeOut), `mint` (`amount × mintPrice + protocolFee`; excess is stuck in TapeOut's contract), `tapeout` (must equal `TAPEOUT_FEE`; overpaying reverts), `open` (excess refunded).
+- REF placeholders that are not resolved to a real `{cpu, circuitId}` throw before encoding.
 
-| # | Severity | Finding | Status |
+### Launch script
+
+- **Mainnet needs all of:** `--network xlayer`, `PRIVATE_KEY` in the environment, `--yes`, `issuance.confirmed: true` in `launch/config.json`, and a non-loopback RPC. Fork mode requires a loopback RPC that reports itself as anvil and a fork chain id (196 or 31337). The key is never printed or written; state and output files hold only addresses and hashes.
+- **Pinned TapeOut implementations.** The factory, transistor, circuit and opener implementations are compared with the versions we tested; a mismatch stops the run unless `--allow-impl-change`.
+- **Resumable without paying twice.** The tx hash is saved before waiting. On resume, a pending tx without a receipt now **stops the run** (unless the node no longer knows it and nothing is in flight, i.e. it was dropped), and every sending run refuses to start while the wallet has unconfirmed transactions (`pending nonce > latest`). Circuits already on chain are adopted by netlist bytes, mints are topped up only to the deficit.
+- **Verification.** Every circuit is checked right after tapeout: netlist bytes, `circuitInfo`, the `TapedOut` event, owner, and `eval`/`step` against the simulator on every input (and every state × input).
+- Optional `scope` in the config must be a CerebrScope bound to the TapeOut factory (checked via `FACTORY()`).
+
+### dApp
+
+- Every write is simulated first (decoded reverts), sent only when the wallet is on the app's chain, and awaited for a successful receipt. Fees and prices are read live from TapeOut and sent exactly (as above).
+- The local fork uses chain id 31337 so wallets never confuse it with X Layer (196); it is hidden in production builds unless `VITE_ENABLE_ANVIL=true`. The dev connector drives an unlocked anvil account; the app never holds a key.
+- The app offers **no NFT transfers** and no brain-wallet `execute`. TapeOut allows sending a circuit NFT into its own account, which locks that account forever; users are warned in the README and on the landing page.
+
+## 4. Review findings and resolutions
+
+| # | Severity | Finding | Resolution |
 |---|---|---|---|
-| 1-1 | Low | Tape-out rarity could be gamed by reverting a bad result and retrying, or by grinding addresses. | **Fixed in round 2.** Traits now use commit-reveal: the seed comes from the hash of the block after the mint, so it is unknown when the mint transaction runs. |
-| 1-2 | Low/Med | `renounceOwnership` could strand fees and freeze the pause state. | **Fixed.** It always reverts with `RenounceDisabled`. |
-| 1-3 | Low | Slippage limits can't stop a sandwich, and there is no deadline parameter. | **Accepted.** Trades are bounded by `maxCost`/`minRefund` and the 1% fee, and X Layer has a single sequencer. The dApp sets tight bounds from the quotes. |
-| 1-4 | Info | `surplusReserve()` reads high if called during the buy-refund callback (read-only reentrancy). | **Documented** in NatSpec. No consumer is affected. |
-| 1-5 | Info | OKB force-sent to the processor inflates `surplusReserve`. | **Documented.** |
-| 1-6 | Info | `MAX_SUPPLY` caps circulating supply, not lifetime minted supply. | **Documented** as "max circulating supply". |
-| 1-7 | Info | Constructor curve parameters have no upper bound. | **Fixed in round 2.** `basePrice` and `slope` must each be ≤ `MAX_CURVE_PARAM` (1e36). |
-| 1-8 | Info | `_mint` is used instead of `_safeMint`. | **Kept on purpose.** Skipping the receiver callback leaves no reentrancy or reroll surface. |
-| 1-9..12 | Info | Curve integral, units, overflow bounds and dust-sell rounding. | Verified correct. Dust sells favour the reserve. |
-| 1-13 | Medium | `evm_version = cancun` emits `MCOPY`. | **Resolved.** Live probes confirm Cancun support on both X Layer chains. |
-| 1-14..17 | Low | NatSpec format, a duplicate external call, events missing `newSupply`, a redundant balance pre-check. | Fixed, or kept on purpose with a comment in the code. |
-| 1-18 | Info | Use `ReentrancyGuardTransient`. | **Done in round 2**, after TSTORE was confirmed on X Layer. |
-| 1-19..21 | Info | Error and event NatSpec, missing `contractURI`, numeric traits, tokenomics wording. | **Fixed.** |
+| 1 | High | `app/scripts/sync-cpu.mjs` crashed on the launch script's `cerebr.launch/1` records (`processor.*`, `circuits[]`), so the dApp and the landing page could never find the mainnet processor. | **Fixed.** Reads `processor`, `createBlock`, `network: 'fork'` and `circuits[].key/circuitId`; regression-run on the fresh fork record (14 catalog ids + scope). |
+| 2 | Medium | `launch.ts` resume cleared a pending tx even without a receipt, so the next run could pay for `createCPU` or a mint twice. | **Fixed.** Stops unless the tx is confirmed or provably dropped; plus an in-flight nonce guard before any send. Both paths tested on the fork. |
+| 3 | Medium | CerebrScope was never deployed or wired into the app by the runbook; the app's fallback called `svg()`, but the contract has `svgOf()`. | **Fixed.** LAUNCH.md step 6b (fork rehearsal, then user-signed deploy); optional `scope` in `launch/config.json` is validated and written to `launch/out`, and `npm run sync` picks it up; ABI renamed to `svgOf`. Verified on the fork: the app's `scopeImage()` returns on-chain SVGs. SUBMISSION has a checklist item and a fallback voice-over line. |
+| 4 | Medium | README/SUBMISSION pointed to an AUDIT.md about the removed $CBR contracts; DEPLOY.md and AGENTS.md still described the curve. | **Fixed** (this document; DEPLOY.md deleted). **AGENTS.md is left for the human** to update: it is the agents' instruction file. |
+| 5 | Low | Landing page claimed the dApp blocks sending a circuit into its own wallet; README called Scope "read-only". | **Fixed** wording on both (the app has no transfer feature; Scope is "no admin, no funds", with an owner-written label registry). |
+| 6 | Low | "Fixed cap and price" claims ignored TapeOut's upgradeable beacons. | **Fixed.** README, SUBMISSION, ISSUANCE and the landing page now say the terms are fixed by Cerebr at `createCPU` and enforced by TapeOut's upgradeable contracts. |
+| 7 | Low | SDK root lacked the `tapeout` export used by the landing snippet; `npm test` failed on Node 26. | **Fixed.** `export * as tapeout`; the snippet typechecks; `npm test` runs `'test/*.test.ts'`; a test covers the root exports. |
+| 8 | Low | `sdk/node_modules` not ignored; stray fork receipts in the root. | **Fixed**, plus a bug found while fixing it: the root `out/` ignore rule also matched `launch/out/`, so the mainnet launch record could never have been committed. Rules are now anchored (`/out/`, `/cache/`); fork records are ignored, mainnet records are committable. Stray files deleted. |
+| 9 | — | Integrator: `launch.ts` and `fork-smoke.ts` only accepted chain id 196, while the dApp's fork (and the in-app instructions) use 31337. | **Fixed.** Fork mode accepts 196 or 31337 and signs with the node's real id; one fork now serves the launch, sync, smoke test and dApp. |
+| 10 | Info | Independent on-chain check of all 14 catalog circuits, both output modes; launch.ts safety rails; CerebrScope authorization, escaping and REF parsing. | No issues found. |
 
-## Round 2 findings (tiers, fusion, commit-reveal, fair launch, ERC-6551, Lens)
+No finding was rejected.
 
-Duplicate reports from the two review agents are merged into one row.
+## 5. Test results (2026-10-04)
 
-| # | Severity | Finding | Status |
-|---|---|---|---|
-| 2-1 | **High** | **Fusion recycling.** The child's owner could pull both parents back out of the child's TBA and fuse them again, any number of times. One pair of Basics produced a new Pro for 5k CBR each time (a direct Pro costs 20k), and Singularity supply had no limit. | **Fixed.** `CerebrCircuit.fusedInto[id]` records the child a Circuit was fused into, and `fuse` reverts `AlreadyFused(id)` for any used parent. Parents still go into the child's TBA and can be withdrawn from it (so the spec's recoverability holds), but they can never be fused again. The fused state is shown in `tokenURI` ("Fused Into #N"), in `CerebrLens.CircuitView.fusedInto`, in the subgraph and in the dApp. Tests: `test_RecycledParentsCannotBeFusedAgain` (real `CerebrAccount`), `test_FusedParentsRecoverableByChildTba`, `test_FusedIntoMarksParentsAndMetadata`, the invariant handler `refuse` and the invariant `invariant_FusedOnce`. |
-| 2-2 | Medium | **Approvals made by a TBA outlive a sale.** A seller could `setApprovalForAll` from the child's TBA, sell the child, then pull the parents out as an operator. The TBA's `state` would not change, so an order bound to `state` gave the buyer no protection. | **Fixed for Circuits.** `CerebrCircuit._update` reverts `AccountOperatorTransfer` when a Circuit held by a canonical Circuit TBA is moved by anyone other than that TBA (`auth != from`). Any move out of a TBA must therefore go through `execute`, which bumps `state`. Internal fusion moves pass `auth = 0`. ERC-20 and ERC-1155 approvals made by a TBA still survive a sale; this is documented below and in the dApp README. Tests: `test_SellerApprovalFromWalletCannotDrainAfterSale`, `test_TbaApprovedOperatorCannotMoveCircuits`, invariant handler `operatorPull`. |
-| 2-3 | Medium | **Sell, burn, rebuy.** A holder can sell x CBR, tape out, then buy x back. The burn then happens at a lower point on the curve, so the holder recovers about `SLOPE·T·x/1e36` of the surplus, minus the 1% fee. | **Accepted and documented.** The surplus is OKB that no one can ever claim. Recovering part of it takes nothing from any other holder: the sell price depends only on supply, solvency still holds, and the end state is the same apart from the dead surplus. NatSpec and TOKENOMICS now say the surplus a burn adds is a lower bound, set at the supply when the burn runs. A structural fix (pricing on cumulative minted supply) would change the economic model. |
-| 2-4 | Medium | **Fusion is cheaper than a direct tape-out.** A Pro by fusion costs 15k CBR against 20k direct; a Quantum costs 50k against 100k. | **Open decision for the owner.** Both prices are in the agreed spec. Direct tape-out is currently a convenience premium: no reveal wait, and no parents locked in a wallet. See the open decisions in README. |
-| 2-5 | Low | **Launch-cap griefing.** An atomic buy then sell from 4 wallets could fill the global block cap for about 0.002–0.006 OKB per block, locking out every other buyer. The defaults also let the window absorb 18× `MAX_SUPPLY`. | **Fixed.** The caps now count **net** buys: during the window, a sell gives back the seller's and the block's same-block usage. The release saturates at zero and never reverts, so sells are still never blocked. Default parameters are re-chosen against measured 1 s blocks (see DEPLOY.md): the window can absorb at most 90% of supply, and the cheapest 10% needs at least 400 blocks. Tests: `test_LaunchAtomicRoundTripCannotFillBlockCap`, `test_LaunchSellsAndTapeOutsUncappedAndSellsNetCap`, the fuzz reference model (now with sells), and the handler `roundTrip` assertion. |
-| 2-6 | Low | **Reveal grinding.** An owner can wait out the 256-block blockhash window (about 4.3 minutes at 1 s blocks) to force a re-commit, which re-rolls the traits. | **Fixed on-chain (round 3).** A FIFO auto-reveal queue in `CerebrCircuit`: every tape-out and fusion settles up to 2 ready sealed Circuits, every buy up to 1, so while the protocol is in use no Circuit can outlive its window. `reveal` stays permissionless; `app/scripts/keeper.ts` and the dApp's "Reveal all ready" button are now an optional backup for quiet periods. Details in [Auto-reveal queue](#auto-reveal-queue-round-3-fix-for-2-6). Tests: `test/CerebrAutoReveal.t.sol` (19, including a reference-model fuzz and a liveness fuzz), the handler's FIFO model check on every action, `invariant_RevealQueue` and the liveness suite. |
-| 2-7 | Low | **ERC-1271 replay.** The TBA accepts any valid owner signature, so signatures that don't name the owner (for example Permit2 `PermitSingle`) can be replayed against the TBA if it approved Permit2. | **Documented.** TBAs should not approve Permit2. A nested EIP-712 wrapper (ERC-7739) would break naive verifiers. |
-| 2-8 | Low | **Lens overflow.** `quoteBuyExactOKB` overflowed for curve parameters the processor accepted (slope > 1.45e40). | **Fixed.** The processor constructor now rejects `basePrice` or `slope` above 1e36, and the Lens NatSpec states that limit. Test: `test_CurveParamsUpperBound`. |
-| 2-9 | Info | **Non-canonical cycles.** Cycle protection covers only canonical TBAs (salt 0, Cerebr implementation). An owner can lock their own Circuits through a TBA with a different salt or implementation. | **Documented.** Only the owner of both tokens can do this, and only to themselves. The dApp uses only canonical TBAs. |
-| 2-10 | Info | Gas figures and optional storage packing (seed inside `CircuitInfo`, redundant `totalMinted`). | **Not applied.** Under the security > simplicity > gas order the gain was too small. |
-| 2-11 | Info | Clean areas: solvency, reentrancy, access control, pause scope, fusion authorization, account `execute`, commit-reveal source. Spec conformance checked. | No action needed. |
-
-No `testBUG_` tests remained after the fixes.
-
-## Auto-reveal queue (round 3, fix for 2-6)
-
-**Design.** Circuit ids are minted in order, so the queue of sealed Circuits needs no array: one cursor, `_revealedPrefix`, packed with `totalMinted` in a single slot (every id at or below it is revealed; `revealQueueHead()` is the next id). `_settleQueue(k)` walks from the head:
-
-- an id that is already revealed (someone called `reveal`) is stepped over, at most `AUTO_REVEAL_MAX_SKIPS` (4) per call;
-- a sealed id whose hash is available is revealed exactly as `reveal(id)` would (same seed formula, same `CircuitRevealed` event);
-- a sealed id whose hash expired (or is zero) re-commits exactly as `reveal(id)` would (`Recommitted`), and the walk continues so ready Circuits behind it are not skipped; the cursor stays on the re-committed id until it is revealed;
-- the walk **stops at the first sealed id that is not ready yet** (FIFO, nothing ready is ever skipped), and after `k` settles or `k + 4` ids.
-
-| Caller | Settles (`k`) | Why |
-|---|---|---|
-| `tapeOutCircuit`, `tapeOutCircuitTier` (inside `CerebrCircuit.mint`) | 2 | Each mint adds one Circuit and can clear two, so mints alone keep up with mints. |
-| `fuseCircuits` (inside `CerebrCircuit.fuse`, before the parent checks) | 2 | Same; it can also reveal ready parents just in time for the fusion. |
-| `buyTransistors` | 1 | Keeps the queue moving during trade-only periods. Cost on an empty queue is ~5.4k gas (one cold call + one cold slot); the reveal itself is the ~31k someone had to pay anyway. |
-| `sellTransistors` | 0 | The exit path stays exactly as audited: it never calls the Circuit contract, so no new code can affect a sell. |
-| `processRevealQueue(k)` (anyone) | `k` | Batch entry point for keepers; `k` is clamped to the queue length. |
-
-**Safety.** `_settleQueue` makes no external calls and has no revert paths (only storage writes, events and bounded checked arithmetic, with `k` clamped before `k + 4`), so it can never make a tape-out, fusion or buy revert; gas is strictly bounded by `k` reveals plus 4 cold reads. A new Circuit can never be revealed in its own mint (its hash is two blocks away). Settling in someone else's transaction reveals nothing the owner can exploit: the seed was fixed at `commitBlock + 1`, and reverting the outer transaction does not change it. `reveal(id)` is unchanged and idempotent with the queue: the queue steps over ids revealed manually and `reveal` keeps reverting `AlreadyRevealed` for ids the queue revealed. No public function, event or error was removed or changed; `totalMinted()` keeps its signature.
-
-**Residual risk.** A re-roll is now possible only if no buy, tape-out or fusion happens for the whole window (256 blocks, about 4.3 minutes) while the Circuit is ready, or while the protocol is paused (then mints and buys stop; `reveal` and `processRevealQueue` stay open). A burst of N mints in one block needs about N/2 later actions to drain. Running the keeper during quiet periods or pauses still closes that gap.
-
-**Gas estimation (found during integration).** Queue cost depends on how many Circuits are ready in the *inclusion* block. A gas estimate runs against the current block, and the transaction lands at least one block later, when another Circuit may have become ready. An unpadded estimate can therefore run out of gas. This reproduces even on a quiet local chain. Clients must pad the gas limit for `buyTransistors`, `tapeOutCircuit`, `tapeOutCircuitTier`, `fuseCircuits` and `processRevealQueue` by at least the bounded worst case: **+80,000 gas** covers 2 reveals plus 4 skips (about 72k). The dApp (`app/src/hooks/useTx.ts`), the smoke test and the local demo script all do this. Integrators calling the contracts directly must do the same.
-
-## Invariants (stateful, 256 runs × 50 depth, `fail-on-revert`)
-
-All 15 invariants pass in both suites: `CerebrInvariantTest` (launch guard off) and `CerebrLaunchInvariantTest` (1,000,000-block window, 30k wallet cap, 120k block cap). Both invariants of the liveness suite `CerebrRevealLivenessInvariantTest` pass too. Each invariant ran 12,800 calls with 0 reverts.
-
-| Invariant | Property |
+| Suite | Result |
 |---|---|
-| `Solvent` | `balance ≥ reserveRequired() + protocolFees` |
-| `BalanceAccounting` | Processor OKB balance equals paid-in − paid-out − fees withdrawn, exactly |
-| `SupplyCap` | `totalSupply ≤ MAX_SUPPLY` |
-| `BalancesSumToSupply` | The sum of actor balances equals `totalSupply` |
-| `PriceConsistent` | `currentPrice == BASE_PRICE + SLOPE·supply/1e18` |
-| `CircuitCount` | `totalMinted` equals tape-outs + fusions |
-| `BurnCounter` | `totalCbrBurned` equals the CBR burned by tape-outs and fusions; sells are excluded |
-| `TierCounts` | `mintedByTier` matches the ghost counts and the stored tiers, and sums to `totalMinted`; every Singularity came from a fusion |
-| `NoZeroOwner` | Ids 1..n are owned; ids 0 and n+1 are not |
-| `NoOwnershipCycles` | Every TBA ownership chain ends at a plain address, and the reverse TBA lookup is consistent |
-| `RevealConsistency` | Revealed ⇔ seed ≠ 0; sealed Circuits expose only their tier |
-| `SurplusFromSinks` | After any sink burn, surplus > 0 |
-| `FusedOnce` *(new)* | Fused parents = 2 × fusions; each parent is older than its child, and the child is exactly one tier higher |
-| `LaunchCaps` | Net same-block buys never exceed the wallet or block cap |
-| `RevealQueue` *(new)* | Every id below `revealQueueHead()` is revealed, and the head never passes `totalMinted + 1` |
-| `NoExpiryUnderActivity` *(liveness suite)* | With a buy, tape-out or fusion at least every 64 blocks, no Circuit ever re-commits, no sealed Circuit's hash expires, and no ready Circuit waits more than 128 blocks |
-| `LivenessQueueHead` *(liveness suite)* | Same head consistency as `RevealQueue` |
+| `forge test` (CI mode, no fork) | 6 passed (incl. 1,000-run fuzz), fork suite skipped |
+| `SCOPE_FORK_RPC=… forge test` (X Layer fork, block ≈72.38M) | 21 passed (15 fork + 6 unit) |
+| `sdk`: `npm test`, `tsc --noEmit` | 35 passed, clean |
+| `sdk/scripts/fork-smoke.ts` | 18 / 18 checks |
+| `sdk/scripts/launch.ts --yes --fresh` (fresh fork, chain 31337) | 19 transactions, 5.03M gas, 14 circuits, 1,164 on-chain cases, **ALL CIRCUITS VERIFIED** |
+| `app`: `tsc --noEmit`, `npm run build` | clean |
+| `app`: `npm run smoke` | 43 / 43 checks |
 
-The handler also asserts these properties inline on every call:
+CI (`.github/workflows/test.yml`) runs forge fmt/build/test (non-fork), the SDK typecheck and tests, and the app build. Fork suites need a local anvil fork and are run by hand before release (README "Quickstart").
 
-- No round-trip arbitrage.
-- The excess payment is refunded.
-- Price moves the right way on every buy and sell.
-- The owner can take fees only.
-- A buy of the remaining launch cap + 1 always reverts with the exact error.
-- Recycled parents always revert `AlreadyFused` and change nothing.
-- Operator pulls out of a TBA always revert `AccountOperatorTransfer`.
-- Nesting outcomes (ok / cycle / too deep) match an independent model.
-- Every buy, sell, tape-out, fusion and queue poke settles exactly the Circuits an independent FIFO model predicts (reveal vs re-commit, seed, untouched ids, new head). Sells settle nothing.
+## 6. Known limitations
 
-## Test results
-
-`forge test`: **219 passed, 0 failed** across 9 suites.
-
-| Suite | Tests |
-|---|---|
-| `CerebrProcessor.t.sol` (unit) | 54 |
-| `CerebrFuzz.t.sol` | 21 |
-| `CerebrFeatures.t.sol` (tiers, fusion, reveal, launch, counters, nesting) | 64 |
-| `CerebrAccount.t.sol` (ERC-6551) | 18 |
-| `CerebrLens.t.sol` | 11 |
-| `CerebrAutoReveal.t.sol` (queue: FIFO, bounds, expiry, manual-reveal interplay, model fuzz, liveness fuzz, gas bound) | 19 |
-| `CerebrInvariant.t.sol` (2 suites × 15, plus the 2-invariant liveness suite) | 32 |
-
-## Coverage (`forge coverage --report summary`, src only)
-
-| File | Lines | Statements | Branches | Functions |
-|---|---|---|---|---|
-| `CerebrProcessor.sol` | 100% (130/130) | 100% (176/176) | 100% (26/26) | 100% (26/26) |
-| `CerebrCircuit.sol` | 100% (183/183) | 99.6% (238/239) | 98.1% (53/54) | 100% (30/30) |
-| `CerebrAccount.sol` | 100% (42/42) | 100% (63/63) | 100% (9/9) | 100% (10/10) |
-| `CerebrLens.sol` | 97.1% (100/103) | 96.8% (152/157) | 100% (6/6) | 100% (9/9) |
-| `ERC6551Registry.sol` | 82.9% (29/35) | 81.8% (27/33) | 0% (0/2) | 100% (2/2) |
-| **Total** | **98.2%** | **98.2%** | **96.9%** | **100%** |
-
-The registry's uncovered branches are in the reference assembly (the create2-failure path). Its behaviour is checked by a differential fuzz test against the canonical mainnet bytecode.
-
-## Gas (`forge test --gas-report`, excluding invariant suites)
-
-Figures include the 21k transaction base (they match anvil receipts, e.g. `reveal` = 53,667). Min values come from reverting test calls. Medians now include auto-reveal work: in the test suites most tape-outs find one ready Circuit to reveal.
-
-| Function | Median | Max | Notes |
-|---|---|---|---|
-| `buyTransistors` | 80.4k | 133.8k | Max is the first buy inside the launch window (new usage slots); includes up to 1 auto-reveal |
-| `sellTransistors` | 47.0k | 80.2k | Unchanged: sells never touch the queue |
-| `tapeOutCircuit` (Basic) | 168.7k | 208.3k | Includes up to 2 auto-reveals |
-| `tapeOutCircuitTier` | 196.5k | 206.9k | |
-| `fuseCircuits` | 225.9k | 297.0k | Max settles 2 queued Circuits |
-| `reveal` | 53.7k | 53.7k | +60 gas from the shared internal `_settle` |
-| `processRevealQueue` | 24.1k | 122.2k | Permissionless batch reveal; ~31k per Circuit after the first |
-| `withdrawFees` | 60.7k | 60.7k | |
-| `ERC6551Registry.createAccount` | 94.9k | 94.9k | "Activate brain wallet" |
-| `CerebrAccount.execute` | 7.2k + callee | 83.6k | |
-| `CerebrLens.quoteBuyExactOKB` (view) | 63.8k | 194.6k | |
-| `CerebrLens.protocolState` (view) | 44.1k | 44.1k | |
-
-**Auto-reveal overhead, before vs after** (controlled scenarios, one transaction each, state built in earlier transactions; transaction gas including the 21k base and calldata):
-
-| Scenario | `tapeOutCircuit` | `tapeOutCircuitTier(Pro)` | `fuseCircuits` | `buyTransistors` | `sellTransistors` |
-|---|---|---|---|---|---|
-| Before (no queue) | 137,551 | 137,977 | 238,502 | 48,395 | 68,899 |
-| After, queue empty | 138,038 (+487) | 138,464 (+487) | 238,978 (+476) | 53,818 (+5,423) | 68,899 (0) |
-| After, 1 ready Circuit (steady state) | 168,748 (+31,197) | 169,174 (+31,197) | 269,689 (+31,187) | 87,323 (+38,928) | 68,899 (0) |
-| After, 2+ ready Circuits | 198,820 (+61,269) | 199,246 (+61,269) | 299,760 (+61,258) | 87,323 (1 settle max) | 68,899 (0) |
-| After, 4 manually revealed ids to step over | 148,144 (+10,593) | 148,570 (+10,593) | 245,084 (+6,582) | 66,724 (+18,329) | 68,899 (0) |
-
-Steady state is one reveal per mint, about **+31k** per tape-out or fusion. About 22k of that is the fresh `seedOf` slot, which any reveal must pay. Network-wide this is cheaper than before: a separate keeper `reveal` transaction costs 53.7k. The worst case per call is bounded by 2 reveals + 4 skips for mints (about +72k) and 1 reveal + 4 skips for buys (about +51k). `test_GasOverheadBounded` asserts the bound.
-
-## Known risks and trust assumptions
-
-- **Owner powers.** The owner can:
-  - pause and unpause **buys, tape-outs and fusions**
-  - withdraw accrued **sell fees** (`protocolFees`)
-  - transfer ownership with the two-step flow
-  
-  The owner **cannot**:
-  - touch the curve reserve or the surplus
-  - pause sells, reveals or transfers
-  - mint CBR or Circuits
-  - change curve parameters
-  - upgrade anything (there are no proxies)
-  - renounce ownership (doing so would strand fees)
-- **Sequencer and blockhash randomness.** Trait seeds are `keccak256(blockhash(commitBlock+1), id, chainid, circuit)`. X Layer's single sequencer produces those hashes and could bias them. Traits are cosmetic, and nothing in the protocol pays out based on rarity. Do not build value-bearing mechanics on them without VRF.
-- **Reveal timing.** Once `commitBlock+1` is mined, an owner can compute the result off-chain. The auto-reveal queue reveals each Circuit in FIFO order during the next tape-outs, fusions and buys. A re-roll is only possible if no buy, tape-out or fusion reaches the Circuit within 256 blocks (about 4.3 minutes): a quiet period, a pause, or a large same-block burst of mints ahead of it. For those cases run `app/scripts/keeper.ts` (optional backup) or call `processRevealQueue`. If the blockhash comes back zero, the Circuit re-commits; a zero hash is never used.
-- **Fair launch is a speed limit, not a sybil filter.** The per-wallet cap can be bypassed with many wallets. The per-block **global** net cap is the real guard. The first buyer in each block still benefits from transaction ordering.
-- **Surplus is a lower bound.** See 2-3. The burner chooses the curve point of the burn by selling and rebuying around it.
-- **Brain wallets (ERC-6551):**
-  - ERC-20 and ERC-1155 approvals granted by a TBA survive a sale of its Circuit. Buyers should check outstanding approvals as well as `state`.
-  - A TBA accepts its owner's signatures (ERC-1271), so it should never approve Permit2.
-  - Circuit approvals granted by a TBA can no longer move Circuits (2-2).
-  - Cycle protection covers canonical TBAs only (2-9).
-  - A seller can still drain a TBA through `execute` right before a sale; marketplace orders should be bound to `state`.
-- **Canonical registry.** On mainnet the contracts rely on the canonical ERC-6551 registry at `0x000000006551c19487814612e58FE06813775758`. Its runtime bytecode was compared with the vendored reference.
-- **Single sequencer and MEV.** Trades are protected only by the `maxCost` and `minRefund` slippage bounds. There is no deadline parameter.
+- **TapeOut is the trust root.** Upgradeable, unaudited, unsealed; its owner can change fees, burns, `eval` semantics or the cap/price enforcement. The launch script's implementation pins detect changes before launch only.
+- **Fees are protocol-set.** Quotes are read live; the 0.08 OKB account-open fee dominates launch cost.
+- **Circuits are small by design.** `eval` is a view call; networks of tens to hundreds of gates are practical. Very large circuits may exceed RPC `eth_call` gas caps for `eval` or Scope rendering.
+- **Self-locking accounts.** TapeOut allows sending a circuit NFT into its own account. The dApp offers no transfers, but other tools can do it.
+- **Names of custom designs** live only in the browser that taped them out, unless the owner writes a CerebrScope label.
+- **This review is internal.** It is not a substitute for a professional audit of either Cerebr or TapeOut.
