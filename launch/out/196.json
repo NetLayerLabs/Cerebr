@@ -1,0 +1,1308 @@
+{
+  "schema": "cerebr.launch/1",
+  "network": "xlayer",
+  "chainId": 196,
+  "generatedAt": "2026-10-05T20:05:30.570Z",
+  "block": "72461675",
+  "explorer": "https://www.oklink.com/xlayer",
+  "deployer": "0xc742AdA2872a042dD36D2E706907b4036968960C",
+  "tapeout": {
+    "factory": "0x1f09daefa827f02cbb40967cc91b259763760761",
+    "opener": "0x536add8f30f03b69f6fbf29d425a816a0dc50106",
+    "registry": "0x000000006551c19487814612e58fe06813775758",
+    "accountImpl": "0xac4f791353ee9f06e2c50ae4c34680d28ea52a57",
+    "multicall3": "0xcA11bde05977b3631167028862bE2a173976CA11",
+    "implementations": {
+      "factoryImpl": "0x74956236Ab64eD143933040B4137E8A352e4d17b",
+      "transistorImpl": "0x265bf10faB9ddEC0eE0A649C6B9DB845f1b9a06b",
+      "circuitImpl": "0x977f217887E085D298Cb3819cDAD5A0ee35F29B2",
+      "openerImplementation": "0xAC4F791353eE9F06e2C50Ae4C34680D28Ea52a57",
+      "openerCodeHash": "0xf0c334d8d72983af1c38694dac7a1c83348c0c000cbb987467d2aedee06999fd",
+      "sealed": false
+    }
+  },
+  "processor": {
+    "name": "Cerebr",
+    "symbol": "CRBR",
+    "story": "Cerebr is an on-chain neural processor. Its transistors are synapses: every NAND minted here is wired into a neuron. Its circuits are neurons and networks, compiled from threshold units into NAND netlists and taped out on X Layer; REF links taped-out neurons into deeper networks, so the brain grows by reuse. eval() is inference: anyone can run any Cerebr circuit on-chain, for free, forever.",
+    "circuits": "0xB04EB79D1A5EECaabAAfF7B77d7c27578EE693FF",
+    "transistors": "0x84b5a5c6fE305319458113b87c09a2A241427D2D",
+    "creator": "0xc742AdA2872a042dD36D2E706907b4036968960C",
+    "supplyCap": "1000000",
+    "minted": "1241",
+    "mintPrice": "10000000000000",
+    "mintPriceOkb": "0.00001",
+    "protocolFee": "660000000000000",
+    "tapeoutFee": "1300000000000000",
+    "circuitCount": "14",
+    "tokenIds": {
+      "NAND": "0",
+      "LATCH": "1"
+    },
+    "listedInTapeoutApp": true,
+    "createTx": "0x3295efc1ceec4aba0f918f89e5316fd62f1f705abdc52d483715e4fcada86815",
+    "createBlock": "72461494",
+    "links": {
+      "circuits": "https://www.oklink.com/xlayer/address/0xB04EB79D1A5EECaabAAfF7B77d7c27578EE693FF",
+      "transistors": "https://www.oklink.com/xlayer/address/0x84b5a5c6fE305319458113b87c09a2A241427D2D",
+      "createTx": "https://www.oklink.com/xlayer/tx/0x3295efc1ceec4aba0f918f89e5316fd62f1f705abdc52d483715e4fcada86815"
+    }
+  },
+  "outputMode": "direct",
+  "circuits": [
+    {
+      "key": "and-neuron",
+      "circuitId": "1",
+      "name": "AND Neuron",
+      "description": "Two excitatory synapses (w=+1,+1), threshold 2: fires only when both inputs spike.",
+      "story": "A coincidence detector — the neuron that only believes two witnesses at once.",
+      "kind": "combinational",
+      "flagship": false,
+      "inputs": [
+        "x0",
+        "x1"
+      ],
+      "outputs": [
+        "y"
+      ],
+      "layers": [
+        [
+          {
+            "weights": [
+              1,
+              1
+            ],
+            "theta": 2,
+            "name": "AND"
+          }
+        ]
+      ],
+      "deps": [],
+      "nIn": 2,
+      "nOut": 1,
+      "nState": 0,
+      "gateCount": 2,
+      "elements": {
+        "nand": 2,
+        "latch": 0,
+        "ref": 0
+      },
+      "netlist": "0x0000000300000200000004000004",
+      "tx": "0xeb5e9cedb905ad98209f04a40b2a93e7caaadce88f031b2bcb07f21d78d18254",
+      "block": "72461505",
+      "account": {
+        "address": "0x2A44cFe7e4E515e32452f42079323944621AD36C",
+        "opened": false
+      },
+      "verified": {
+        "ok": true,
+        "cases": 4,
+        "at": "2026-10-05T20:02:22.214Z",
+        "checks": [
+          "netlist bytes",
+          "circuitInfo",
+          "TapedOut event",
+          "owner",
+          "eval == simulator (4 inputs)"
+        ]
+      },
+      "links": {
+        "tx": "https://www.oklink.com/xlayer/tx/0xeb5e9cedb905ad98209f04a40b2a93e7caaadce88f031b2bcb07f21d78d18254",
+        "account": "https://www.oklink.com/xlayer/address/0x2A44cFe7e4E515e32452f42079323944621AD36C"
+      }
+    },
+    {
+      "key": "or-neuron",
+      "circuitId": "2",
+      "name": "OR Neuron",
+      "description": "Two excitatory synapses (w=+1,+1), threshold 1: fires when either input spikes.",
+      "story": "The most forgiving neuron: one signal is enough to wake it.",
+      "kind": "combinational",
+      "flagship": false,
+      "inputs": [
+        "x0",
+        "x1"
+      ],
+      "outputs": [
+        "y"
+      ],
+      "layers": [
+        [
+          {
+            "weights": [
+              1,
+              1
+            ],
+            "theta": 1,
+            "name": "OR"
+          }
+        ]
+      ],
+      "deps": [],
+      "nIn": 2,
+      "nOut": 1,
+      "nState": 0,
+      "gateCount": 3,
+      "elements": {
+        "nand": 3,
+        "latch": 0,
+        "ref": 0
+      },
+      "netlist": "0x000000020000020000000300000400000005000004",
+      "tx": "0x9dbcfd1e5b9a00083bd1058a83108778cb5f242a19e60f425bd782d8d7770895",
+      "block": "72461510",
+      "account": {
+        "address": "0x1a092254daf0fFeFB0922B2469aC32FaaeAf23CF",
+        "opened": false
+      },
+      "verified": {
+        "ok": true,
+        "cases": 4,
+        "at": "2026-10-05T20:02:29.167Z",
+        "checks": [
+          "netlist bytes",
+          "circuitInfo",
+          "TapedOut event",
+          "owner",
+          "eval == simulator (4 inputs)"
+        ]
+      },
+      "links": {
+        "tx": "https://www.oklink.com/xlayer/tx/0x9dbcfd1e5b9a00083bd1058a83108778cb5f242a19e60f425bd782d8d7770895",
+        "account": "https://www.oklink.com/xlayer/address/0x1a092254daf0fFeFB0922B2469aC32FaaeAf23CF"
+      }
+    },
+    {
+      "key": "nand-neuron",
+      "circuitId": "3",
+      "name": "Inhibitory Neuron (NAND)",
+      "description": "Two inhibitory synapses (w=-1,-1), threshold -1: silent only when both inputs spike.",
+      "story": "Built from the very gate the processor mints — one NAND, one neuron.",
+      "kind": "combinational",
+      "flagship": false,
+      "inputs": [
+        "x0",
+        "x1"
+      ],
+      "outputs": [
+        "y"
+      ],
+      "layers": [
+        [
+          {
+            "weights": [
+              -1,
+              -1
+            ],
+            "theta": -1,
+            "name": "NAND"
+          }
+        ]
+      ],
+      "deps": [],
+      "nIn": 2,
+      "nOut": 1,
+      "nState": 0,
+      "gateCount": 1,
+      "elements": {
+        "nand": 1,
+        "latch": 0,
+        "ref": 0
+      },
+      "netlist": "0x00000003000002",
+      "tx": "0xab5badaeb079e3274b02a1642f4f345e4879f6f17373af732e6449dcc2168a81",
+      "block": "72461517",
+      "account": {
+        "address": "0x02A354D5c46444a57178C7c01BA4116098dF104f",
+        "opened": false
+      },
+      "verified": {
+        "ok": true,
+        "cases": 4,
+        "at": "2026-10-05T20:02:34.675Z",
+        "checks": [
+          "netlist bytes",
+          "circuitInfo",
+          "TapedOut event",
+          "owner",
+          "eval == simulator (4 inputs)"
+        ]
+      },
+      "links": {
+        "tx": "https://www.oklink.com/xlayer/tx/0xab5badaeb079e3274b02a1642f4f345e4879f6f17373af732e6449dcc2168a81",
+        "account": "https://www.oklink.com/xlayer/address/0x02A354D5c46444a57178C7c01BA4116098dF104f"
+      }
+    },
+    {
+      "key": "xor-net",
+      "circuitId": "4",
+      "name": "The XOR Problem",
+      "description": "Two-layer network: hidden OR-neuron and NAND-neuron, output AND-neuron. y = x0 XOR x1.",
+      "story": "Minsky & Papert showed a single perceptron cannot learn XOR. Two layers can — here, in NAND gates, on chain.",
+      "kind": "combinational",
+      "flagship": false,
+      "inputs": [
+        "x0",
+        "x1"
+      ],
+      "outputs": [
+        "y"
+      ],
+      "layers": [
+        [
+          {
+            "weights": [
+              1,
+              1
+            ],
+            "theta": 1,
+            "name": "OR"
+          },
+          {
+            "weights": [
+              -1,
+              -1
+            ],
+            "theta": -1,
+            "name": "NAND"
+          }
+        ],
+        [
+          {
+            "weights": [
+              1,
+              1
+            ],
+            "theta": 2,
+            "name": "AND"
+          }
+        ]
+      ],
+      "deps": [],
+      "nIn": 2,
+      "nOut": 1,
+      "nState": 0,
+      "gateCount": 6,
+      "elements": {
+        "nand": 6,
+        "latch": 0,
+        "ref": 0
+      },
+      "netlist": "0x000000020000020000000300000400000005000004000000030000020000000700000600000008000008",
+      "tx": "0x4ace108c8ecb85f8ea47d6a13cc9e96c7e3013a4618ed086401cbce6519930a8",
+      "block": "72461523",
+      "account": {
+        "address": "0x20891A4B653Cc5A297A0071999E832731a7A3d58",
+        "opened": false
+      },
+      "verified": {
+        "ok": true,
+        "cases": 4,
+        "at": "2026-10-05T20:02:40.217Z",
+        "checks": [
+          "netlist bytes",
+          "circuitInfo",
+          "TapedOut event",
+          "owner",
+          "eval == simulator (4 inputs)"
+        ]
+      },
+      "links": {
+        "tx": "https://www.oklink.com/xlayer/tx/0x4ace108c8ecb85f8ea47d6a13cc9e96c7e3013a4618ed086401cbce6519930a8",
+        "account": "https://www.oklink.com/xlayer/address/0x20891A4B653Cc5A297A0071999E832731a7A3d58"
+      }
+    },
+    {
+      "key": "xor-net-ref",
+      "circuitId": "5",
+      "name": "The XOR Problem (REF-composed)",
+      "description": "The same 2-layer XOR network wired from the taped-out OR, NAND and AND neuron circuits by REF.",
+      "story": "Minsky & Papert showed a single perceptron cannot learn XOR. Two layers can — here, in NAND gates, on chain.",
+      "kind": "combinational",
+      "flagship": true,
+      "inputs": [
+        "x0",
+        "x1"
+      ],
+      "outputs": [
+        "y"
+      ],
+      "layers": [
+        [
+          {
+            "weights": [
+              1,
+              1
+            ],
+            "theta": 1,
+            "name": "OR"
+          },
+          {
+            "weights": [
+              -1,
+              -1
+            ],
+            "theta": -1,
+            "name": "NAND"
+          }
+        ],
+        [
+          {
+            "weights": [
+              1,
+              1
+            ],
+            "theta": 2,
+            "name": "AND"
+          }
+        ]
+      ],
+      "deps": [
+        {
+          "key": "or-neuron",
+          "circuitId": "2"
+        },
+        {
+          "key": "nand-neuron",
+          "circuitId": "3"
+        },
+        {
+          "key": "and-neuron",
+          "circuitId": "1"
+        }
+      ],
+      "nIn": 2,
+      "nOut": 1,
+      "nState": 0,
+      "gateCount": 6,
+      "elements": {
+        "nand": 0,
+        "latch": 0,
+        "ref": 3
+      },
+      "netlist": "0x02b04eb79d1a5eecaabaaff7b77d7c27578ee693ff0000000000000002020100000200000302b04eb79d1a5eecaabaaff7b77d7c27578ee693ff0000000000000003020100000200000302b04eb79d1a5eecaabaaff7b77d7c27578ee693ff00000000000000010201000004000005",
+      "tx": "0xc3e10087944a57070a3f4acf618992085d06d6af5e381b4675d9fd482976b66e",
+      "block": "72461528",
+      "account": {
+        "address": "0x9E1d3eC3B3D0fe84997df0E065a96a7c93c13166",
+        "opened": false
+      },
+      "verified": {
+        "ok": true,
+        "cases": 4,
+        "at": "2026-10-05T20:02:46.708Z",
+        "checks": [
+          "netlist bytes",
+          "circuitInfo",
+          "TapedOut event",
+          "owner",
+          "eval == simulator (4 inputs)"
+        ]
+      },
+      "links": {
+        "tx": "https://www.oklink.com/xlayer/tx/0xc3e10087944a57070a3f4acf618992085d06d6af5e381b4675d9fd482976b66e",
+        "account": "https://www.oklink.com/xlayer/address/0x9E1d3eC3B3D0fe84997df0E065a96a7c93c13166"
+      }
+    },
+    {
+      "key": "majority-3",
+      "circuitId": "6",
+      "name": "Majority-3",
+      "description": "Three excitatory synapses, threshold 2: the vote of three inputs (6 NAND, a full adder carry).",
+      "story": "Three voters, one decision. The smallest committee that can outvote a single faulty wire.",
+      "kind": "combinational",
+      "flagship": false,
+      "inputs": [
+        "x0",
+        "x1",
+        "x2"
+      ],
+      "outputs": [
+        "y"
+      ],
+      "layers": [
+        [
+          {
+            "weights": [
+              1,
+              1,
+              1
+            ],
+            "theta": 2,
+            "name": "MAJ3"
+          }
+        ]
+      ],
+      "deps": [],
+      "nIn": 3,
+      "nOut": 1,
+      "nState": 0,
+      "gateCount": 6,
+      "elements": {
+        "nand": 6,
+        "latch": 0,
+        "ref": 0
+      },
+      "netlist": "0x000000020000030000000200000500000003000005000000060000070000000800000400000005000009",
+      "tx": "0x2418f266c2f0ba0b728813c8cf07999ec0fb41efdb81d42b7d1f2b941d3315ca",
+      "block": "72461534",
+      "account": {
+        "address": "0x7Ee673259E0174Cc9d3c6968E81f240A31A3e375",
+        "opened": false
+      },
+      "verified": {
+        "ok": true,
+        "cases": 8,
+        "at": "2026-10-05T20:02:54.972Z",
+        "checks": [
+          "netlist bytes",
+          "circuitInfo",
+          "TapedOut event",
+          "owner",
+          "eval == simulator (8 inputs)"
+        ]
+      },
+      "links": {
+        "tx": "https://www.oklink.com/xlayer/tx/0x2418f266c2f0ba0b728813c8cf07999ec0fb41efdb81d42b7d1f2b941d3315ca",
+        "account": "https://www.oklink.com/xlayer/address/0x7Ee673259E0174Cc9d3c6968E81f240A31A3e375"
+      }
+    },
+    {
+      "key": "majority-5",
+      "circuitId": "7",
+      "name": "Majority-5",
+      "description": "Five excitatory synapses, threshold 3: majority vote of five inputs.",
+      "story": "A five-member council on a chip; ties are impossible by construction.",
+      "kind": "combinational",
+      "flagship": false,
+      "inputs": [
+        "x0",
+        "x1",
+        "x2",
+        "x3",
+        "x4"
+      ],
+      "outputs": [
+        "y"
+      ],
+      "layers": [
+        [
+          {
+            "weights": [
+              1,
+              1,
+              1,
+              1,
+              1
+            ],
+            "theta": 3,
+            "name": "MAJ5"
+          }
+        ]
+      ],
+      "deps": [],
+      "nIn": 5,
+      "nOut": 1,
+      "nState": 0,
+      "gateCount": 24,
+      "elements": {
+        "nand": 24,
+        "latch": 0,
+        "ref": 0
+      },
+      "netlist": "0x00000005000005000000060000050000000800000800000004000004000000090000040000000b00000b000000060000070000000d0000070000000900000a0000000e0000040000000f000010000000030000030000000c00001200000011000003000000130000140000000e00000a0000001600000a000000110000120000001700000300000018000019000000020000020000001500001b0000001a0000020000001c00001d",
+      "tx": "0xb25b7f1822c3aa229ec7931ba8728cdb656e8b56f11d430913f87ae095c95558",
+      "block": "72461542",
+      "account": {
+        "address": "0xaA4AE5038b6e717FDf5c981d45CD1Da1D00Ac402",
+        "opened": false
+      },
+      "verified": {
+        "ok": true,
+        "cases": 32,
+        "at": "2026-10-05T20:03:01.003Z",
+        "checks": [
+          "netlist bytes",
+          "circuitInfo",
+          "TapedOut event",
+          "owner",
+          "eval == simulator (32 inputs)"
+        ]
+      },
+      "links": {
+        "tx": "https://www.oklink.com/xlayer/tx/0xb25b7f1822c3aa229ec7931ba8728cdb656e8b56f11d430913f87ae095c95558",
+        "account": "https://www.oklink.com/xlayer/address/0xaA4AE5038b6e717FDf5c981d45CD1Da1D00Ac402"
+      }
+    },
+    {
+      "key": "threshold-neuron",
+      "circuitId": "8",
+      "name": "Go/No-Go Neuron",
+      "description": "Three excitatory (+1) and two inhibitory (-1) synapses, threshold 2: y = [e0+e1+e2 − i0 − i1 ≥ 2].",
+      "story": "Excitation argues for, inhibition argues against; the neuron fires when the case is strong enough.",
+      "kind": "combinational",
+      "flagship": false,
+      "inputs": [
+        "e0",
+        "e1",
+        "e2",
+        "i0",
+        "i1"
+      ],
+      "outputs": [
+        "y"
+      ],
+      "layers": [
+        [
+          {
+            "weights": [
+              1,
+              1,
+              1,
+              -1,
+              -1
+            ],
+            "theta": 2
+          }
+        ]
+      ],
+      "deps": [],
+      "nIn": 5,
+      "nOut": 1,
+      "nState": 0,
+      "gateCount": 19,
+      "elements": {
+        "nand": 19,
+        "latch": 0,
+        "ref": 0
+      },
+      "netlist": "0x00000005000005000000060000060000000200000300000002000009000000030000090000000a00000b0000000c0000040000000c00000d0000000400000d0000000e00000f0000000900000d0000000700000800000007000012000000080000120000001300001400000015000010000000120000160000001100001700000018000018",
+      "tx": "0xc58e60186673067a51e6606901a65195267599730f716180b95ba4ef95d3fd3d",
+      "block": "72461549",
+      "account": {
+        "address": "0x550500EF28b4Ebe39a7431E2A86A45f97F6db141",
+        "opened": false
+      },
+      "verified": {
+        "ok": true,
+        "cases": 32,
+        "at": "2026-10-05T20:03:09.962Z",
+        "checks": [
+          "netlist bytes",
+          "circuitInfo",
+          "TapedOut event",
+          "owner",
+          "eval == simulator (32 inputs)"
+        ]
+      },
+      "links": {
+        "tx": "https://www.oklink.com/xlayer/tx/0xc58e60186673067a51e6606901a65195267599730f716180b95ba4ef95d3fd3d",
+        "account": "https://www.oklink.com/xlayer/address/0x550500EF28b4Ebe39a7431E2A86A45f97F6db141"
+      }
+    },
+    {
+      "key": "line-cell",
+      "circuitId": "9",
+      "name": "Line Cell",
+      "description": "Three excitatory synapses, threshold 3: fires when all three pixels of a stroke are lit.",
+      "story": "A receptive field three pixels long — the first stage of the line detector.",
+      "kind": "combinational",
+      "flagship": false,
+      "inputs": [
+        "p0",
+        "p1",
+        "p2"
+      ],
+      "outputs": [
+        "y"
+      ],
+      "layers": [
+        [
+          {
+            "weights": [
+              1,
+              1,
+              1
+            ],
+            "theta": 3,
+            "name": "line"
+          }
+        ]
+      ],
+      "deps": [],
+      "nIn": 3,
+      "nOut": 1,
+      "nState": 0,
+      "gateCount": 4,
+      "elements": {
+        "nand": 4,
+        "latch": 0,
+        "ref": 0
+      },
+      "netlist": "0x00000004000003000000050000050000000600000200000007000007",
+      "tx": "0xdcdf8f9a4bbb13b57b30f3a8f437499f68e8d0b9fd2e9f41d955043fb9233819",
+      "block": "72461557",
+      "account": {
+        "address": "0xF074589A6232B24F6Fb19c432166B473236Cc870",
+        "opened": false
+      },
+      "verified": {
+        "ok": true,
+        "cases": 8,
+        "at": "2026-10-05T20:03:15.711Z",
+        "checks": [
+          "netlist bytes",
+          "circuitInfo",
+          "TapedOut event",
+          "owner",
+          "eval == simulator (8 inputs)"
+        ]
+      },
+      "links": {
+        "tx": "https://www.oklink.com/xlayer/tx/0xdcdf8f9a4bbb13b57b30f3a8f437499f68e8d0b9fd2e9f41d955043fb9233819",
+        "account": "https://www.oklink.com/xlayer/address/0xF074589A6232B24F6Fb19c432166B473236Cc870"
+      }
+    },
+    {
+      "key": "any-of-3",
+      "circuitId": "10",
+      "name": "Any-of-3 Neuron",
+      "description": "Three excitatory synapses, threshold 1: pools three feature detectors.",
+      "story": "The pooling neuron: it does not care which detector fired, only that one did.",
+      "kind": "combinational",
+      "flagship": false,
+      "inputs": [
+        "h0",
+        "h1",
+        "h2"
+      ],
+      "outputs": [
+        "y"
+      ],
+      "layers": [
+        [
+          {
+            "weights": [
+              1,
+              1,
+              1
+            ],
+            "theta": 1,
+            "name": "any"
+          }
+        ]
+      ],
+      "deps": [],
+      "nIn": 3,
+      "nOut": 1,
+      "nState": 0,
+      "gateCount": 6,
+      "elements": {
+        "nand": 6,
+        "latch": 0,
+        "ref": 0
+      },
+      "netlist": "0x000000030000030000000400000500000006000005000000020000020000000700000800000009000008",
+      "tx": "0x57a1e3547687a8ff7ef97cb01b9366768b295f7c73a1120c4f4461b44e7cb37a",
+      "block": "72461563",
+      "account": {
+        "address": "0x9c960f794abD831c0d7Eb3A782F8a60031B2a324",
+        "opened": false
+      },
+      "verified": {
+        "ok": true,
+        "cases": 8,
+        "at": "2026-10-05T20:03:21.965Z",
+        "checks": [
+          "netlist bytes",
+          "circuitInfo",
+          "TapedOut event",
+          "owner",
+          "eval == simulator (8 inputs)"
+        ]
+      },
+      "links": {
+        "tx": "https://www.oklink.com/xlayer/tx/0x57a1e3547687a8ff7ef97cb01b9366768b295f7c73a1120c4f4461b44e7cb37a",
+        "account": "https://www.oklink.com/xlayer/address/0x9c960f794abD831c0d7Eb3A782F8a60031B2a324"
+      }
+    },
+    {
+      "key": "line-detector",
+      "circuitId": "11",
+      "name": "Line Detector",
+      "description": "3×3 binarized network: 8 line cells (3 rows, 3 columns, 2 diagonals; w=+1 on the stroke, θ=3) pooled by any-of neurons (θ=1). Outputs are multi-hot [horizontal, vertical, diagonal]; all zero means no line.",
+      "story": "A miniature visual cortex: simple cells tuned to orientation, complex cells pooling them — 512 images, every answer on chain.",
+      "kind": "combinational",
+      "flagship": false,
+      "inputs": [
+        "r0c0",
+        "r0c1",
+        "r0c2",
+        "r1c0",
+        "r1c1",
+        "r1c2",
+        "r2c0",
+        "r2c1",
+        "r2c2"
+      ],
+      "outputs": [
+        "horizontal",
+        "vertical",
+        "diagonal"
+      ],
+      "layers": [
+        [
+          {
+            "weights": [
+              1,
+              1,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "theta": 3,
+            "name": "row0"
+          },
+          {
+            "weights": [
+              0,
+              0,
+              0,
+              1,
+              1,
+              1,
+              0,
+              0,
+              0
+            ],
+            "theta": 3,
+            "name": "row1"
+          },
+          {
+            "weights": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              1,
+              1,
+              1
+            ],
+            "theta": 3,
+            "name": "row2"
+          },
+          {
+            "weights": [
+              1,
+              0,
+              0,
+              1,
+              0,
+              0,
+              1,
+              0,
+              0
+            ],
+            "theta": 3,
+            "name": "col0"
+          },
+          {
+            "weights": [
+              0,
+              1,
+              0,
+              0,
+              1,
+              0,
+              0,
+              1,
+              0
+            ],
+            "theta": 3,
+            "name": "col1"
+          },
+          {
+            "weights": [
+              0,
+              0,
+              1,
+              0,
+              0,
+              1,
+              0,
+              0,
+              1
+            ],
+            "theta": 3,
+            "name": "col2"
+          },
+          {
+            "weights": [
+              1,
+              0,
+              0,
+              0,
+              1,
+              0,
+              0,
+              0,
+              1
+            ],
+            "theta": 3,
+            "name": "diag"
+          },
+          {
+            "weights": [
+              0,
+              0,
+              1,
+              0,
+              1,
+              0,
+              1,
+              0,
+              0
+            ],
+            "theta": 3,
+            "name": "anti"
+          }
+        ],
+        [
+          {
+            "weights": [
+              1,
+              1,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "theta": 1,
+            "name": "horizontal"
+          },
+          {
+            "weights": [
+              0,
+              0,
+              0,
+              1,
+              1,
+              1,
+              0,
+              0
+            ],
+            "theta": 1,
+            "name": "vertical"
+          },
+          {
+            "weights": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              1,
+              1
+            ],
+            "theta": 1,
+            "name": "diagonal"
+          }
+        ]
+      ],
+      "deps": [],
+      "nIn": 9,
+      "nOut": 3,
+      "nState": 0,
+      "gateCount": 37,
+      "elements": {
+        "nand": 37,
+        "latch": 0,
+        "ref": 0
+      },
+      "netlist": "0x000000040000030000000b00000b0000000c000002000000070000060000000e00000e0000000f0000050000000a0000090000001100001100000012000008000000130000130000000800000500000015000015000000160000020000000900000600000018000018000000190000030000000a0000070000001b00001b0000001c0000040000001d00001d0000000a0000060000001f00001f000000200000020000000800000600000022000022000000230000040000002400002400000014000010000000260000100000002700000d0000001e00001a0000002900001a0000002a000017000000250000210000002800000d0000002b0000170000002c000021",
+      "tx": "0x69a23927d56107894ba2b62a4c73829d5770c1db4194d8105a2ed8bb6319dce5",
+      "block": "72461569",
+      "account": {
+        "address": "0xc1eA2A67C705FCDC8f7002bDC9B9861333f8F31B",
+        "opened": false
+      },
+      "verified": {
+        "ok": true,
+        "cases": 512,
+        "at": "2026-10-05T20:04:05.482Z",
+        "checks": [
+          "netlist bytes",
+          "circuitInfo",
+          "TapedOut event",
+          "owner",
+          "eval == simulator (512 inputs)"
+        ]
+      },
+      "links": {
+        "tx": "https://www.oklink.com/xlayer/tx/0x69a23927d56107894ba2b62a4c73829d5770c1db4194d8105a2ed8bb6319dce5",
+        "account": "https://www.oklink.com/xlayer/address/0xc1eA2A67C705FCDC8f7002bDC9B9861333f8F31B"
+      }
+    },
+    {
+      "key": "line-detector-ref",
+      "circuitId": "12",
+      "name": "Line Detector (REF-composed)",
+      "description": "The line detector wired from one taped-out Line Cell (reused 8×), pooled by Any-of-3 (2×) and OR (1×) neurons, all by REF.",
+      "story": "A miniature visual cortex: simple cells tuned to orientation, complex cells pooling them — 512 images, every answer on chain.",
+      "kind": "combinational",
+      "flagship": true,
+      "inputs": [
+        "r0c0",
+        "r0c1",
+        "r0c2",
+        "r1c0",
+        "r1c1",
+        "r1c2",
+        "r2c0",
+        "r2c1",
+        "r2c2"
+      ],
+      "outputs": [
+        "horizontal",
+        "vertical",
+        "diagonal"
+      ],
+      "layers": [
+        [
+          {
+            "weights": [
+              1,
+              1,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "theta": 3,
+            "name": "row0"
+          },
+          {
+            "weights": [
+              0,
+              0,
+              0,
+              1,
+              1,
+              1,
+              0,
+              0,
+              0
+            ],
+            "theta": 3,
+            "name": "row1"
+          },
+          {
+            "weights": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              1,
+              1,
+              1
+            ],
+            "theta": 3,
+            "name": "row2"
+          },
+          {
+            "weights": [
+              1,
+              0,
+              0,
+              1,
+              0,
+              0,
+              1,
+              0,
+              0
+            ],
+            "theta": 3,
+            "name": "col0"
+          },
+          {
+            "weights": [
+              0,
+              1,
+              0,
+              0,
+              1,
+              0,
+              0,
+              1,
+              0
+            ],
+            "theta": 3,
+            "name": "col1"
+          },
+          {
+            "weights": [
+              0,
+              0,
+              1,
+              0,
+              0,
+              1,
+              0,
+              0,
+              1
+            ],
+            "theta": 3,
+            "name": "col2"
+          },
+          {
+            "weights": [
+              1,
+              0,
+              0,
+              0,
+              1,
+              0,
+              0,
+              0,
+              1
+            ],
+            "theta": 3,
+            "name": "diag"
+          },
+          {
+            "weights": [
+              0,
+              0,
+              1,
+              0,
+              1,
+              0,
+              1,
+              0,
+              0
+            ],
+            "theta": 3,
+            "name": "anti"
+          }
+        ],
+        [
+          {
+            "weights": [
+              1,
+              1,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "theta": 1,
+            "name": "horizontal"
+          },
+          {
+            "weights": [
+              0,
+              0,
+              0,
+              1,
+              1,
+              1,
+              0,
+              0
+            ],
+            "theta": 1,
+            "name": "vertical"
+          },
+          {
+            "weights": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              1,
+              1
+            ],
+            "theta": 1,
+            "name": "diagonal"
+          }
+        ]
+      ],
+      "deps": [
+        {
+          "key": "line-cell",
+          "circuitId": "9"
+        },
+        {
+          "key": "any-of-3",
+          "circuitId": "10"
+        },
+        {
+          "key": "or-neuron",
+          "circuitId": "2"
+        }
+      ],
+      "nIn": 9,
+      "nOut": 3,
+      "nState": 0,
+      "gateCount": 47,
+      "elements": {
+        "nand": 0,
+        "latch": 0,
+        "ref": 11
+      },
+      "netlist": "0x02b04eb79d1a5eecaabaaff7b77d7c27578ee693ff0000000000000009030100000200000300000402b04eb79d1a5eecaabaaff7b77d7c27578ee693ff0000000000000009030100000500000600000702b04eb79d1a5eecaabaaff7b77d7c27578ee693ff0000000000000009030100000800000900000a02b04eb79d1a5eecaabaaff7b77d7c27578ee693ff0000000000000009030100000200000500000802b04eb79d1a5eecaabaaff7b77d7c27578ee693ff0000000000000009030100000300000600000902b04eb79d1a5eecaabaaff7b77d7c27578ee693ff0000000000000009030100000400000700000a02b04eb79d1a5eecaabaaff7b77d7c27578ee693ff0000000000000009030100000200000600000a02b04eb79d1a5eecaabaaff7b77d7c27578ee693ff0000000000000009030100000400000600000802b04eb79d1a5eecaabaaff7b77d7c27578ee693ff000000000000000a030100000b00000c00000d02b04eb79d1a5eecaabaaff7b77d7c27578ee693ff000000000000000a030100000e00000f00001002b04eb79d1a5eecaabaaff7b77d7c27578ee693ff00000000000000020201000011000012",
+      "tx": "0x65fa37ad39f3d62ff4088ef352904ec9ee8520ec7ada0326652f13cccc2648ea",
+      "block": "72461613",
+      "account": {
+        "address": "0xE687E29c1b4B94bCD3F4F45EDc84E4678E3Ec0eD",
+        "opened": false
+      },
+      "verified": {
+        "ok": true,
+        "cases": 512,
+        "at": "2026-10-05T20:04:48.792Z",
+        "checks": [
+          "netlist bytes",
+          "circuitInfo",
+          "TapedOut event",
+          "owner",
+          "eval == simulator (512 inputs)"
+        ]
+      },
+      "links": {
+        "tx": "https://www.oklink.com/xlayer/tx/0x65fa37ad39f3d62ff4088ef352904ec9ee8520ec7ada0326652f13cccc2648ea",
+        "account": "https://www.oklink.com/xlayer/address/0xE687E29c1b4B94bCD3F4F45EDc84E4678E3Ec0eD"
+      }
+    },
+    {
+      "key": "adder-2bit",
+      "circuitId": "13",
+      "name": "2-bit Adder",
+      "description": "a + b for two 2-bit numbers (LSB-first): half adder + full adder, 3-bit sum.",
+      "story": "Arithmetic is where neurons come from: a threshold neuron is a weighted sum and a compare.",
+      "kind": "combinational",
+      "flagship": false,
+      "inputs": [
+        "a0",
+        "a1",
+        "b0",
+        "b1"
+      ],
+      "outputs": [
+        "s0",
+        "s1",
+        "s2"
+      ],
+      "deps": [],
+      "nIn": 4,
+      "nOut": 3,
+      "nState": 0,
+      "gateCount": 14,
+      "elements": {
+        "nand": 14,
+        "latch": 0,
+        "ref": 0
+      },
+      "netlist": "0x00000002000004000000020000060000000400000600000006000006000000030000050000000300000a0000000500000a0000000b00000c0000000d0000090000000d00000e0000000900000e000000070000080000000f0000100000000a00000e",
+      "tx": "0xdbbec9cd6b0909f3e505e3927f6f9e8e3f60e63039fd2aaae9ac01a141dbf3f3",
+      "block": "72461656",
+      "account": {
+        "address": "0x213fd75c2ad5330bAE28ef34B6D461890287F2D7",
+        "opened": false
+      },
+      "verified": {
+        "ok": true,
+        "cases": 16,
+        "at": "2026-10-05T20:04:53.643Z",
+        "checks": [
+          "netlist bytes",
+          "circuitInfo",
+          "TapedOut event",
+          "owner",
+          "eval == simulator (16 inputs)"
+        ]
+      },
+      "links": {
+        "tx": "https://www.oklink.com/xlayer/tx/0xdbbec9cd6b0909f3e505e3927f6f9e8e3f60e63039fd2aaae9ac01a141dbf3f3",
+        "account": "https://www.oklink.com/xlayer/address/0x213fd75c2ad5330bAE28ef34B6D461890287F2D7"
+      }
+    },
+    {
+      "key": "spiking-neuron",
+      "circuitId": "14",
+      "name": "Integrate-and-Fire Neuron",
+      "description": "Sequential neuron with a 2-bit membrane potential in two LATCHes: integrates input spikes, fires on the third and resets; `inhibit` clears it. Run with step().",
+      "story": "The neuron remembers. Its potential lives in latches between calls — a heartbeat of state on chain.",
+      "kind": "sequential",
+      "flagship": false,
+      "inputs": [
+        "spike",
+        "inhibit"
+      ],
+      "outputs": [
+        "fire"
+      ],
+      "state": [
+        "p0",
+        "p1"
+      ],
+      "deps": [],
+      "nIn": 2,
+      "nOut": 1,
+      "nState": 2,
+      "gateCount": 19,
+      "elements": {
+        "nand": 17,
+        "latch": 2,
+        "ref": 0
+      },
+      "netlist": "0x010000110100001500000003000003000000020000060000000700000700000008000005000000060000090000000a00000a000000040000020000000400000c0000000200000c0000000d00000e0000000b00000f00000010000010000000050000050000001200000c0000000b0000130000001400001400000009000009",
+      "tx": "0x91e5a6585576e608318a33d7d616b0e6fe769bce3aa3510b9e08782ca11d7016",
+      "block": "72461661",
+      "account": {
+        "address": "0x358bbf1E1850E3b0c3a18b896Adc2f1CAa95a7e3",
+        "opened": false
+      },
+      "verified": {
+        "ok": true,
+        "cases": 16,
+        "at": "2026-10-05T20:05:01.720Z",
+        "checks": [
+          "netlist bytes",
+          "circuitInfo",
+          "TapedOut event",
+          "owner",
+          "step == simulator (16 state x input cases)"
+        ]
+      },
+      "links": {
+        "tx": "https://www.oklink.com/xlayer/tx/0x91e5a6585576e608318a33d7d616b0e6fe769bce3aa3510b9e08782ca11d7016",
+        "account": "https://www.oklink.com/xlayer/address/0x358bbf1E1850E3b0c3a18b896Adc2f1CAa95a7e3"
+      }
+    }
+  ],
+  "costs": {
+    "valuePaid": "38530000000000000",
+    "gasPaid": "97480684874034",
+    "withdrawn": "12410000000000000",
+    "net": "26217480684874034",
+    "netOkb": "0.02621748"
+  }
+}

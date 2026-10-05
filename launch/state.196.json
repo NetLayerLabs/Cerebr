@@ -1,0 +1,454 @@
+{
+  "version": 1,
+  "network": "xlayer",
+  "chainId": 196,
+  "deployer": "0xc742AdA2872a042dD36D2E706907b4036968960C",
+  "startedAt": "2026-10-05T20:01:56.113Z",
+  "updatedAt": "2026-10-05T20:05:30.571Z",
+  "mints": [
+    {
+      "id": "NAND",
+      "amount": "1139",
+      "value": "12050000000000000",
+      "tx": {
+        "hash": "0x8cd6b747194cba30aafce82b85546b013daa9f314a878e9a04d5ae47b84f62e1",
+        "block": "72461499",
+        "gasUsed": "157611",
+        "gasCost": "3152220157611",
+        "value": "12050000000000000"
+      }
+    },
+    {
+      "id": "LATCH",
+      "amount": "102",
+      "value": "1680000000000000",
+      "tx": {
+        "hash": "0xeaf30d1f02cf16dec19c77c229a1e62f38e259a7d9da1285cbeb4c3edd6e563c",
+        "block": "72461502",
+        "gasUsed": "86434",
+        "gasCost": "1728680086434",
+        "value": "1680000000000000"
+      }
+    }
+  ],
+  "circuits": {
+    "and-neuron": {
+      "circuitId": "1",
+      "netlist": "0x0000000300000200000004000004",
+      "nIn": 2,
+      "nOut": 1,
+      "gateCount": 2,
+      "nState": 0,
+      "author": "0xc742AdA2872a042dD36D2E706907b4036968960C",
+      "tx": {
+        "hash": "0xeb5e9cedb905ad98209f04a40b2a93e7caaadce88f031b2bcb07f21d78d18254",
+        "block": "72461505",
+        "gasUsed": "246582",
+        "gasCost": "4931640246582",
+        "value": "1300000000000000"
+      },
+      "verified": {
+        "ok": true,
+        "cases": 4,
+        "at": "2026-10-05T20:02:22.214Z",
+        "checks": [
+          "netlist bytes",
+          "circuitInfo",
+          "TapedOut event",
+          "owner",
+          "eval == simulator (4 inputs)"
+        ]
+      }
+    },
+    "or-neuron": {
+      "circuitId": "2",
+      "netlist": "0x000000020000020000000300000400000005000004",
+      "nIn": 2,
+      "nOut": 1,
+      "gateCount": 3,
+      "nState": 0,
+      "author": "0xc742AdA2872a042dD36D2E706907b4036968960C",
+      "tx": {
+        "hash": "0x9dbcfd1e5b9a00083bd1058a83108778cb5f242a19e60f425bd782d8d7770895",
+        "block": "72461510",
+        "gasUsed": "215154",
+        "gasCost": "4303080215154",
+        "value": "1300000000000000"
+      },
+      "verified": {
+        "ok": true,
+        "cases": 4,
+        "at": "2026-10-05T20:02:29.167Z",
+        "checks": [
+          "netlist bytes",
+          "circuitInfo",
+          "TapedOut event",
+          "owner",
+          "eval == simulator (4 inputs)"
+        ]
+      }
+    },
+    "nand-neuron": {
+      "circuitId": "3",
+      "netlist": "0x00000003000002",
+      "nIn": 2,
+      "nOut": 1,
+      "gateCount": 1,
+      "nState": 0,
+      "author": "0xc742AdA2872a042dD36D2E706907b4036968960C",
+      "tx": {
+        "hash": "0xab5badaeb079e3274b02a1642f4f345e4879f6f17373af732e6449dcc2168a81",
+        "block": "72461517",
+        "gasUsed": "209615",
+        "gasCost": "4192300209615",
+        "value": "1300000000000000"
+      },
+      "verified": {
+        "ok": true,
+        "cases": 4,
+        "at": "2026-10-05T20:02:34.675Z",
+        "checks": [
+          "netlist bytes",
+          "circuitInfo",
+          "TapedOut event",
+          "owner",
+          "eval == simulator (4 inputs)"
+        ]
+      }
+    },
+    "xor-net": {
+      "circuitId": "4",
+      "netlist": "0x000000020000020000000300000400000005000004000000030000020000000700000600000008000008",
+      "nIn": 2,
+      "nOut": 1,
+      "gateCount": 6,
+      "nState": 0,
+      "author": "0xc742AdA2872a042dD36D2E706907b4036968960C",
+      "tx": {
+        "hash": "0x4ace108c8ecb85f8ea47d6a13cc9e96c7e3013a4618ed086401cbce6519930a8",
+        "block": "72461523",
+        "gasUsed": "223740",
+        "gasCost": "4474800223740",
+        "value": "1300000000000000"
+      },
+      "verified": {
+        "ok": true,
+        "cases": 4,
+        "at": "2026-10-05T20:02:40.217Z",
+        "checks": [
+          "netlist bytes",
+          "circuitInfo",
+          "TapedOut event",
+          "owner",
+          "eval == simulator (4 inputs)"
+        ]
+      }
+    },
+    "xor-net-ref": {
+      "circuitId": "5",
+      "netlist": "0x02b04eb79d1a5eecaabaaff7b77d7c27578ee693ff0000000000000002020100000200000302b04eb79d1a5eecaabaaff7b77d7c27578ee693ff0000000000000003020100000200000302b04eb79d1a5eecaabaaff7b77d7c27578ee693ff00000000000000010201000004000005",
+      "nIn": 2,
+      "nOut": 1,
+      "gateCount": 6,
+      "nState": 0,
+      "author": "0xc742AdA2872a042dD36D2E706907b4036968960C",
+      "tx": {
+        "hash": "0xc3e10087944a57070a3f4acf618992085d06d6af5e381b4675d9fd482976b66e",
+        "block": "72461528",
+        "gasUsed": "254761",
+        "gasCost": "5095220254761",
+        "value": "1300000000000000"
+      },
+      "verified": {
+        "ok": true,
+        "cases": 4,
+        "at": "2026-10-05T20:02:46.708Z",
+        "checks": [
+          "netlist bytes",
+          "circuitInfo",
+          "TapedOut event",
+          "owner",
+          "eval == simulator (4 inputs)"
+        ]
+      }
+    },
+    "majority-3": {
+      "circuitId": "6",
+      "netlist": "0x000000020000030000000200000500000003000005000000060000070000000800000400000005000009",
+      "nIn": 3,
+      "nOut": 1,
+      "gateCount": 6,
+      "nState": 0,
+      "author": "0xc742AdA2872a042dD36D2E706907b4036968960C",
+      "tx": {
+        "hash": "0x2418f266c2f0ba0b728813c8cf07999ec0fb41efdb81d42b7d1f2b941d3315ca",
+        "block": "72461534",
+        "gasUsed": "223740",
+        "gasCost": "4474800223740",
+        "value": "1300000000000000"
+      },
+      "verified": {
+        "ok": true,
+        "cases": 8,
+        "at": "2026-10-05T20:02:54.972Z",
+        "checks": [
+          "netlist bytes",
+          "circuitInfo",
+          "TapedOut event",
+          "owner",
+          "eval == simulator (8 inputs)"
+        ]
+      }
+    },
+    "majority-5": {
+      "circuitId": "7",
+      "netlist": "0x00000005000005000000060000050000000800000800000004000004000000090000040000000b00000b000000060000070000000d0000070000000900000a0000000e0000040000000f000010000000030000030000000c00001200000011000003000000130000140000000e00000a0000001600000a000000110000120000001700000300000018000019000000020000020000001500001b0000001a0000020000001c00001d",
+      "nIn": 5,
+      "nOut": 1,
+      "gateCount": 24,
+      "nState": 0,
+      "author": "0xc742AdA2872a042dD36D2E706907b4036968960C",
+      "tx": {
+        "hash": "0xb25b7f1822c3aa229ec7931ba8728cdb656e8b56f11d430913f87ae095c95558",
+        "block": "72461542",
+        "gasUsed": "274708",
+        "gasCost": "5494160274708",
+        "value": "1300000000000000"
+      },
+      "verified": {
+        "ok": true,
+        "cases": 32,
+        "at": "2026-10-05T20:03:01.003Z",
+        "checks": [
+          "netlist bytes",
+          "circuitInfo",
+          "TapedOut event",
+          "owner",
+          "eval == simulator (32 inputs)"
+        ]
+      }
+    },
+    "threshold-neuron": {
+      "circuitId": "8",
+      "netlist": "0x00000005000005000000060000060000000200000300000002000009000000030000090000000a00000b0000000c0000040000000c00000d0000000400000d0000000e00000f0000000900000d0000000700000800000007000012000000080000120000001300001400000015000010000000120000160000001100001700000018000018",
+      "nIn": 5,
+      "nOut": 1,
+      "gateCount": 19,
+      "nState": 0,
+      "author": "0xc742AdA2872a042dD36D2E706907b4036968960C",
+      "tx": {
+        "hash": "0xc58e60186673067a51e6606901a65195267599730f716180b95ba4ef95d3fd3d",
+        "block": "72461549",
+        "gasUsed": "260582",
+        "gasCost": "5211640260582",
+        "value": "1300000000000000"
+      },
+      "verified": {
+        "ok": true,
+        "cases": 32,
+        "at": "2026-10-05T20:03:09.962Z",
+        "checks": [
+          "netlist bytes",
+          "circuitInfo",
+          "TapedOut event",
+          "owner",
+          "eval == simulator (32 inputs)"
+        ]
+      }
+    },
+    "line-cell": {
+      "circuitId": "9",
+      "netlist": "0x00000004000003000000050000050000000600000200000007000007",
+      "nIn": 3,
+      "nOut": 1,
+      "gateCount": 4,
+      "nState": 0,
+      "author": "0xc742AdA2872a042dD36D2E706907b4036968960C",
+      "tx": {
+        "hash": "0xdcdf8f9a4bbb13b57b30f3a8f437499f68e8d0b9fd2e9f41d955043fb9233819",
+        "block": "72461557",
+        "gasUsed": "217921",
+        "gasCost": "4358420217921",
+        "value": "1300000000000000"
+      },
+      "verified": {
+        "ok": true,
+        "cases": 8,
+        "at": "2026-10-05T20:03:15.711Z",
+        "checks": [
+          "netlist bytes",
+          "circuitInfo",
+          "TapedOut event",
+          "owner",
+          "eval == simulator (8 inputs)"
+        ]
+      }
+    },
+    "any-of-3": {
+      "circuitId": "10",
+      "netlist": "0x000000030000030000000400000500000006000005000000020000020000000700000800000009000008",
+      "nIn": 3,
+      "nOut": 1,
+      "gateCount": 6,
+      "nState": 0,
+      "author": "0xc742AdA2872a042dD36D2E706907b4036968960C",
+      "tx": {
+        "hash": "0x57a1e3547687a8ff7ef97cb01b9366768b295f7c73a1120c4f4461b44e7cb37a",
+        "block": "72461563",
+        "gasUsed": "223740",
+        "gasCost": "4474800223740",
+        "value": "1300000000000000"
+      },
+      "verified": {
+        "ok": true,
+        "cases": 8,
+        "at": "2026-10-05T20:03:21.965Z",
+        "checks": [
+          "netlist bytes",
+          "circuitInfo",
+          "TapedOut event",
+          "owner",
+          "eval == simulator (8 inputs)"
+        ]
+      }
+    },
+    "line-detector": {
+      "circuitId": "11",
+      "netlist": "0x000000040000030000000b00000b0000000c000002000000070000060000000e00000e0000000f0000050000000a0000090000001100001100000012000008000000130000130000000800000500000015000015000000160000020000000900000600000018000018000000190000030000000a0000070000001b00001b0000001c0000040000001d00001d0000000a0000060000001f00001f000000200000020000000800000600000022000022000000230000040000002400002400000014000010000000260000100000002700000d0000001e00001a0000002900001a0000002a000017000000250000210000002800000d0000002b0000170000002c000021",
+      "nIn": 9,
+      "nOut": 3,
+      "gateCount": 37,
+      "nState": 0,
+      "author": "0xc742AdA2872a042dD36D2E706907b4036968960C",
+      "tx": {
+        "hash": "0x69a23927d56107894ba2b62a4c73829d5770c1db4194d8105a2ed8bb6319dce5",
+        "block": "72461569",
+        "gasUsed": "311563",
+        "gasCost": "6231260311563",
+        "value": "1300000000000000"
+      },
+      "verified": {
+        "ok": true,
+        "cases": 512,
+        "at": "2026-10-05T20:04:05.482Z",
+        "checks": [
+          "netlist bytes",
+          "circuitInfo",
+          "TapedOut event",
+          "owner",
+          "eval == simulator (512 inputs)"
+        ]
+      }
+    },
+    "line-detector-ref": {
+      "circuitId": "12",
+      "netlist": "0x02b04eb79d1a5eecaabaaff7b77d7c27578ee693ff0000000000000009030100000200000300000402b04eb79d1a5eecaabaaff7b77d7c27578ee693ff0000000000000009030100000500000600000702b04eb79d1a5eecaabaaff7b77d7c27578ee693ff0000000000000009030100000800000900000a02b04eb79d1a5eecaabaaff7b77d7c27578ee693ff0000000000000009030100000200000500000802b04eb79d1a5eecaabaaff7b77d7c27578ee693ff0000000000000009030100000300000600000902b04eb79d1a5eecaabaaff7b77d7c27578ee693ff0000000000000009030100000400000700000a02b04eb79d1a5eecaabaaff7b77d7c27578ee693ff0000000000000009030100000200000600000a02b04eb79d1a5eecaabaaff7b77d7c27578ee693ff0000000000000009030100000400000600000802b04eb79d1a5eecaabaaff7b77d7c27578ee693ff000000000000000a030100000b00000c00000d02b04eb79d1a5eecaabaaff7b77d7c27578ee693ff000000000000000a030100000e00000f00001002b04eb79d1a5eecaabaaff7b77d7c27578ee693ff00000000000000020201000011000012",
+      "nIn": 9,
+      "nOut": 3,
+      "gateCount": 47,
+      "nState": 0,
+      "author": "0xc742AdA2872a042dD36D2E706907b4036968960C",
+      "tx": {
+        "hash": "0x65fa37ad39f3d62ff4088ef352904ec9ee8520ec7ada0326652f13cccc2648ea",
+        "block": "72461613",
+        "gasUsed": "423242",
+        "gasCost": "8464840423242",
+        "value": "1300000000000000"
+      },
+      "verified": {
+        "ok": true,
+        "cases": 512,
+        "at": "2026-10-05T20:04:48.792Z",
+        "checks": [
+          "netlist bytes",
+          "circuitInfo",
+          "TapedOut event",
+          "owner",
+          "eval == simulator (512 inputs)"
+        ]
+      }
+    },
+    "adder-2bit": {
+      "circuitId": "13",
+      "netlist": "0x00000002000004000000020000060000000400000600000006000006000000030000050000000300000a0000000500000a0000000b00000c0000000d0000090000000d00000e0000000900000e000000070000080000000f0000100000000a00000e",
+      "nIn": 4,
+      "nOut": 3,
+      "gateCount": 14,
+      "nState": 0,
+      "author": "0xc742AdA2872a042dD36D2E706907b4036968960C",
+      "tx": {
+        "hash": "0xdbbec9cd6b0909f3e505e3927f6f9e8e3f60e63039fd2aaae9ac01a141dbf3f3",
+        "block": "72461656",
+        "gasUsed": "246457",
+        "gasCost": "4929140246457",
+        "value": "1300000000000000"
+      },
+      "verified": {
+        "ok": true,
+        "cases": 16,
+        "at": "2026-10-05T20:04:53.643Z",
+        "checks": [
+          "netlist bytes",
+          "circuitInfo",
+          "TapedOut event",
+          "owner",
+          "eval == simulator (16 inputs)"
+        ]
+      }
+    },
+    "spiking-neuron": {
+      "circuitId": "14",
+      "netlist": "0x010000110100001500000003000003000000020000060000000700000700000008000005000000060000090000000a00000a000000040000020000000400000c0000000200000c0000000d00000e0000000b00000f00000010000010000000050000050000001200000c0000000b0000130000001400001400000009000009",
+      "nIn": 2,
+      "nOut": 1,
+      "gateCount": 19,
+      "nState": 2,
+      "author": "0xc742AdA2872a042dD36D2E706907b4036968960C",
+      "tx": {
+        "hash": "0x91e5a6585576e608318a33d7d616b0e6fe769bce3aa3510b9e08782ca11d7016",
+        "block": "72461661",
+        "gasUsed": "270465",
+        "gasCost": "5409300270465",
+        "value": "1300000000000000"
+      },
+      "verified": {
+        "ok": true,
+        "cases": 16,
+        "at": "2026-10-05T20:05:01.720Z",
+        "checks": [
+          "netlist bytes",
+          "circuitInfo",
+          "TapedOut event",
+          "owner",
+          "step == simulator (16 state x input cases)"
+        ]
+      }
+    }
+  },
+  "accounts": {},
+  "withdrawals": [
+    {
+      "amount": "12410000000000000",
+      "tx": {
+        "hash": "0xcbda8ac5f69e2c62077a10b4a3094f318682ae114d6c0d659e241c873052f1f5",
+        "block": "72461669",
+        "gasUsed": "40385",
+        "gasCost": "807700040385",
+        "value": "0"
+      }
+    }
+  ],
+  "balanceAtStart": "75078232732074891",
+  "cpu": {
+    "circuits": "0xB04EB79D1A5EECaabAAfF7B77d7c27578EE693FF",
+    "transistors": "0x84b5a5c6fE305319458113b87c09a2A241427D2D",
+    "tx": {
+      "hash": "0x3295efc1ceec4aba0f918f89e5316fd62f1f705abdc52d483715e4fcada86815",
+      "block": "72461494",
+      "gasUsed": "987334",
+      "gasCost": "19746680987334",
+      "value": "6600000000000000"
+    }
+  },
+  "done": "2026-10-05T20:05:30.571Z"
+}
