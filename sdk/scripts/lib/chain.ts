@@ -75,7 +75,13 @@ export async function connect(o: { network: NetworkName; rpc?: string; as?: Addr
   if (key) {
     const hex = (key.startsWith('0x') ? key : `0x${key}`) as Hex;
     if (!/^0x[0-9a-fA-F]{64}$/.test(hex)) throw new Error('PRIVATE_KEY is not a 32-byte hex key (value not shown)');
-    const account = privateKeyToAccount(hex);
+    let account: ReturnType<typeof privateKeyToAccount>;
+    try {
+      account = privateKeyToAccount(hex);
+    } catch {
+      // viem/noble echo the offending value (e.g. a key >= the curve order); never surface it
+      throw new Error('PRIVATE_KEY is not a valid secp256k1 private key (value not shown)');
+    }
     deployer = account.address;
     wc = createWalletClient({ chain: xLayer, transport, account });
   } else {
@@ -85,6 +91,22 @@ export async function connect(o: { network: NetworkName; rpc?: string; as?: Addr
     wc = createWalletClient({ chain: xLayer, transport, account: deployer }) as unknown as Wallet;
   }
   return { network: 'xlayer', rpc, chain: xLayer, pc, wc, deployer };
+}
+
+/**
+ * Removes secrets from text that is about to be printed (error messages, stack traces): the
+ * PRIVATE_KEY value in any spelling (with or without 0x, any case) is replaced by [redacted].
+ */
+export function redactSecrets(text: string, env: NodeJS.ProcessEnv = process.env): string {
+  const key = env.PRIVATE_KEY?.trim();
+  if (!key) return text;
+  const bare = key.replace(/^0x/i, '');
+  if (bare.length < 8) return text;
+  const esc = bare.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  let out = text.replace(new RegExp(`(0x)?${esc}`, 'gi'), '[redacted]');
+  // noble/viem report an out-of-range key as a decimal integer
+  if (/^[0-9a-fA-F]+$/.test(bare)) out = out.split(BigInt(`0x${bare}`).toString()).join('[redacted]');
+  return out;
 }
 
 /**
@@ -125,6 +147,10 @@ export interface ImplReport {
   transistorImpl: Address;
   circuitImpl: Address;
   openerImplementation: Address;
+  /** Beacon of the account proxy (openerImplementation), read from the proxy's bytecode immutable. */
+  accountBeacon: Address;
+  /** beacon.implementation(): the upgradeable logic every native account delegates to. */
+  accountBeaconImpl: Address;
   openerCodeHash: Hex;
   sealed: boolean;
   mismatches: string[];
@@ -144,11 +170,24 @@ export async function readImplementations(pc: PublicClient, pins: Pins): Promise
     pc.readContract({ address: tBeacon, abi: beaconAbi, functionName: 'implementation' }),
     pc.readContract({ address: cBeacon, abi: beaconAbi, functionName: 'implementation' }),
   ]);
-  const got = { factoryImpl, transistorImpl, circuitImpl, openerImplementation };
+  // The account proxy is a beacon proxy whose beacon is an immutable in its bytecode (no EIP-1967
+  // beacon slot). Check that the proxy still embeds the known beacon, then read the beacon's
+  // implementation: that is the upgradeable code behind every circuit's native account.
+  const beaconMismatch: string[] = [];
+  const accountBeacon = getAddress(XLAYER.accountBeacon ?? '0x0000000000000000000000000000000000000000');
+  const proxyCode = (await pc.getCode({ address: openerImplementation })) ?? '0x';
+  if (!proxyCode.toLowerCase().includes(accountBeacon.slice(2).toLowerCase())) {
+    beaconMismatch.push(`accountBeacon: the account proxy ${openerImplementation} no longer embeds beacon ${accountBeacon}`);
+  }
+  const accountBeaconImpl = await pc
+    .readContract({ address: accountBeacon, abi: beaconAbi, functionName: 'implementation' })
+    .catch(() => '0x0000000000000000000000000000000000000000' as Address);
+  const got = { factoryImpl, transistorImpl, circuitImpl, openerImplementation, accountBeaconImpl };
   const mismatches = (Object.keys(got) as (keyof typeof got)[])
     .filter((k) => got[k].toLowerCase() !== pins[k].toLowerCase())
     .map((k) => `${k}: pinned ${pins[k]}, on chain ${got[k]}`);
-  return { ...got, openerCodeHash: keccak256(openerCode ?? '0x'), sealed, mismatches };
+  mismatches.push(...beaconMismatch);
+  return { ...got, accountBeacon, openerCodeHash: keccak256(openerCode ?? '0x'), sealed, mismatches };
 }
 
 // ---------------------------------------------------------------- on-chain verification
