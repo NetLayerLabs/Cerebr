@@ -120,7 +120,7 @@ export function StudioView({ initial }: { initial?: string }) {
           {'error' in compiled ? (
             <div className="error small">{compiled.error}</div>
           ) : cpu ? (
-            <CompiledPanel c={compiled.c!} cpu={cpu} design={design} mode={mode} />
+            <CompiledPanel key={`${JSON.stringify(design)}|${mode}`} c={compiled.c!} cpu={cpu} design={design} mode={mode} />
           ) : (
             <div className="skeleton" style={{ height: 320 }} />
           )}
@@ -376,20 +376,27 @@ function CompiledPanel({ c, cpu, design, mode }: { c: Compiled; cpu: CpuState; d
   const flat = flatGates(c.program)
   const steps = [...plan.mints.map((m) => `Mint ${m.amount} ${m.label}`), ...plan.tapeouts.map((t) => `Tape out ${t.label}${t.dep ? ' (dependency)' : ''}`)]
 
+  // Every exit refetches balances and the circuit index (awaited), so a retry plans from chain
+  // state: no second mint for transistors already bought, no second tapeout of a landed dependency.
+  async function stop() {
+    await qc.invalidateQueries()
+    setProgress(undefined)
+  }
+
   async function run() {
-    if (!index) return
+    if (!index || !balances) return
     const idx = new Map(index)
     let step = 0
     setProgress({ step, of: steps.length })
     for (const m of plan.mints) {
       const r = await send(`Mint ${m.amount} ${m.label}`, mintTx(cpu.transistors, m.id === NAND_ID ? NAND_ID : LATCH_ID, m.amount, cpu.mintPrice, cpu.protocolFee), { refresh: false })
-      if (!r) return setProgress(undefined)
+      if (!r) return stop()
       setProgress({ step: ++step, of: steps.length })
     }
     // Dependencies first; each one's id goes into the index so the next compile REFs it.
     for (const d of c.deps.filter((x) => x.circuitId === undefined)) {
       const r = await send(`Tape out ${d.label.name}`, tapeoutTx(cpu.circuits, d.hex, d.netlist.nIn, d.netlist.nOut, cpu.tapeoutFee), { refresh: false })
-      if (!r) return setProgress(undefined)
+      if (!r) return stop()
       const id = tapedOutId(r, cpu.circuits)
       addToIndex(idx, d.netlist, d.hex, id)
       saveLabel(chainId, cpu.circuits, id, d.label)
@@ -398,10 +405,10 @@ function CompiledPanel({ c, cpu, design, mode }: { c: Compiled; cpu: CpuState; d
     const final = compileDesign(design, { mode, cpu: cpu.circuits, index: idx })
     if (!final.hex) {
       push({ kind: 'error', title: 'A dependency is still missing on chain' })
-      return setProgress(undefined)
+      return stop()
     }
     const r = await send(`Tape out ${final.label.name}`, tapeoutTx(cpu.circuits, final.hex, final.netlist.nIn, final.netlist.nOut, cpu.tapeoutFee), { refresh: false })
-    if (!r) return setProgress(undefined)
+    if (!r) return stop()
     const id = tapedOutId(r, cpu.circuits)
     saveLabel(chainId, cpu.circuits, id, labelFor(design, final.label))
     setProgress({ step: ++step, of: steps.length, done: id })
@@ -484,7 +491,7 @@ function CompiledPanel({ c, cpu, design, mode }: { c: Compiled; cpu: CpuState; d
           </a>
         </div>
       ) : (
-        <button className="btn primary big" disabled={!!busy || !!plan.blocked || !index || (!!progress && !progress.done)} onClick={run}>
+        <button className="btn primary big" disabled={!!busy || !!plan.blocked || !index || !balances || (!!progress && !progress.done)} onClick={run}>
           {busy ? busy + '…' : steps.length > 1 ? `Tape out (${steps.length} transactions)` : 'Tape out'}
         </button>
       )}
