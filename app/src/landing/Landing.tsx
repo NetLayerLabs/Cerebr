@@ -1,14 +1,12 @@
-import { useCerebr } from '../hooks/useCerebr.ts'
-import { compact, fmt } from '../lib/format.ts'
-import { TIERS } from '../lib/tiers.ts'
 import { Logo } from '../components/Logo.tsx'
 import { HeroChip } from './HeroChip.tsx'
+import { EXPLORER, FEES, ISSUANCE, okb } from './issuance.ts'
+import { useCpuStats } from './useCpuStats.ts'
 import './landing.css'
 
 const APP_HREF = '/app'
-const RARITY = ['Common', 'Rare', 'Epic', 'Legendary'] as const
-const TIER_COST = ['5,000 CBR', '20,000 CBR', '100,000 CBR', 'Fusion only']
-const FUSE_FROM = ['Tape out directly', '2 × Basic + 5k CBR', '2 × Pro + 20k CBR', '2 × Quantum + 100k CBR']
+const TAPEOUT_HREF = 'https://tapeout.net'
+const SET_AT_LAUNCH = 'Set at launch'
 
 function LaunchButton({ big }: { big?: boolean }) {
   return (
@@ -18,19 +16,22 @@ function LaunchButton({ big }: { big?: boolean }) {
   )
 }
 
+const int = (n: bigint | number) => Number(n).toLocaleString('en-US')
+
 export function Landing() {
   return (
     <div className="lp">
       <div className="bg-grid" aria-hidden />
       <Nav />
       <Hero />
-      <Loop />
-      <Economics />
-      <Circuits />
+      <HowItWorks />
+      <XorStory />
+      <Catalog />
+      <IssuanceSection />
       <BrainWallets />
-      <Fairness />
-      <Security />
+      <UseCases />
       <Builders />
+      <Security />
       <Faq />
       <FinalCta />
       <LandingFooter />
@@ -45,13 +46,14 @@ function Nav() {
         <Logo />
         <div>
           <div className="brand-name">CEREBR</div>
-          <div className="brand-sub">neural processor · X Layer</div>
+          <div className="brand-sub">neural processor · TapeOut · X Layer</div>
         </div>
       </a>
       <nav className="lp-links">
         <a href="#how">How it works</a>
-        <a href="#economics">Economics</a>
-        <a href="#circuits">Circuits</a>
+        <a href="#xor">XOR</a>
+        <a href="#catalog">Circuits</a>
+        <a href="#issuance">Issuance</a>
         <a href="#wallets">Brain wallets</a>
         <a href="#security">Security</a>
         <a href="#faq">FAQ</a>
@@ -66,27 +68,28 @@ function Hero() {
     <section className="lp-hero">
       <div className="lp-hero-copy">
         <span className="lp-eyebrow">
-          <span className="dot live" /> Built for X Layer · IGNIX TapeOut Hackathon
+          <span className="dot live" /> Built on TapeOut · X Layer mainnet
         </span>
         <h1>
-          Mint compute.
+          A neural processor,
           <br />
-          <span className="grad">Burn it into brains.</span>
+          <span className="grad">taped out on X Layer.</span>
         </h1>
         <p className="lp-lede">
-          Cerebr is an on-chain neural processor. Buy Transistors ($CBR) on a fully backed bonding curve, burn them to
-          tape out Neural Circuit NFTs, and fuse Circuits into rarer brains, each with its own on-chain wallet.
+          Cerebr compiles neurons into real NAND netlists and tapes them out on its own TapeOut processor. Every
+          transistor is a synapse, every circuit is a neuron you own, and anyone can run inference on-chain with{' '}
+          <code>eval()</code>.
         </p>
         <div className="lp-cta-row">
           <LaunchButton big />
-          <a className="btn lp-ghost" href="#how">
-            See how it works
+          <a className="btn lp-ghost" href="#xor">
+            See a neuron solve XOR
           </a>
         </div>
         <ul className="lp-proof">
-          <li>100% on-chain art &amp; metadata</li>
-          <li>Owner can never touch the reserve</li>
-          <li>Sells can never be paused</li>
+          <li>Real gates, not pictures of gates</li>
+          <li>Inference you can verify on-chain</li>
+          <li>Neurons any team can REF</li>
         </ul>
       </div>
       <div className="lp-hero-art">
@@ -97,28 +100,34 @@ function Hero() {
   )
 }
 
-/** Live protocol numbers from CerebrLens.protocolState(); hidden when no deployment is reachable. */
+/** Live CPU numbers from transistors/circuits via the SDK; hidden until a CPU is configured and readable. */
 function LiveStrip() {
-  const { state, chain } = useCerebr()
-  if (!state) return null
+  const s = useCpuStats()
+  if (!s) return null
+  const pct = s.supplyCap > 0n ? Number((s.minted * 10_000n) / s.supplyCap) / 100 : 0
   const items: [string, string, string][] = [
-    ['Spot price', fmt(state.currentPrice, 4), 'OKB / CBR'],
-    ['Circulating', compact(state.totalSupply), `of ${compact(state.maxSupply)} CBR`],
-    ['OKB reserve', fmt(state.balance, 4), 'OKB'],
-    ['Surplus locked', fmt(state.surplusReserve, 4), 'OKB, forever'],
-    ['CBR burned', compact(state.totalCbrBurned), 'CBR'],
-    ['Circuits', state.totalCircuits.toString(), 'taped out + fused'],
+    ['Processor', s.name, s.symbol],
+    ['Transistors minted', int(s.minted), `of ${int(s.supplyCap)} (${pct}%)`],
+    ['Remaining', int(s.remaining), 'NAND + LATCH share the cap'],
+    ['Unit price', okb(s.mintPrice), 'OKB per transistor'],
+    ['Circuits taped out', int(s.circuitCount), 'on this CPU'],
+    ['Tape-out fee', okb(s.tapeoutFee), 'OKB, to TapeOut'],
   ]
   return (
     <div className="lp-live">
       <div className="lp-live-head tiny">
-        <span className="dot live" /> Live from {chain?.name ?? 'chain'}
+        <span className="dot live" /> Live from X Layer ·{' '}
+        <a href={`${EXPLORER}/address/${s.transistors}`} target="_blank" rel="noreferrer">
+          view on OKLink
+        </a>
       </div>
       <div className="lp-live-grid">
         {items.map(([k, v, u], i) => (
-          <div key={k} className={`lp-live-item${i === 3 || i === 4 ? ' accent' : ''}`}>
+          <div key={k} className={`lp-live-item${i === 1 || i === 4 ? ' accent' : ''}`}>
             <div className="stat-label">{k}</div>
-            <div className="lp-live-value mono">{v}</div>
+            <div className="lp-live-value mono" title={v}>
+              {v}
+            </div>
             <div className="stat-unit">{u}</div>
           </div>
         ))}
@@ -140,35 +149,36 @@ function SectionHead({ id, kicker, title, children }: { id?: string; kicker: str
 const STEPS = [
   {
     n: '01',
-    title: 'Mint Transistors',
-    body: 'Send OKB and receive $CBR at the price on a linear bonding curve. Early buyers pay less, and every OKB paid stays in the contract as reserve.',
-    fn: 'buyTransistors(amount, maxCost)',
+    title: 'Mint transistors',
+    body: 'Transistors are the synapses. Mint NAND (and LATCH, for memory) from the Cerebr processor’s fixed supply at a fixed unit price.',
+    fn: 'transistors.mint(NAND, amount)',
   },
   {
     n: '02',
-    title: 'Tape out a Circuit',
-    body: 'Burn 5k, 20k or 100k $CBR to mint a Basic, Pro or Quantum Neural Circuit. Its traits stay sealed until a later block reveals them.',
-    fn: 'tapeOutCircuit()',
+    title: 'Compile a neuron',
+    body: 'Give the compiler integer weights and a threshold. It tries four constructions and keeps the netlist with the fewest NAND gates.',
+    fn: 'neuron({ weights, theta }) → netlist',
   },
   {
     n: '03',
-    title: 'Fuse upward',
-    body: 'Two Circuits of the same tier plus $CBR make one Circuit of the next tier. The parents move into the child’s brain wallet; nothing is destroyed.',
-    fn: 'fuseCircuits(idA, idB)',
+    title: 'Tape it out',
+    body: 'The netlist goes on-chain as a circuit NFT. Each NAND burns one transistor, so every neuron is paid for in real silicon.',
+    fn: 'circuits.tapeout(nl, nIn, nOut)',
   },
   {
     n: '04',
-    title: 'Lock the surplus',
-    body: 'Burned $CBR never comes back, but the OKB that backed it stays in the reserve. That surplus can’t be withdrawn by anyone, so it only grows.',
-    fn: 'surplusReserve()',
+    title: 'Compose and infer',
+    body: 'Wire taped-out neurons into networks with REF, which reuses a circuit without burning more transistors. Run any of them for free with eval.',
+    fn: 'circuits.eval(id, inputs)',
   },
 ]
 
-function Loop() {
+function HowItWorks() {
   return (
     <section className="lp-section">
-      <SectionHead id="how" kicker="How it works" title="A closed loop from OKB to on-chain brains">
-        Four steps and one economic idea: every burn makes the curve more than fully backed.
+      <SectionHead id="how" kicker="How it works" title="From transistors to neurons to networks">
+        TapeOut gives every processor two contracts: transistors you mint and circuits you tape out by burning them.
+        Cerebr adds the missing piece, a compiler that turns neural networks into those circuits.
       </SectionHead>
       <ol className="lp-steps">
         {STEPS.map((s) => (
@@ -184,123 +194,311 @@ function Loop() {
   )
 }
 
-function Economics() {
+const XOR_ROWS: [number, number, number, number, number][] = [
+  // x0, x1, OR, NAND, y = AND(OR, NAND)
+  [0, 0, 0, 1, 0],
+  [0, 1, 1, 1, 1],
+  [1, 0, 1, 1, 1],
+  [1, 1, 1, 0, 0],
+]
+
+function XorStory() {
   return (
     <section className="lp-section">
-      <SectionHead id="economics" kicker="Economics" title="A bonding curve that only gets more backed">
-        No order book, no liquidity pool and no team allocation. The contract itself is the market maker.
+      <SectionHead id="xor" kicker="The XOR problem" title="One neuron can’t. Two layers of taped-out neurons can.">
+        In 1969 Minsky and Papert showed that a single threshold neuron can never compute XOR, because no straight line
+        separates its true cases from its false ones. Add a hidden layer and the problem disappears. Cerebr tapes out
+        that exact network and runs it on-chain.
       </SectionHead>
       <div className="lp-split">
-        <div className="card lp-curve-card">
-          <CurveIllustration />
-          <div className="lp-formula mono">
-            price(s) = <span className="c-mint">base</span> + <span className="c-cyan">slope</span> × s
+        <div className="card lp-xor-card">
+          <XorNetwork />
+        </div>
+        <div className="lp-xor-side">
+          <div className="card lp-xor-plane-card">
+            <XorPlane />
+            <p className="tiny muted">
+              The two hidden neurons each draw one line. The output neuron fires only between them.
+            </p>
+          </div>
+          <div className="card lp-truth">
+            <table>
+              <thead>
+                <tr>
+                  <th>x0</th>
+                  <th>x1</th>
+                  <th>OR</th>
+                  <th>NAND</th>
+                  <th>y = XOR</th>
+                </tr>
+              </thead>
+              <tbody>
+                {XOR_ROWS.map((r) => (
+                  <tr key={r.join('')}>
+                    {r.map((v, i) => (
+                      <td key={i} className={i === 4 ? (v ? 'on' : 'off') : undefined}>
+                        {v}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
-        <ul className="lp-facts">
-          <li>
-            <b>10M $CBR max circulating supply.</b> The cap and the curve parameters are fixed when the contract is
-            deployed. The owner can never change them.
-          </li>
-          <li>
-            <b>Exact integral pricing.</b> A buy pays the area under the curve. Buys round up and sells round down, so the
-            reserve can never fall short, even by a single wei.
-          </li>
-          <li>
-            <b>Sell back at any time.</b> Selling burns your $CBR and pays you from the reserve, minus a 1% fee. Sells
-            have no pause switch.
-          </li>
-          <li>
-            <b>Burns over-collateralise the curve.</b> A burn lowers the spot price, but the OKB behind the burned $CBR
-            stays in the reserve forever. The surplus is readable on-chain at any time.
-          </li>
-          <li>
-            <b>Slippage protection built in.</b> Every buy takes a <code>maxCost</code> and every sell a{' '}
-            <code>minRefund</code>, so a front-runner can’t push you past the limit you set.
-          </li>
-        </ul>
       </div>
+      <ul className="lp-xor-facts">
+        <li>
+          <b className="mono">6 NAND</b>
+          <span className="muted">flattened into one circuit, so it burns 6 transistors</span>
+        </li>
+        <li>
+          <b className="mono">0 NAND + 3 REF</b>
+          <span className="muted">built from the taped-out OR, NAND and AND neurons, burning nothing new</span>
+        </li>
+        <li>
+          <b className="mono">eval(id, 0b10) → 1</b>
+          <span className="muted">a free view call, so anyone can check the answer</span>
+        </li>
+      </ul>
     </section>
   )
 }
 
-function CurveIllustration() {
-  // price rises linearly; shaded = reserve backing current supply; hatched = locked surplus from burns
-  return (
-    <svg viewBox="0 0 400 220" className="lp-curve" role="img" aria-label="Linear bonding curve with reserve and locked surplus">
-      <defs>
-        <linearGradient id="lpArea" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#3ddc97" stopOpacity="0.35" />
-          <stop offset="1" stopColor="#3ddc97" stopOpacity="0.03" />
-        </linearGradient>
-        <pattern id="lpHatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-          <rect width="7" height="7" fill="rgba(255,176,0,0.08)" />
-          <line x1="0" y1="0" x2="0" y2="7" stroke="#ffb000" strokeOpacity="0.55" strokeWidth="2" />
-        </pattern>
-      </defs>
-      <g stroke="#1c2536">
-        {[40, 80, 120, 160].map((y) => (
-          <line key={y} x1="30" x2="390" y1={y} y2={y} />
-        ))}
+function XorNetwork() {
+  const node = (x: number, y: number, label: string, sub: string, color: string) => (
+    <g>
+      <circle cx={x} cy={y} r="27" fill="#101622" stroke={color} strokeWidth="2" />
+      <text x={x} y={y + 1} textAnchor="middle" fill={color} className="lp-svg-title">
+        {label}
+      </text>
+      <text x={x} y={y + 15} textAnchor="middle" fill="#8b98a9" className="lp-svg-label">
+        {sub}
+      </text>
+    </g>
+  )
+  // weight labels sit near the target node so the crossing edges stay readable
+  const edge = (x1: number, y1: number, x2: number, y2: number, w: string, t = 0.7) => {
+    const lx = x1 + (x2 - x1) * t
+    const ly = y1 + (y2 - y1) * t
+    return (
+      <g>
+        <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="url(#xorG)" strokeWidth="1.6" />
+        <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="url(#xorG)" strokeWidth="2" className="lp-trace" pathLength={100} />
+        <rect x={lx - 13} y={ly - 9} width="26" height="16" rx="5" fill="#0b0f17" stroke="#26324a" />
+        <text x={lx} y={ly + 3} textAnchor="middle" fill="#e6edf3" className="lp-svg-label">
+          {w}
+        </text>
       </g>
-      <path d="M30 190 L30 165 L215 110 L215 190 Z" fill="url(#lpArea)" />
-      <path d="M215 190 L215 110 L265 95 L265 190 Z" fill="url(#lpHatch)" />
-      <path d="M30 165 L390 58" stroke="#3ddc97" strokeWidth="3" fill="none" />
-      <line x1="30" y1="190" x2="390" y2="190" stroke="#26324a" />
-      <line x1="30" y1="20" x2="30" y2="190" stroke="#26324a" />
-      <circle cx="215" cy="110" r="6" fill="#3ddc97" />
-      <circle cx="215" cy="110" r="12" fill="none" stroke="#3ddc97" strokeOpacity="0.4" className="lp-pulse" />
-      <text x="222" y="104" className="lp-svg-label" fill="#e6edf3">supply now</text>
-      <text x="120" y="182" className="lp-svg-label" fill="#3ddc97">reserve backing</text>
-      <text x="270" y="150" className="lp-svg-label" fill="#ffb000">locked by burns</text>
-      <text x="36" y="34" className="lp-svg-label" fill="#8b98a9">price (OKB)</text>
-      <text x="330" y="208" className="lp-svg-label" fill="#8b98a9">supply →</text>
+    )
+  }
+  return (
+    <svg viewBox="0 0 420 260" className="lp-xor-svg" role="img" aria-label="Two-layer neural network computing XOR: OR and NAND hidden neurons feeding an AND output neuron">
+      <defs>
+        <linearGradient id="xorG" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stopColor="#3ddc97" />
+          <stop offset="1" stopColor="#2bb3ff" />
+        </linearGradient>
+      </defs>
+      <text x="50" y="22" textAnchor="middle" fill="#8b98a9" className="lp-svg-label">inputs</text>
+      <text x="200" y="22" textAnchor="middle" fill="#8b98a9" className="lp-svg-label">hidden layer</text>
+      <text x="345" y="22" textAnchor="middle" fill="#8b98a9" className="lp-svg-label">output</text>
+      {edge(77, 80, 173, 75, '+1')}
+      {edge(77, 80, 173, 185, '−1', 0.78)}
+      {edge(77, 190, 173, 75, '+1', 0.78)}
+      {edge(77, 190, 173, 185, '−1')}
+      {edge(227, 75, 318, 130, '+1', 0.5)}
+      {edge(227, 185, 318, 130, '+1', 0.5)}
+      {node(50, 80, 'x0', 'input', '#e6edf3')}
+      {node(50, 190, 'x1', 'input', '#e6edf3')}
+      {node(200, 75, 'OR', 'θ = 1', '#3ddc97')}
+      {node(200, 185, 'NAND', 'θ = −1', '#b26bff')}
+      {node(345, 130, 'AND', 'θ = 2', '#2bb3ff')}
+      <text x="345" y="185" textAnchor="middle" fill="#e6edf3" className="lp-svg-label">y = x0 ⊕ x1</text>
+      <text x="210" y="248" textAnchor="middle" fill="#8b98a9" className="lp-svg-label">
+        each circle is a taped-out circuit · each line is a REF
+      </text>
     </svg>
   )
 }
 
-function Circuits() {
+function XorPlane() {
+  // input plane: the four XOR cases and the two lines drawn by the hidden neurons
+  // (OR fires above x0 + x1 = 0.5, NAND fires below x0 + x1 = 1.5; XOR is the band between)
+  const pts: [number, number, number][] = [
+    [0, 0, 0],
+    [0, 1, 1],
+    [1, 0, 1],
+    [1, 1, 0],
+  ]
+  const px = (v: number) => 50 + v * 120
+  const py = (v: number) => 160 - v * 120
+  const line = (sum: number) => ({ x1: px(sum + 0.35), y1: py(-0.35), x2: px(-0.35), y2: py(sum + 0.35) })
+  const band = [
+    [px(0.85), py(-0.35)],
+    [px(-0.35), py(0.85)],
+    [px(-0.35), py(1.85)],
+    [px(1.85), py(-0.35)],
+  ]
+  return (
+    <svg viewBox="0 0 220 200" className="lp-plane" role="img" aria-label="The XOR cases in the input plane, separated by two lines">
+      <defs>
+        <clipPath id="xorPlaneClip">
+          <rect x="16" y="8" width="196" height="186" />
+        </clipPath>
+      </defs>
+      <g clipPath="url(#xorPlaneClip)">
+        <path d={`M${band.map((p) => p.join(' ')).join(' L')} Z`} fill="rgba(61,220,151,0.10)" />
+        <line {...line(0.5)} stroke="#3ddc97" strokeDasharray="5 4" />
+        <line {...line(1.5)} stroke="#b26bff" strokeDasharray="5 4" />
+      </g>
+      <line x1="30" y1={py(0)} x2="205" y2={py(0)} stroke="#26324a" />
+      <line x1={px(0)} y1="14" x2={px(0)} y2="185" stroke="#26324a" />
+      {pts.map(([a, b, y]) => (
+        <g key={`${a}${b}`}>
+          <circle cx={px(a)} cy={py(b)} r="9" fill={y ? '#3ddc97' : '#101622'} stroke={y ? '#3ddc97' : '#ff5d73'} strokeWidth="2" />
+          <text x={px(a) + 16} y={py(b) + (b ? -10 : 22)} fill="#8b98a9" className="lp-svg-label" textAnchor="middle">
+            {a}
+            {b}
+          </text>
+        </g>
+      ))}
+      <text x="208" y={py(0) + 14} textAnchor="end" fill="#8b98a9" className="lp-svg-label">x0</text>
+      <text x={px(0) - 8} y="22" textAnchor="end" fill="#8b98a9" className="lp-svg-label">x1</text>
+    </svg>
+  )
+}
+
+type Kind = 'neuron' | 'network' | 'ref' | 'memory' | 'arith'
+const KIND_LABEL: Record<Kind, string> = {
+  neuron: 'Neuron',
+  network: 'Network',
+  ref: 'REF-composed',
+  memory: 'Stateful',
+  arith: 'Arithmetic',
+}
+
+// Gate counts from the Cerebr neural compiler (sdk/src/neuro, direct output mode), each circuit
+// exhaustively verified against its reference model.
+const CATALOG: { name: string; io: string; gates: string; kind: Kind; note: string }[] = [
+  { name: 'AND neuron', io: '2 → 1', gates: '2 NAND', kind: 'neuron', note: 'Weights +1, +1, fires at 2.' },
+  { name: 'OR neuron', io: '2 → 1', gates: '3 NAND', kind: 'neuron', note: 'Weights +1, +1, fires at 1.' },
+  { name: 'Inhibitory neuron', io: '2 → 1', gates: '1 NAND', kind: 'neuron', note: 'Weights −1, −1, threshold −1. A single gate.' },
+  { name: 'Majority-3', io: '3 → 1', gates: '6 NAND', kind: 'neuron', note: 'Votes yes when at least two of three inputs do.' },
+  { name: 'Majority-5', io: '5 → 1', gates: '24 NAND', kind: 'neuron', note: 'Five-voter consensus neuron.' },
+  { name: 'Go/No-Go neuron', io: '5 → 1', gates: '19 NAND', kind: 'neuron', note: 'Three excitatory and two inhibitory inputs, threshold 2.' },
+  { name: 'XOR network', io: '2 → 1', gates: '6 NAND', kind: 'network', note: 'The two-layer network above, flattened.' },
+  { name: 'XOR network (REF)', io: '2 → 1', gates: '0 NAND + 3 REF', kind: 'ref', note: 'Same truth table, built from three taped-out neurons.' },
+  { name: 'Line detector', io: '9 → 3', gates: '37 NAND', kind: 'network', note: 'Finds horizontal, vertical and diagonal lines on a 3×3 grid.' },
+  { name: 'Line detector (REF)', io: '9 → 3', gates: '0 NAND + 11 REF', kind: 'ref', note: 'Eight line cells and three pooling neurons, all reused.' },
+  { name: '2-bit adder', io: '4 → 3', gates: '14 NAND', kind: 'arith', note: 'Ripple adder, the building block for counting neurons.' },
+  { name: 'Integrate-and-fire', io: '2 → 1', gates: '17 NAND + 2 LATCH', kind: 'memory', note: 'A spiking neuron that fires on every third spike. Runs with step().' },
+]
+
+function Catalog() {
   return (
     <section className="lp-section">
-      <SectionHead id="circuits" kicker="Neural Circuits" title="Four tiers. Better odds the higher you go.">
-        Each Circuit is an ERC-721 whose SVG art and traits are generated entirely on-chain: architecture, cores,
-        clock speed, process node and rarity. There’s no IPFS link to go missing.
+      <SectionHead id="catalog" kicker="Circuit catalog" title="Neurons you can run, own and reuse">
+        Every circuit below is compiled to a TapeOut netlist and checked against its reference model on every possible
+        input. Gate counts are exact, so a circuit costs exactly that many transistors to tape out.
       </SectionHead>
-      <div className="lp-tiers">
-        {TIERS.map((t) => (
-          <div key={t.id} className="tier lp-tier" style={{ '--tc': t.color } as React.CSSProperties}>
-            <div className="tier-top">
-              <span className="tier-name">{t.name}</span>
-              <span className="tiny muted mono">T{t.id}</span>
+      <div className="lp-catalog">
+        {CATALOG.map((c) => (
+          <div key={c.name} className={`card lp-cat k-${c.kind}`}>
+            <div className="lp-cat-top">
+              <span className="lp-cat-kind tiny">{KIND_LABEL[c.kind]}</span>
+              <span className="tiny muted mono">{c.io}</span>
             </div>
-            <div className="tier-cost mono">{TIER_COST[t.id]}</div>
-            <div className="tiny muted">{FUSE_FROM[t.id]}</div>
-            <div className="odds" aria-label="Rarity odds">
-              {t.odds.map((o, i) => (
-                <span key={i} style={{ flexGrow: o || 0.001 }} className={`odd r${i}`}>
-                  {o >= 10 ? `${o}%` : ''}
-                </span>
-              ))}
-            </div>
-            <dl className="lp-spec tiny">
-              <dt>Cores</dt>
-              <dd className="mono">{t.cores}</dd>
-              <dt>Clock</dt>
-              <dd className="mono">{t.clock} GHz</dd>
-              <dt>Node</dt>
-              <dd className="mono">{t.node} nm</dd>
-              <dt>Legendary</dt>
-              <dd className="mono">{t.odds[3]}%</dd>
-            </dl>
+            <h3>{c.name}</h3>
+            <div className="lp-cat-gates mono">{c.gates}</div>
+            <p className="muted small">{c.note}</p>
           </div>
         ))}
       </div>
-      <div className="lp-legend tiny muted">
-        {RARITY.map((r, i) => (
-          <span key={r}>
-            <i className={`odd r${i}`} /> {r}
-          </span>
+      <p className="tiny muted lp-note">
+        REF reuses a circuit that is already taped out, on Cerebr or on any other TapeOut processor, without burning
+        more transistors. The tape-out fee still applies to each new circuit.
+      </p>
+    </section>
+  )
+}
+
+function IssuanceSection() {
+  const cap = ISSUANCE.supplyCap
+  const price = ISSUANCE.mintPrice
+  const cards: { k: string; v: string; u: string; todo?: boolean }[] = [
+    { k: 'Transistor supply cap', v: cap !== undefined ? int(cap) : SET_AT_LAUNCH, u: 'NAND + LATCH share it', todo: cap === undefined },
+    { k: 'Unit price', v: price !== undefined ? okb(price) : SET_AT_LAUNCH, u: 'OKB per transistor', todo: price === undefined },
+    { k: 'Mint fee', v: FEES.mintCall, u: 'OKB per mint call, to TapeOut' },
+    { k: 'Tape-out fee', v: FEES.tapeout, u: 'OKB per circuit, to TapeOut' },
+  ]
+  return (
+    <section className="lp-section">
+      <SectionHead id="issuance" kicker="Asset issuance" title="One asset: the transistor">
+        Cerebr has no token of its own. The asset is the Cerebr processor’s transistor, issued through the TapeOut
+        factory with a supply cap and unit price that are public from the moment it is deployed.
+      </SectionHead>
+      <div className="lp-nums">
+        {cards.map((c) => (
+          <div key={c.k} className={`lp-num${c.todo ? ' lp-todo' : ''}`}>
+            <div className="stat-label">{c.k}</div>
+            <div className="lp-num-v mono">{c.v}</div>
+            <div className="small muted">{c.u}</div>
+          </div>
         ))}
+      </div>
+      <div className="lp-split">
+        <ul className="lp-facts">
+          <li>
+            <b>Fixed supply, fixed price.</b> Set once at <code>createCPU</code>; Cerebr cannot change them (TapeOut’s
+            contracts that enforce them are upgradeable by TapeOut). No curve, no presale and no team allocation.
+            Anyone mints at the same price until the cap is reached.
+          </li>
+          <li>
+            <b>Burned by use.</b> Each NAND gate in a taped-out circuit burns one NAND transistor, and each LATCH burns
+            one LATCH. Burns don’t free up room under the cap, so transistors only get scarcer.
+          </li>
+          <li>
+            <b>Where the OKB goes.</b> The unit price goes to the processor’s creator, who withdraws it from the
+            contract. The mint fee and tape-out fee go to TapeOut.
+          </li>
+          <li>
+            <b>No fake activity.</b> We tape out our showcase circuits once each from the deployment wallet and say so.
+            The creator also keeps 1,000 NAND and 100 LATCH, minted at the public price and disclosed. We never trade
+            with ourselves to inflate numbers.
+          </li>
+        </ul>
+        <div className="card">
+          <h3 className="lp-h3">What a circuit costs</h3>
+          <table className="lp-cost">
+            <thead>
+              <tr>
+                <th>Circuit</th>
+                <th>Transistors</th>
+                <th>Fees (OKB)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                ['Inhibitory neuron', 1],
+                ['XOR network', 6],
+                ['XOR network (REF)', 0],
+                ['Line detector', 37],
+                ['Line detector (REF)', 0],
+              ].map(([n, t]) => (
+                <tr key={n}>
+                  <td>{n}</td>
+                  <td className="mono">{t}</td>
+                  <td className="mono">{FEES.tapeout}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <p className="tiny muted">
+            Plus the transistors themselves at the unit price, a {FEES.mintCall} OKB fee per mint call and gas (about
+            0.02 gwei on X Layer). Fees are TapeOut’s and can change; the dApp reads them live before every quote.
+          </p>
+        </div>
       </div>
     </section>
   )
@@ -309,31 +507,30 @@ function Circuits() {
 function BrainWallets() {
   return (
     <section className="lp-section">
-      <SectionHead id="wallets" kicker="ERC-6551 brain wallets" title="Every Circuit is also a wallet">
-        Each Neural Circuit controls its own token-bound account. A brain can hold OKB, tokens and other NFTs, sign
-        messages (ERC-1271) and make calls. Whoever owns the Circuit controls the wallet.
+      <SectionHead id="wallets" kicker="Brain wallets" title="Every neuron can have a wallet">
+        Each taped-out circuit can open TapeOut’s native ERC-6551 account. A neuron can then hold OKB, tokens and NFTs
+        and call contracts. Whoever owns the circuit NFT controls its wallet.
       </SectionHead>
       <div className="lp-split">
         <div className="card lp-nest">
-          <NestDiagram />
+          <WalletDiagram />
         </div>
         <ul className="lp-facts">
           <li>
-            <b>Created on demand.</b> Every Circuit’s wallet address is known from the moment it is minted, so it can
-            receive assets straight away. The wallet contract is only deployed when the owner clicks “Activate brain
-            wallet”, which keeps minting cheap.
+            <b>Address known up front.</b> <code>accountOf(circuit)</code> returns the wallet’s address before it
+            exists, so a neuron can receive funds straight away.
           </li>
           <li>
-            <b>Fusion keeps its history.</b> Fused parents aren’t burned. They move into the child’s wallet, so anything
-            they held can still be reached through the child.
+            <b>Opened on demand.</b> <code>open()</code> deploys the account for {FEES.open} OKB, paid to TapeOut.
+            Anyone can pay to open a wallet for any circuit.
           </li>
           <li>
-            <b>Sold with the brain.</b> When a Circuit changes hands, its wallet goes with it. A parent locked inside a
-            child can only be moved by the child’s wallet itself, never by an approved operator.
+            <b>Sold with the neuron.</b> Control follows the circuit NFT. Transfer the circuit and its wallet goes with
+            it.
           </li>
           <li>
-            <b>Ready for agents.</b> A brain that can own assets and act on-chain gives AI agents and games a clear
-            identity to plug into.
+            <b>One rule.</b> Never send a circuit into its own wallet: the wallet would own itself and be locked for
+            good. The dApp offers no circuit transfers, so it can’t happen there.
           </li>
         </ul>
       </div>
@@ -341,7 +538,7 @@ function BrainWallets() {
   )
 }
 
-function NestDiagram() {
+function WalletDiagram() {
   const box = (x: number, y: number, w: number, label: string, color: string, sub: string) => (
     <g>
       <rect x={x} y={y} width={w} height="46" rx="10" fill="#101622" stroke={color} strokeWidth="1.6" />
@@ -350,43 +547,44 @@ function NestDiagram() {
     </g>
   )
   return (
-    <svg viewBox="0 0 400 250" className="lp-nest-svg" role="img" aria-label="A Pro Circuit's brain wallet holding its two Basic parents">
-      {box(110, 10, 180, 'Pro Circuit #7', '#2bb3ff', 'owned by you')}
+    <svg viewBox="0 0 400 250" className="lp-nest-svg" role="img" aria-label="A Cerebr circuit NFT controlling its TapeOut native account">
+      {box(110, 10, 180, 'Circuit #7 · XOR', '#2bb3ff', 'NFT owned by you')}
       <path d="M200 56 V78" stroke="#2bb3ff" strokeDasharray="3 4" />
       <rect x="20" y="80" width="360" height="160" rx="14" fill="rgba(43,179,255,0.05)" stroke="#2bb3ff" strokeOpacity="0.5" strokeDasharray="5 5" />
-      <text x="36" y="104" fill="#2bb3ff" className="lp-svg-title">Brain wallet of #7 (ERC-6551)</text>
-      {box(36, 120, 150, 'Basic #3', '#3ddc97', 'fused parent')}
-      {box(214, 120, 150, 'Basic #5', '#3ddc97', 'fused parent')}
-      <text x="36" y="200" fill="#e6edf3" className="lp-svg-label">+ OKB · ERC-20s · NFTs · signatures</text>
-      <text x="36" y="220" fill="#8b98a9" className="lp-svg-label">parents’ own wallets stay reachable through #7</text>
+      <text x="36" y="104" fill="#2bb3ff" className="lp-svg-title">Native account of #7 (ERC-6551)</text>
+      {box(36, 120, 150, 'OKB · tokens', '#3ddc97', 'held by the neuron')}
+      {box(214, 120, 150, 'execute()', '#b26bff', 'calls any contract')}
+      <text x="36" y="200" fill="#e6edf3" className="lp-svg-label">owner() = ownerOf(#7), at all times</text>
+      <text x="36" y="220" fill="#8b98a9" className="lp-svg-label">opener.open(circuits, 7) deploys it via the 6551 registry</text>
     </svg>
   )
 }
 
-function Fairness() {
-  const cards = [
-    {
-      t: 'Commit-reveal traits',
-      b: 'A tape-out locks in a block, and traits come from the hash of a block after the mint. Nobody can preview the outcome, and reverting a bad mint to try again doesn’t work. Every buy, tape-out and fusion reveals ready Circuits automatically, in mint order.',
-    },
-    {
-      t: 'Fair-launch guard',
-      b: 'For the first ~3,600 blocks (about an hour), buys are capped at 1,000 $CBR per wallet per block and 2,500 $CBR per block overall. The overall cap is the real limit, so bots can’t sweep the cheapest supply.',
-    },
-    {
-      t: 'Each Circuit fuses once',
-      b: 'A Circuit used as a fusion parent is permanently marked. Taking it back out of the wallet doesn’t let you fuse it again.',
-    },
-    {
-      t: 'Limited admin powers',
-      b: 'The owner can pause buys, tape-outs and fusion, and withdraw the 1% sell fees. That is all. They can’t mint $CBR, touch the reserve, pause sells or give up ownership.',
-    },
-  ]
+const USES = [
+  {
+    t: 'On-chain game AI',
+    b: 'Enemy logic, bot players and referees that run as real circuits. Every move can be replayed and checked by anyone with a view call.',
+  },
+  {
+    t: 'Verifiable inference for agents',
+    b: 'DeAI agents can call a small, fixed classifier on-chain and prove which model made the decision. No oracle, no trusted server.',
+  },
+  {
+    t: 'Composable neurons',
+    b: 'Our neurons are public building blocks. Any team on TapeOut can REF them into a bigger network without burning a single transistor.',
+  },
+  {
+    t: 'Teaching how brains compute',
+    b: 'From threshold units to spiking neurons, each idea is a circuit you can open, read gate by gate and run live.',
+  },
+]
+
+function UseCases() {
   return (
     <section className="lp-section">
-      <SectionHead kicker="Fair by construction" title="Safeguards built into the contracts" />
+      <SectionHead kicker="Use cases" title="Small, honest intelligence that lives on-chain" />
       <div className="lp-cards-4">
-        {cards.map((c) => (
+        {USES.map((c) => (
           <div key={c.t} className="card lp-mini">
             <h3>{c.t}</h3>
             <p className="muted">{c.b}</p>
@@ -397,96 +595,44 @@ function Fairness() {
   )
 }
 
-function Security() {
-  const nums: [string, string][] = [
-    ['219', 'Foundry tests'],
-    ['98%', 'line coverage'],
-    ['3', 'internal review rounds'],
-    ['1,000×', 'fuzz runs per property'],
-  ]
-  return (
-    <section className="lp-section">
-      <SectionHead id="security" kicker="Security" title="Tested against the claims we make">
-        Every economic claim on this page is checked by tests: unit tests, fuzzing, and stateful invariant tests that
-        run random sequences of buys, sells, tape-outs, fusions and reveals across many users.
-      </SectionHead>
-      <div className="lp-nums">
-        {nums.map(([n, l]) => (
-          <div key={l} className="lp-num">
-            <div className="lp-num-v grad">{n}</div>
-            <div className="small muted">{l}</div>
-          </div>
-        ))}
-      </div>
-      <div className="lp-split">
-        <div className="card">
-          <h3 className="lp-h3">Invariants that always hold</h3>
-          <ul className="lp-checks">
-            <li>
-              The reserve covers the full curve backing plus fees: <code>balance ≥ reserveRequired + protocolFees</code>
-            </li>
-            <li>Buying and immediately selling never returns more than you paid</li>
-            <li>The price never falls as supply rises</li>
-            <li>Total supply never exceeds 10M $CBR</li>
-            <li>Total burned equals the sum of every tape-out and fusion burn</li>
-            <li>No Circuit is ever used as a fusion parent twice</li>
-          </ul>
-        </div>
-        <div className="card">
-          <h3 className="lp-h3">Trade-offs we disclose</h3>
-          <ul className="lp-warns">
-            <li>
-              The randomness comes from a block hash, which X Layer’s sequencer can influence. That’s acceptable because
-              traits are purely cosmetic.
-            </li>
-            <li>If nothing happens on the protocol for about 4 minutes, a ready Circuit’s reveal window can lapse and it gets new traits. A permissionless keeper closes that gap.</li>
-            <li>The per-wallet launch cap can be dodged with many wallets; the per-block cap is the real guard.</li>
-            <li>
-              ERC-20 approvals made by a brain wallet stay in place after the Circuit is sold. Don’t approve
-              signature-based spenders such as Permit2 from a brain wallet.
-            </li>
-          </ul>
-          <p className="tiny muted">
-            Full findings and how each was resolved: <code>AUDIT.md</code>. This is an internal multi-agent review, not a professional third-party audit.
-          </p>
-        </div>
-      </div>
-    </section>
-  )
-}
+const SDK_SNIPPET = `import { getCircuit, encodeHex, tapeout } from '@cerebr/sdk'
 
-const LENS_SNIPPET = `// one call, the whole protocol
-const s = await lens.read.protocolState()
-s.currentPrice   s.surplusReserve   s.mintedByTier
+// compile the two-layer XOR network to a NAND netlist
+const nl = getCircuit('xor-net').build({ mode: 'direct' })
 
-// how much CBR does 1 OKB buy right now?
-const cbr = await lens.read.quoteBuyExactOKB([parseEther('1')])
+// tape it out on the Cerebr processor (burns 6 NAND)
+const { circuitId } = await tapeout.tapeout(wallet, client, {
+  circuits: CEREBR, netlist: encodeHex(nl), nIn: 2, nOut: 1,
+})
 
-// a user's CBR + every Circuit, traits and brain wallet
-const u = await lens.read.userState([address])`
+// run it on-chain, for free: x0 = 1, x1 = 0
+await tapeout.evalCircuit(client, {
+  circuits: CEREBR, id: circuitId, inputs: [1, 0],
+}) // → [1]`
 
 function Builders() {
   return (
     <section className="lp-section">
-      <SectionHead kicker="For builders" title="Integrate in minutes, not days" />
+      <SectionHead kicker="For builders" title="A compiler, an SDK and an on-chain renderer" />
       <div className="lp-split">
-        <pre className="card lp-code mono">{LENS_SNIPPET}</pre>
+        <pre className="card lp-code mono">{SDK_SNIPPET}</pre>
         <ul className="lp-facts">
           <li>
-            <b>CerebrLens.</b> A read-only helper contract. It quotes how much $CBR an exact OKB amount buys, returns
-            protocol snapshots and user portfolios, and gives the curve points for charts.
+            <b>Neural compiler.</b> Threshold neurons, majority votes, multi-layer networks and spiking neurons compile
+            to TapeOut netlists. A built-in simulator matches TapeOut’s own byte for byte.
           </li>
           <li>
-            <b>Subgraph included.</b> Trades, Circuits, fusions, daily snapshots and protocol totals are indexed and
-            ready to deploy to Goldsky on X Layer.
+            <b>TapeOut SDK.</b> Typed viem helpers for every step: create a CPU, mint, tape out, eval, step and open
+            accounts, with fee quotes read live from the chain.
           </li>
           <li>
-            <b>Detailed events.</b> Every buy, sell, tape-out and fusion event includes the new supply, so an indexer
-            can rebuild the full history from events alone.
+            <b>CerebrScope.</b> An on-chain lens that draws each circuit as an SVG die shot from its actual gates,
+            serves its metadata and runs truth tables in one call. TapeOut circuits return an empty{' '}
+            <code>tokenURI</code> today; Scope fills that gap.
           </li>
           <li>
-            <b>Standards everywhere.</b> ERC-20, ERC-721 with on-chain <code>tokenURI</code> and <code>contractURI</code>,
-            ERC-6551 and ERC-1271.
+            <b>Verified on a mainnet fork.</b> Every TapeOut call we rely on was checked on a local copy of X Layer
+            mainnet before any real transaction.
           </li>
         </ul>
       </div>
@@ -494,27 +640,61 @@ function Builders() {
   )
 }
 
+function Security() {
+  return (
+    <section className="lp-section">
+      <SectionHead id="security" kicker="Security & honesty" title="What we control, and what we don’t">
+        Cerebr adds no custody and no token of its own. Here’s exactly where your OKB and your trust go.
+      </SectionHead>
+      <div className="lp-split">
+        <div className="card">
+          <h3 className="lp-h3">By design</h3>
+          <ul className="lp-checks">
+            <li>Cerebr holds no user funds. Mints, tape-outs and wallets are direct calls to TapeOut’s contracts.</li>
+            <li>CerebrScope holds no funds and has no admin. Its only state is an optional label registry, and only a circuit’s owner can label it.</li>
+            <li>Supply cap and unit price are set once at deployment and published on this page. Cerebr has no way to change them.</li>
+            <li>The dApp reads fees live and sends exact amounts, so no OKB is stranded by overpaying.</li>
+            <li>Every catalog circuit is checked against its reference model on all inputs before it is taped out.</li>
+          </ul>
+        </div>
+        <div className="card">
+          <h3 className="lp-h3">Risks we disclose</h3>
+          <ul className="lp-warns">
+            <li>TapeOut’s X Layer contracts are in a test phase, upgradeable and unaudited. Their owner can change code and fees.</li>
+            <li>Opening a brain wallet costs {FEES.open} OKB, paid to TapeOut, not to Cerebr.</li>
+            <li>Circuits run as view calls with gas limits, so on-chain networks stay small: tens to hundreds of gates.</li>
+            <li>Our compiler, CerebrScope, launch script and dApp had an internal review (AUDIT.md), not a professional third-party audit.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  )
+}
+
 const FAQ = [
-  ['What do I need to start?', 'An injected wallet such as OKX Wallet, and some OKB on X Layer for $CBR and gas.'],
   [
-    'Where does the money go?',
-    'All OKB from buys stays in the Processor contract as reserve. The only thing the owner can ever withdraw is the 1% fee on sells.',
+    'What is TapeOut?',
+    'A protocol on X Layer where anyone can create a processor. Each processor has transistors you mint and circuits you tape out by burning them. Cerebr is one of those processors, specialised in neural circuits.',
   ],
   [
-    'Why does the price drop when Circuits are taped out?',
-    'Price follows circulating supply, and burns reduce it. The OKB behind the burned $CBR stays locked, though, so the reserve backing each remaining token goes up. That surplus is shown live on-chain.',
+    'Is there a Cerebr token?',
+    'No. The asset is the Cerebr processor’s transistor, issued through the TapeOut factory. Circuits are NFTs on the same processor.',
   ],
   [
-    'Can a whale or bot buy all the cheap supply at launch?',
-    'Not in the first hour. The fair-launch guard caps buys per block, both per wallet and across everyone.',
+    'Are these real neural networks?',
+    'They are binary neural networks: neurons with integer weights and a threshold, outputting 0 or 1. Small, but real, and every one runs gate by gate on-chain.',
   ],
   [
-    'What can a brain wallet actually do?',
-    'Anything an account can do: hold and send assets, call contracts and sign messages. Control always follows ownership of the Circuit.',
+    'Does running a circuit cost anything?',
+    'No. eval and step are view functions, so you can call them for free from any wallet, script or contract read.',
   ],
   [
-    'Is fusion cheaper than taping out directly?',
-    'Yes, on purpose. Two Basics plus 5k $CBR (15k in all) make a Pro, against 20k direct. Fusion rewards working up through the tiers, and it’s the only way to reach Singularity.',
+    'Can I use Cerebr neurons in my own circuit?',
+    'Yes. Add a REF to the circuit’s id in your netlist. It burns no transistors and pays no royalty; you only pay the normal tape-out fee for your own circuit.',
+  ],
+  [
+    'What do I need to start?',
+    'An injected wallet such as OKX Wallet and a little OKB on X Layer for transistors, fees and gas.',
   ],
 ] as const
 
@@ -539,9 +719,9 @@ function FinalCta() {
     <section className="lp-final card">
       <div>
         <h2>
-          The Processor is running. <span className="grad">Tape out your first Circuit.</span>
+          Build a neuron. <span className="grad">Tape it out. Watch it think.</span>
         </h2>
-        <p className="muted">Buy $CBR, mint a sealed wafer, reveal it and work up to Singularity.</p>
+        <p className="muted">Mint transistors, compile a circuit, tape it out and test it live, all from the dApp.</p>
       </div>
       <LaunchButton big />
     </section>
@@ -556,8 +736,12 @@ function LandingFooter() {
         <span className="brand-name">CEREBR</span>
       </div>
       <p className="tiny muted">
-        Built for the IGNIX X Layer TapeOut Hackathon. Smart contracts carry risk; only use funds you can afford to
-        lose. Not financial advice.
+        A neural processor built on{' '}
+        <a href={TAPEOUT_HREF} target="_blank" rel="noreferrer">
+          TapeOut
+        </a>{' '}
+        for the IGNIX X Layer hackathon. Smart contracts carry risk; only use funds you can afford to lose. Not financial
+        advice.
       </p>
       <a className="small" href={APP_HREF}>
         Launch App →

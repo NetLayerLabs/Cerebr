@@ -66,7 +66,7 @@ export function HeroChip() {
         <circle key={i} cx={x} cy={y} r="5.5" fill="#e6edf3" className="lp-node" style={{ animationDelay: `${i * 0.25}s` }} />
       ))}
       <text x="245" y="178" textAnchor="middle" className="lp-chip-label">
-        CEREBR · CBR-1
+        CEREBR · NEURAL CPU
       </text>
       <text x="245" y="328" textAnchor="middle" className="lp-chip-sub">
         X LAYER · 196
