@@ -18,7 +18,18 @@ anvil --fork-url https://rpc.xlayer.tech --chain-id 31337 --port 8564
 FORK_RPC=http://127.0.0.1:8564 npm run smoke     # createCPU, tape out the catalog, eval/step = simulator, open a brain wallet
 ```
 
-**Build and deploy.** `npm run build` (typecheck + Vite) writes `dist/`; host it on any static host (`vercel.json` routes `/app`). After the mainnet launch: `npm run sync && npm run build`. The local fork is left out of production builds unless `VITE_ENABLE_ANVIL=true`. See `.env.example` for overrides.
+**Build and deploy.** `npm run build` (typecheck + Vite) writes `dist/`; host it on any static host (`vercel.json` routes `/app`). After a launch: `npm run sync && npm run build`. The app shows **X Layer mainnet only**; the local fork is a developer opt-in (`VITE_ENABLE_ANVIL=true`, plus `npm run sync -- --fork`). See `.env.example` for overrides.
+
+**Vercel settings.** Import `NetLayerLabs/Cerebr`, then set:
+
+| Setting | Value |
+|---|---|
+| Root Directory | `app` |
+| Include files outside the Root Directory | **enabled** (the app builds `../sdk` and `../launch` from source) |
+| Framework preset | Vite |
+| Build command | `npm run build` |
+| Output directory | `dist` |
+| Environment variables | none required (optional `VITE_RPC_196` for a private RPC) |
 
 | Script | |
 |---|---|
