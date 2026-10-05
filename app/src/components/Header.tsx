@@ -4,6 +4,7 @@ import type { Connector } from 'wagmi'
 import { FORK_CHAIN_ID } from '../config/chains.ts'
 import { useNet } from '../hooks/useCpu.ts'
 import { fmt, shortAddr } from '../lib/format.ts'
+import { useToasts } from '../hooks/useToasts.tsx'
 import { errorMessage } from '../lib/errors.ts'
 import { Logo } from './Logo.tsx'
 
@@ -33,6 +34,9 @@ export function Header() {
   const chains = useChains()
   const { address, chainId: walletChainId, isConnected } = useConnection()
   const { mutate: switchChain } = useSwitchChain()
+  const { push } = useToasts()
+  const switchTo = (id: number) =>
+    switchChain({ chainId: id }, { onError: (e) => push({ kind: 'error', title: 'Network not switched', body: errorMessage(e) }) })
   const { mutate: connect, error: connectError, isPending } = useConnect()
   const { mutate: disconnect } = useDisconnect()
   const { data: bal } = useBalance({ address, chainId, query: { refetchInterval: 6_000 } })
@@ -65,7 +69,7 @@ export function Header() {
         <label className="chain-select" title="Network">
           <span className={`dot ${blockNumber !== undefined ? 'live' : ''}`} />
           {chains.length > 1 ? (
-            <select value={chainId} onChange={(e) => switchChain({ chainId: Number(e.target.value) })}>
+            <select value={chainId} onChange={(e) => switchTo(Number(e.target.value))}>
               {chains.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}
@@ -80,7 +84,7 @@ export function Header() {
         {isConnected && address ? (
           <div className="wallet">
             {wrongNetwork ? (
-              <button className="btn warn" onClick={() => switchChain({ chainId })}>
+              <button className="btn warn" onClick={() => switchTo(chainId)}>
                 Switch to {chain?.name}
               </button>
             ) : (
