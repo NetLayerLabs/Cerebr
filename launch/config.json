@@ -1,0 +1,54 @@
+{
+  "$schema": "cerebr.launch-config/1",
+  "$comment": "Input for sdk/scripts/launch.ts. Values marked TODO_USER must be confirmed by the user before a mainnet run; the launcher refuses --network xlayer while issuance.confirmed is false. Amounts are decimal strings (OKB for *Okb fields, integers otherwise).",
+
+  "cpu": {
+    "name": "Cerebr",
+    "symbol": "CRBR",
+    "story": "Cerebr is an on-chain neural processor. Its transistors are synapses: every NAND minted here is wired into a neuron. Its circuits are neurons and networks, compiled from threshold units into NAND netlists and taped out on X Layer; REF links taped-out neurons into deeper networks, so the brain grows by reuse. eval() is inference: anyone can run any Cerebr circuit on-chain, for free, forever."
+  },
+
+  "issuance": {
+    "$comment": "Confirmed by the project owner on 2026-10-04: 1,000,000 transistors at 0.00001 OKB each. Fixed at createCPU and publicly disclosed. TapeOut lists a processor in its app only if transistorSupply >= 10000 and minted >= 1.",
+    "transistorSupply": "1000000",
+    "mintPriceOkb": "0.00001",
+    "confirmed": true
+  },
+
+  "outputMode": "direct",
+
+  "circuits": [
+    { "id": "and-neuron" },
+    { "id": "or-neuron" },
+    { "id": "nand-neuron" },
+    { "id": "xor-net" },
+    { "id": "xor-net-ref", "flagship": true },
+    { "id": "majority-3" },
+    { "id": "majority-5" },
+    { "id": "threshold-neuron" },
+    { "id": "line-cell" },
+    { "id": "any-of-3" },
+    { "id": "line-detector" },
+    { "id": "line-detector-ref", "flagship": true },
+    { "id": "adder-2bit" },
+    { "id": "spiking-neuron" }
+  ],
+
+  "openAccounts": ["xor-net-ref"],
+
+  "keep": {
+    "$comment": "Transistors minted on top of what the tapeouts burn; they stay in the deployer's wallet. The unit price comes back via withdraw() (the deployer is the creator), so they cost only gas.",
+    "nand": "1000",
+    "latch": "100"
+  },
+
+  "withdrawCreatorRevenue": true,
+
+  "pins": {
+    "$comment": "TapeOut is upgradeable. The launcher aborts if any implementation differs from these pins (re-verify on a fork, then update, or pass --allow-impl-change).",
+    "factoryImpl": "0x74956236ab64ed143933040b4137e8a352e4d17b",
+    "transistorImpl": "0x265bf10faB9ddEC0eE0A649C6B9DB845f1b9a06b",
+    "circuitImpl": "0x977f217887E085D298Cb3819cDAD5A0ee35F29B2",
+    "openerImplementation": "0xac4f791353ee9f06e2c50ae4c34680d28ea52a57"
+  }
+}
