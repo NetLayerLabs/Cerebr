@@ -54,12 +54,23 @@ export function suffix(network: 'fork' | 'xlayer', chainId: number): string {
   return network === 'fork' ? `${chainId}.fork` : `${chainId}`;
 }
 
+let launchDir = LAUNCH_DIR;
+
+/** Where state and out files live (default launch/; launch.ts --launch-dir points it at a copy). */
+export function setLaunchDir(dir: string) {
+  launchDir = resolve(dir);
+}
+
+export function getLaunchDir(): string {
+  return launchDir;
+}
+
 export function statePath(network: 'fork' | 'xlayer', chainId: number): string {
-  return resolve(LAUNCH_DIR, `state.${suffix(network, chainId)}.json`);
+  return resolve(launchDir, `state.${suffix(network, chainId)}.json`);
 }
 
 export function outPath(network: 'fork' | 'xlayer', chainId: number): string {
-  return resolve(LAUNCH_DIR, 'out', `${suffix(network, chainId)}.json`);
+  return resolve(launchDir, 'out', `${suffix(network, chainId)}.json`);
 }
 
 export function toJson(value: unknown): string {

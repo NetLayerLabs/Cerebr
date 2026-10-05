@@ -78,6 +78,18 @@ export function verifyLocally(cfg: LaunchConfig): { id: string; cases: number }[
   });
 }
 
+/**
+ * launch/config.json `keep` is minted once per token: it is added to the first mint of NAND (resp.
+ * LATCH) only. Once the state records a mint of that token, keep no longer applies, so spending the
+ * kept transistors never makes a re-run mint them again.
+ */
+export function effectiveKeep(keep: { nand: bigint; latch: bigint }, mints: readonly { id: 'NAND' | 'LATCH' }[]): { nand: bigint; latch: bigint } {
+  return {
+    nand: mints.some((m) => m.id === 'NAND') ? 0n : keep.nand,
+    latch: mints.some((m) => m.id === 'LATCH') ? 0n : keep.latch,
+  };
+}
+
 export interface PlanStep {
   kind: 'createCPU' | 'mint' | 'tapeout' | 'open' | 'withdraw';
   label: string;
@@ -121,9 +133,11 @@ export function buildPlan(p: {
 
   const needNand = todo.reduce((s, c) => s + BigInt(c.nand), 0n);
   const needLatch = todo.reduce((s, c) => s + BigInt(c.latch), 0n);
-  // Tapeouts burn needNand/needLatch; cfg.keep stays in the deployer's wallet afterwards.
-  const wantNand = needNand + p.cfg.keep.nand;
-  const wantLatch = needLatch + p.cfg.keep.latch;
+  // Tapeouts burn needNand/needLatch; cfg.keep stays in the deployer's wallet afterwards. keep is
+  // minted once per token (effectiveKeep), never topped up again after it was spent.
+  const keep = effectiveKeep(p.cfg.keep, p.state.mints);
+  const wantNand = needNand + keep.nand;
+  const wantLatch = needLatch + keep.latch;
   const mintNand = wantNand > p.balances.nand ? wantNand - p.balances.nand : 0n;
   const mintLatch = wantLatch > p.balances.latch ? wantLatch - p.balances.latch : 0n;
   const firstMint = p.state.mints.length === 0;
@@ -166,7 +180,7 @@ export function printPlan(plan: Plan, circuits: Address | undefined, keep: { nan
   if (plan.steps.length === 0) console.log('  nothing to do: every step is already on chain');
   plan.steps.forEach((s, i) => console.log(`  ${String(i + 1).padStart(2)}. ${s.label.padEnd(64)} value ${fmt(s.value).padStart(10)} OKB   gas ~${s.gas}`));
   console.log(`\n  transistors burned by remaining tapeouts: ${plan.needNand} NAND, ${plan.needLatch} LATCH`);
-  if (keep.nand > 0n || keep.latch > 0n) console.log(`  transistors kept in your wallet:          ${keep.nand} NAND, ${keep.latch} LATCH`);
+  if (keep.nand > 0n || keep.latch > 0n) console.log(`  transistors kept in your wallet:          ${keep.nand} NAND, ${keep.latch} LATCH (keep, minted once per token)`);
   console.log(`  protocol + mint value (exact):  ${fmt(plan.fees)} OKB`);
   console.log(`  gas (estimate, ${plan.gas} gas @ ${Number(plan.gasPrice) / 1e9} gwei): ${fmt(plan.gas * plan.gasPrice)} OKB`);
   console.log(`  gross:                          ${fmt(plan.gross)} OKB`);
