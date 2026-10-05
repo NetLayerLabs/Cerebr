@@ -6,29 +6,8 @@ export const generatedCpus: Record<number, CpuConfig> = {
     "chainId": 196,
     "circuits": "0xB04EB79D1A5EECaabAAfF7B77d7c27578EE693FF",
     "transistors": "0x84b5a5c6fE305319458113b87c09a2A241427D2D",
+    "scope": "0x2640F8E89b2B107919568FFd42dFb46A1866e528",
     "block": 72461494,
-    "catalog": {
-      "and-neuron": "1",
-      "or-neuron": "2",
-      "nand-neuron": "3",
-      "xor-net": "4",
-      "xor-net-ref": "5",
-      "majority-3": "6",
-      "majority-5": "7",
-      "threshold-neuron": "8",
-      "line-cell": "9",
-      "any-of-3": "10",
-      "line-detector": "11",
-      "line-detector-ref": "12",
-      "adder-2bit": "13",
-      "spiking-neuron": "14"
-    }
-  },
-  "31337": {
-    "chainId": 31337,
-    "circuits": "0x3B6908a275B95b79F9cE96d9AcB9F823627898FE",
-    "transistors": "0x09455da57cdDA42fEd0f5a207BcDE9cdDB73269C",
-    "block": 72378805,
     "catalog": {
       "and-neuron": "1",
       "or-neuron": "2",
