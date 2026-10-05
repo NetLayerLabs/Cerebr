@@ -1,15 +1,10 @@
 # Compiler files
-cache/
-out/
+/cache/
+/out/
 
 # Commonly ignored directories
 .logs/
 .ignore/
-
-# Ignores development broadcast logs
-!/broadcast
-/broadcast/*/31337/
-/broadcast/**/dry-run/
 
 # Docs
 docs/
@@ -24,13 +19,16 @@ out-*/
 cache-*/
 broadcast/
 
-# dApp / indexer build output and dependencies
+# dApp build output and dependencies
 app/node_modules/
 app/dist/
-indexer/node_modules/
-indexer/build/
-indexer/generated/
 
-# Local-only deployment records (anvil) and simulations
-deployments/31337.json
-deployments/*.dry-run.json
+# SDK dependencies
+sdk/node_modules/
+
+# Launch: mainnet records (launch/out/196.json, launch/state.196.json) ARE committed;
+# fork rehearsal records, archived states and temp files are not.
+launch/state.*.fork*.json
+launch/out/*.fork.json
+launch/*.stale-*.json
+launch/**/*.tmp

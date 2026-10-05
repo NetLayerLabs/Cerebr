@@ -7,9 +7,14 @@ on:
   pull_request:
   workflow_dispatch:
 
+# Fork tests need a local anvil fork of X Layer mainnet and are skipped here:
+#   - CerebrScope fork suite runs only when SCOPE_FORK_RPC is set (unset in CI -> skipped).
+#   - sdk/scripts/fork-smoke.ts, sdk/scripts/launch.ts and app `npm run smoke` are local-only
+#     (they refuse non-loopback RPCs). Run them before every release; see README "Quickstart".
+
 jobs:
-  check:
-    name: Foundry project
+  contracts:
+    name: Contracts (Foundry)
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -31,5 +36,48 @@ jobs:
       - name: Run Forge build
         run: forge build --sizes
 
-      - name: Run Forge tests
+      - name: Run Forge tests (non-fork)
         run: forge test -vvv
+
+  sdk:
+    name: SDK (compiler + TapeOut client)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: sdk
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 26
+
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - run: npm test
+
+  app:
+    name: dApp + landing (typecheck and build)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 26
+
+      # The app compiles the SDK from source (sdk/src), so both need their dependencies.
+      - run: npm ci
+        working-directory: sdk
+      - run: npm ci
+        working-directory: app
+      - run: npm run build
+        working-directory: app
