@@ -21,6 +21,8 @@ export interface Pins {
   transistorImpl: Address;
   circuitImpl: Address;
   openerImplementation: Address;
+  /** Implementation behind the account proxy's beacon (TapeOut's upgradeable ERC-6551 account logic). */
+  accountBeaconImpl: Address;
 }
 
 export interface LaunchConfig {
@@ -86,7 +88,7 @@ export function loadConfig(path = DEFAULT_CONFIG): LaunchConfig {
   }
 
   const pins = raw.pins ?? {};
-  for (const k of ['factoryImpl', 'transistorImpl', 'circuitImpl', 'openerImplementation'] as const) {
+  for (const k of ['factoryImpl', 'transistorImpl', 'circuitImpl', 'openerImplementation', 'accountBeaconImpl'] as const) {
     if (!isAddress(pins[k] ?? '', { strict: false })) fail(path, `pins.${k} must be an address`);
   }
 

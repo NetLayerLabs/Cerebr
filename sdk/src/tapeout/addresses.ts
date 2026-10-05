@@ -11,6 +11,8 @@ export interface TapeoutConfig {
   opener: Address;
   /** ERC-6551 account implementation passed to the registry (itself a beacon proxy). */
   accountImpl: Address;
+  /** The beacon behind accountImpl (an immutable in its bytecode); `implementation()` is the upgradeable account logic. */
+  accountBeacon?: Address;
   /** Canonical ERC-6551 registry used by the opener (salt 0). */
   registry: Address;
   /** BEM token (TapeOut's protocol token; not needed for CPU / circuit flows). */
@@ -26,6 +28,7 @@ export const XLAYER: TapeoutConfig = {
   factory: '0x1f09daefa827f02cbb40967cc91b259763760761',
   opener: '0x536add8f30f03b69f6fbf29d425a816a0dc50106',
   accountImpl: '0xac4f791353ee9f06e2c50ae4c34680d28ea52a57',
+  accountBeacon: '0x9b135f586f7850a3fa92210c298f732b20bc8f44',
   registry: '0x000000006551c19487814612e58fe06813775758',
   bem: '0x60e62Efa9405d6873C5deaBD4E6CC91c25363952',
   multicall3: '0xcA11bde05977b3631167028862bE2a173976CA11',

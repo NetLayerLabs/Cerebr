@@ -51,6 +51,7 @@
     "factoryImpl": "0x74956236ab64ed143933040b4137e8a352e4d17b",
     "transistorImpl": "0x265bf10faB9ddEC0eE0A649C6B9DB845f1b9a06b",
     "circuitImpl": "0x977f217887E085D298Cb3819cDAD5A0ee35F29B2",
-    "openerImplementation": "0xac4f791353ee9f06e2c50ae4c34680d28ea52a57"
+    "openerImplementation": "0xac4f791353ee9f06e2c50ae4c34680d28ea52a57",
+    "accountBeaconImpl": "0x6B6fDa1483367e939314070a4f233c1DFD35996B"
   }
 }
