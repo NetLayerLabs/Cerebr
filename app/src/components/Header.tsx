@@ -64,14 +64,17 @@ export function Header() {
       <div className="header-right">
         <label className="chain-select" title="Network">
           <span className={`dot ${blockNumber !== undefined ? 'live' : ''}`} />
-          <select value={chainId} onChange={(e) => switchChain({ chainId: Number(e.target.value) })}>
-            {chains.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-          {blockNumber !== undefined && <span className="mono muted small">#{blockNumber.toString()}</span>}
+          {chains.length > 1 ? (
+            <select value={chainId} onChange={(e) => switchChain({ chainId: Number(e.target.value) })}>
+              {chains.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <span>{chains[0]?.name}</span>
+          )}
         </label>
 
         {isConnected && address ? (
