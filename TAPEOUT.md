@@ -19,13 +19,13 @@ TapeOut warns that its X Layer contracts are test-phase, upgradeable (UUPS and b
 | Factory protocolWallet | `0x571d447f4f24688eC35Ccf07f1D6993655F6aF15` | receives deploy and mint protocol fees (pull, `owed`/`withdraw`) |
 | Circuits TREASURY | `0xEBeceDeA36e598b64E17f8d519EB77441C539F76` | receives TAPEOUT_FEE (push) |
 | Opener | `0x536add8f30f03b69f6fbf29d425a816a0dc50106` | not a proxy |
-| Account impl (ERC-6551) | `0xac4f791353ee9f06e2c50ae4c34680d28ea52a57` | itself a beacon proxy: beacon `0x9b135f58…8f44` to impl `0x6B6fDa14…996B` |
+| Account impl (ERC-6551) | `0xac4f791353ee9f06e2c50ae4c34680d28ea52a57` | itself a beacon proxy: beacon `0x9b135f586F7850A3Fa92210c298F732b20bC8f44` (an immutable in the proxy's bytecode, no EIP-1967 slot) to impl `0x6B6fDa1483367e939314070a4f233c1DFD35996B` (pinned in `launch/config.json` as `accountBeaconImpl`) |
 | ERC-6551 registry | `0x000000006551c19487814612e58fe06813775758` | salt `0x0` |
 | Opener treasury | `0xE2f77062c6060503e0289c6638D1B0A7C76cBB9d` | receives open, EXEC and BATCH fees (push) |
 | Multicall3 | `0xcA11bde05977b3631167028862bE2a173976CA11` | present |
 | BEM token | `0x60e62Efa9405d6873C5deaBD4E6CC91c25363952` | not needed for our flows |
 
-At the fork block there were 275 CPUs. CPU #0 is TapeOut's own `OnlyTestXLayer` (circuits `0x839bdD6f…574e`, 102 circuits).
+At the fork block there were 275 CPUs. CPU #0 is TapeOut's own `OnlyTestXLayer` (circuits `0x839bdD6f…574e`, 102 circuits at that block; 103 by 2026-10-06).
 
 ## 2. Factory
 
@@ -33,7 +33,7 @@ At the fork block there were 275 CPUs. CPU #0 is TapeOut's own `OnlyTestXLayer` 
   The factory checks no bounds: supply 0, mintPrice 0 and empty strings are all accepted. The TapeOut app only *lists* an X Layer CPU when `supplyCap >= 10000` and `minted >= 1`.
 * `event CPUCreated(address indexed circuits, address indexed transistors, address indexed creator, string name, uint256 supply, uint256 mintPrice)`: topic0 `0x2e8868f1…2290`. It is emitted by the factory.
 * Views: `deployFee()`, `protocolFee()` (0.00066 OKB, copied into each new CPU), `cpuCount()`, `isCPU(address)`, `owner()`, `protocolWallet()`, `isSealed()`, `transistorBeacon()`, `circuitBeacon()`.
-* **CORRECTED:** there is **no `cpuAt(i)`**. The function is **`cpus(uint256) returns (address circuits)`**. `isCPU` is keyed by the **circuits** address: `isCPU(transistors)` returns false.
+* `cpuAt(i)` and `cpus(i)` both exist and return the same **circuits** address (verified on mainnet: `cpuAt(275)` = `cpus(275)` = Cerebr); the SDK uses `cpus`. `isCPU` is keyed by the **circuits** address: `isCPU(transistors)` returns false.
 
 ## 3. Transistors (ERC-1155, one per CPU)
 
@@ -65,7 +65,9 @@ The wire format matches `sdk/reference/tapeout-netlist-src.js`:
 
 Signals are numbered as follows: 0 is const0, 1 is const1, inputs occupy 2..1+nIn, and then each element appends its output signals (a REF appends nOut of them).
 
-* A NAND or REF input that points to a signal that does not exist yet reverts `"NAND: future signal"`. A LATCH `d` may point forward, which is how feedback works.
+* A NAND or REF input must point to a signal strictly before the element's own outputs. Otherwise a NAND reverts `"NAND: future signal"` and a REF reverts `"REF: future signal"`; that includes a NAND reading its own output and a REF input equal to one of its own outputs. (TapeOut's client decoder in `sdk/reference/tapeout-netlist-src.js` accepts those two self-references; the SDK's `decode` and `scanNetlist` follow the contract.)
+* A LATCH `d` may point forward, which is how feedback works, but it must be below the total signal count (`2 + nIn` + every element's outputs), otherwise the tapeout reverts `"LATCH d out of range"`.
+  All three rules were re-checked on a fork on 2026-10-06 with `eth_call` tapeouts against the Cerebr processor.
 * **Outputs are the last nOut signals produced by elements. The NOT-NOT buffer is NOT required**: the TapeOut XOR #1 is 4 bare NANDs with its output on the last signal. The output signals can never be inputs or constants. If there are fewer than nOut element signals, the tapeout reverts `"too few signals for outputs"`; a 0-gate identity circuit and `nIn=2, nOut=2` with 1 gate were both rejected. `nOut = 0` reverts `"no outputs"`.
   To expose an input or an earlier signal, either reorder the gates or append a NOT-NOT pair (2 NAND).
 * REF target `cpu` must be the **circuits** address of a registered CPU, otherwise it reverts `"REF: target not a registered CPU"`. The pin counts must match the target's `circuitInfo`, otherwise it reverts `"REF: pin mismatch"`. A missing id reverts `"no circuit"`.
@@ -129,7 +131,7 @@ The gross total is about 0.110 OKB; net of the creator refund it is about 0.100 
 ## 7. Error and revert strings seen
 
 * `"deploy fee"`, `"insufficient"`, `"bad id"`, `"zero"`, `"supply cap"`
-* `"tapeout fee"`, `"no circuit"`, `"no outputs"`, `"too few signals for outputs"`, `"NAND: future signal"`
+* `"tapeout fee"`, `"no circuit"`, `"no outputs"`, `"too few signals for outputs"`, `"NAND: future signal"`, `"REF: future signal"`, `"LATCH d out of range"`
 * `"REF: pin mismatch"`, `"REF: target not a registered CPU"`, `"has latch: use step"`
 * `ERC1155InsufficientBalance 0x03dee4c5`, `ERC721NonexistentToken 0x7e273289`, `FeeTooLow 0xf04f3db2`, `AlreadyOpened 0x1da42b26`
 * `NotRegisteredCPU 0x5c69a867`, `NotOwner 0x30cd7471`, `OnlyCall 0x90afeb14`, `ProtocolFeeTooLow 0xafd49700`

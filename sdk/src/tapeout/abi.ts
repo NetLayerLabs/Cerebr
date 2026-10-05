@@ -1,6 +1,6 @@
 // TapeOut ABIs, restricted to what is deployed on X Layer. Every selector below was checked
 // against the live bytecode (cast selectors) and exercised on a fork; see TAPEOUT.md.
-// Note: the factory has NO cpuAt(i) (use cpus(i)), the circuits contract has NO cpuName/cpuSymbol/
+// Note: the factory's cpuAt(i) and cpus(i) are equivalent (the SDK uses cpus(i)), the circuits contract has NO cpuName/cpuSymbol/
 // story/commitDesign (those strings live on the transistors contract), and tokenURI/uri return "".
 
 import { parseAbi } from 'viem';
