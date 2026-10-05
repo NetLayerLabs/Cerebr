@@ -1,7 +1,7 @@
 import { createConfig, http, injected, mock, type CreateConnectorFn } from 'wagmi'
 import type { EIP1193Provider } from 'viem'
 import { anvilEnabled, appChains } from './config/env.ts'
-import { ANVIL_ID } from './config/chains.ts'
+import { FORK_CHAIN_ID } from './config/chains.ts'
 
 declare global {
   interface Window {
@@ -23,10 +23,12 @@ const connectors: CreateConnectorFn[] = [
   injected(),
 ]
 
-// Local demo only: drives anvil's unlocked account #0 through the RPC. No key is held in the app.
+// Local fork only: drives an unlocked anvil dev account through the RPC. No key is held in the app.
+// Account #2: on an X Layer fork, #0, #1 and #5 carry mainnet EIP-7702 delegations and cannot
+// receive ERC-1155 transistors.
 if (anvilEnabled) {
   connectors.push(
-    mock({ accounts: ['0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266'], features: { reconnect: true, defaultConnected: import.meta.env.VITE_ANVIL_AUTOCONNECT === 'true' } }),
+    mock({ accounts: ['0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC'], features: { reconnect: true, defaultConnected: import.meta.env.VITE_ANVIL_AUTOCONNECT === 'true' } }),
   )
 }
 
@@ -37,7 +39,7 @@ export const wagmiConfig = createConfig({
   multiInjectedProviderDiscovery: true,
 })
 
-export const ANVIL_DEV_CHAIN = ANVIL_ID
+export const ANVIL_DEV_CHAIN = FORK_CHAIN_ID
 
 declare module 'wagmi' {
   interface Register {
