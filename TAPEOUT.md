@@ -1,0 +1,143 @@
+# TapeOut on X Layer: verified integration spec
+
+All of this was verified on an anvil fork of X Layer mainnet at block 72,375,308 on 2026-10-04:
+`anvil --fork-url https://rpc.xlayer.tech --port 8561 --auto-impersonate --chain-id 196`.
+The tests used synthetic, impersonated addresses. Nothing was broadcast to a public chain.
+Evidence for each fact comes from `cast selectors` on the live bytecode, `cast call`/`cast estimate` reverts, and fork receipts. The hints extracted from the TapeOut client bundle (`sdk/reference/*`) are marked **CORRECTED** wherever the chain disagrees with them.
+
+The SDK lives in `sdk/src/tapeout/` (import from `sdk/src/tapeout/index.ts`). To run the end-to-end check, start the anvil fork above and then run `cd sdk && FORK_RPC=http://127.0.0.1:8561 node scripts/fork-smoke.ts`. All 18 checks print PASS.
+
+TapeOut warns that its X Layer contracts are test-phase, upgradeable (UUPS and beacons, owner `0xB3D8…3138`, `isSealed() = false`) and unaudited. Every fee below can be changed by the owner, so read the fees live with `readFees()` before quoting a price.
+
+## 1. Addresses (chainId 196)
+
+| What | Address | Notes |
+|---|---|---|
+| Factory (proxy) | `0x1f09daefa827f02cbb40967cc91b259763760761` | EIP-1967 UUPS; impl `0x74956236ab64ed143933040b4137e8a352e4d17b` |
+| Transistor beacon | `0x1059Ad62cAbB6a6925bb65aA617300556c60A51B` | impl `0x265bf10faB9ddEC0eE0A649C6B9DB845f1b9a06b` |
+| Circuit beacon | `0xf70d1ed4f62CF3780157B0b421b7E2F45bD0991C` | impl `0x977f217887E085D298Cb3819cDAD5A0ee35F29B2` |
+| Factory protocolWallet | `0x571d447f4f24688eC35Ccf07f1D6993655F6aF15` | receives deploy and mint protocol fees (pull, `owed`/`withdraw`) |
+| Circuits TREASURY | `0xEBeceDeA36e598b64E17f8d519EB77441C539F76` | receives TAPEOUT_FEE (push) |
+| Opener | `0x536add8f30f03b69f6fbf29d425a816a0dc50106` | not a proxy |
+| Account impl (ERC-6551) | `0xac4f791353ee9f06e2c50ae4c34680d28ea52a57` | itself a beacon proxy: beacon `0x9b135f58…8f44` to impl `0x6B6fDa14…996B` |
+| ERC-6551 registry | `0x000000006551c19487814612e58fe06813775758` | salt `0x0` |
+| Opener treasury | `0xE2f77062c6060503e0289c6638D1B0A7C76cBB9d` | receives open, EXEC and BATCH fees (push) |
+| Multicall3 | `0xcA11bde05977b3631167028862bE2a173976CA11` | present |
+| BEM token | `0x60e62Efa9405d6873C5deaBD4E6CC91c25363952` | not needed for our flows |
+
+At the fork block there were 275 CPUs. CPU #0 is TapeOut's own `OnlyTestXLayer` (circuits `0x839bdD6f…574e`, 102 circuits).
+
+## 2. Factory
+
+* `createCPU(string name, string symbol, string story, uint256 transistorSupply, uint256 mintPrice) payable returns (address transistors, address circuits)` (selector `0x47f9b5fd`). msg.value must be **>= deployFee() = 0.0066 OKB** (otherwise it reverts `"deploy fee"`). **Any excess is kept, not refunded**: sending 0.01 OKB cost exactly 0.01 OKB. Gas: about 715k.
+  The factory checks no bounds: supply 0, mintPrice 0 and empty strings are all accepted. The TapeOut app only *lists* an X Layer CPU when `supplyCap >= 10000` and `minted >= 1`.
+* `event CPUCreated(address indexed circuits, address indexed transistors, address indexed creator, string name, uint256 supply, uint256 mintPrice)`: topic0 `0x2e8868f1…2290`. It is emitted by the factory.
+* Views: `deployFee()`, `protocolFee()` (0.00066 OKB, copied into each new CPU), `cpuCount()`, `isCPU(address)`, `owner()`, `protocolWallet()`, `isSealed()`, `transistorBeacon()`, `circuitBeacon()`.
+* **CORRECTED:** there is **no `cpuAt(i)`**. The function is **`cpus(uint256) returns (address circuits)`**. `isCPU` is keyed by the **circuits** address: `isCPU(transistors)` returns false.
+
+## 3. Transistors (ERC-1155, one per CPU)
+
+* Token ids are verified on-chain: `NAND() = 0` and `LATCH() = 1`. `mint` with any other id reverts `"bad id"`, and an amount of 0 reverts `"zero"`.
+* `mint(uint256 id, uint256 amount) payable`: requires `msg.value >= amount*mintPrice + protocolFee`, otherwise it reverts `"insufficient"`. The **protocolFee is a flat 0.00066 OKB per mint call, not per transistor.** Payment is pull-based: `owed(creator) += amount*mintPrice` and `owed(protocolWallet) += protocolFee`. **Any excess is stranded in the contract** (owed to nobody). The creator collects with `withdraw()`, which was verified to pay out exactly `owed`.
+  `event Minted(address indexed to, uint256 indexed id, uint256 amount, uint256 paid)`, where `paid` is the full msg.value. Gas: 180k for the first mint on a CPU and about 69k afterwards (a 40,000-transistor mint costs the same as a 4-transistor one).
+* `supplyCap` is **shared by NAND and LATCH**, and `minted()` counts both. Going over the cap reverts `"supply cap"`. Burns do not reduce `minted`.
+* Views: `mintPrice, protocolFee, supplyCap, minted, creator, circuits, owed(addr), protocolWallet`, plus **`cpuName()`, `cpuSymbol()`, `story()`. CORRECTED: these three live on the transistors contract, not on circuits.** The ERC-1155 standard functions are present (`balanceOfBatch`, `safeTransferFrom`, `safeBatchTransferFrom`, approvals). `uri(id)` returns `""`.
+* There is also `burnFrom(address,uint256,uint256)`, which only the circuits contract may call.
+
+## 4. Circuits (ERC-721, one per CPU)
+
+* `tapeout(bytes nl, uint32 nIn, uint32 nOut) payable returns (uint256 id)`: **msg.value must equal TAPEOUT_FEE() = 0.0013 OKB exactly.** Both underpaying and overpaying revert `"tapeout fee"`. The fee is pushed straight to TREASURY.
+  It burns **1 NAND per NAND element and 1 LATCH per LATCH element** from msg.sender (emitted as TransferSingle to 0x0). With too few transistors it reverts `ERC1155InsufficientBalance` (`0x03dee4c5`). **A REF burns nothing**, at any depth.
+  It emits `Transfer(0, author, id)` and then `TapedOut(uint256 indexed circuitId, address indexed author, uint32 gateCount, uint32 nState)`.
+* **No `commitDesign` is needed.** The circuits contract has no commit functions; `commitDesign`, `designCommits` and the rest belong to BSC-only mining and market contracts. A plain `tapeout()` works.
+* Ids start at **1**. **CORRECTED:** `nextId()` returns the **last assigned id**, which equals the circuit count, not the next id. A fresh CPU returns 0, and returns 1 after the first tapeout.
+* `circuitInfo(id) returns (uint32 nIn, uint32 nOut, uint32 nState, uint32 gateCount)`. `gateCount` and `nState` are **flattened through REFs**. For example, a circuit with 2 REFs to a 4-gate XOR reports gateCount 8. A non-existent id reverts `"no circuit"`.
+* `netlist(id)` returns the bytes exactly as submitted. `ownerOf`, `balanceOf`, `transferFrom`, `safeTransferFrom` and approvals work. ERC-721 and Metadata are supported; Enumerable is not.
+  **`tokenURI(id)` returns `""`.** TapeOut has no on-chain metadata on X Layer, and CerebrScope fills that gap.
+* Views: `TAPEOUT_FEE()`, `TREASURY()`, `transistors()`, `transistorsContract()`, `factory()`, `name()`, `symbol()` (= cpuName/cpuSymbol), plus `sweepFees()`.
+
+### 4.1 Netlist rules (all verified with reverting tapeouts)
+
+The wire format matches `sdk/reference/tapeout-netlist-src.js`:
+* NAND is `00 a:u24 b:u24`.
+* LATCH is `01 d:u24`.
+* REF is `02 cpu:20B id:u64 nIns:u8 nOut:u8 ins:u24*nIns`.
+
+Signals are numbered as follows: 0 is const0, 1 is const1, inputs occupy 2..1+nIn, and then each element appends its output signals (a REF appends nOut of them).
+
+* A NAND or REF input that points to a signal that does not exist yet reverts `"NAND: future signal"`. A LATCH `d` may point forward, which is how feedback works.
+* **Outputs are the last nOut signals produced by elements. The NOT-NOT buffer is NOT required**: the TapeOut XOR #1 is 4 bare NANDs with its output on the last signal. The output signals can never be inputs or constants. If there are fewer than nOut element signals, the tapeout reverts `"too few signals for outputs"`; a 0-gate identity circuit and `nIn=2, nOut=2` with 1 gate were both rejected. `nOut = 0` reverts `"no outputs"`.
+  To expose an input or an earlier signal, either reorder the gates or append a NOT-NOT pair (2 NAND).
+* REF target `cpu` must be the **circuits** address of a registered CPU, otherwise it reverts `"REF: target not a registered CPU"`. The pin counts must match the target's `circuitInfo`, otherwise it reverts `"REF: pin mismatch"`. A missing id reverts `"no circuit"`.
+  **A circuit can REF circuits on the same CPU or on any other CPU, and those circuits may be owned by anyone.** There is no royalty and no fee.
+  REFs to sequential circuits work, and their state is concatenated into the parent's `nState`.
+  Nesting depth: 40 levels were tested without hitting a limit. Each level costs a constant ~211k gas to tape out, and eval gas grows (3.0M at depth 40).
+* There is no hard gate limit up to the block gas limit (210M). Tapeouts of 2 to 30,000 gates were tested.
+
+### 4.2 eval / step (bit packing verified)
+
+* Inputs, outputs and state are **bit-packed LSB-first per byte**: bit i is `(byte[i>>3] >> (i&7)) & 1`. Missing input bytes read as 0, and extra bytes are ignored.
+  Example: on the half adder (nIn 2, nOut 2), `eval(0x03)` returns `0x02` (sum 0, carry 1). On the 9-latch register, `step(state 0x0300, in 0x0100)` returns `newState 0x0100` and `out 0xfc01`.
+* `eval(id, inputs)` works only for combinational circuits. If `nState > 0` it reverts `"has latch: use step"`.
+* `step(id, state, inputs) returns (newState, outputs)`. Each LATCH outputs its **current** state bit, the outputs are computed from that state, and then every latch samples `d` into newState. An empty `state` (`0x`) means all zeros.
+
+## 5. Native circuit accounts (brain wallets)
+
+* `opener.accountOf(circuits, id)` returns the deterministic ERC-6551 address from `registry.account(accountImpl, salt 0, 196, circuits, id)`, both **before** and after `open()`. The address can receive funds before it is opened.
+* `opener.open(circuits, id) payable returns (address)`:
+  * msg.value must be **>= FEE() = 0.08 OKB**. Below that it reverts `FeeTooLow(sent, need)` (`0xf04f3db2`). **Any excess is refunded.** The fee is pushed to the opener treasury.
+  * **Anyone may pay to open any circuit**, not only its owner.
+  * It reverts `AlreadyOpened()` (`0x1da42b26`), `NotRegisteredCPU()` (`0x5c69a867`) or `ERC721NonexistentToken`.
+  * Gas is about 174k. The call creates the account through the registry and calls `payments.paid(account)`. It emits `Opened(address indexed circuits, uint256 indexed tokenId, address indexed account, address payer)`.
+  * Afterwards `isOpened` and `isDeployed` are both true.
+* Account interface (selectors verified):
+  * `token() returns (uint256 chainId, address tokenContract, uint256 tokenId)`.
+  * `owner()` follows the circuit NFT owner (verified after a transfer).
+  * `state()` is a nonce that increments on each execute.
+  * `execute(address to, uint256 value, bytes data, uint8 operation) payable returns (bytes)`. **msg.value pays EXEC_FEE = 0.0013 OKB (excess refunded); `value` is spent from the account's own balance.** A non-owner gets `NotOwner()` (`0x30cd7471`), an operation other than 0 gets `OnlyCall()` (`0x90afeb14`), and no fee gets `ProtocolFeeTooLow`. Gas is about 108k.
+  * `executeBatch(address[] to, uint256[] value, bytes[] data)` costs BATCH_FEE = 0.0033 OKB.
+  * Also `isValidSigner`, `isValidSignature` (ERC-1271), and the ERC-721/1155 receivers. The account can hold transistors and move them through `execute`, which was verified.
+* Caveat: transferring a circuit NFT into its own account is not blocked at the ERC-721 level, and doing so locks the account. The dApp should guard against this.
+
+## 6. Cost calculator (wei; X Layer gas price ~0.02 gwei)
+
+```
+createCPU   value = deployFee                                   (0.0066 OKB; excess lost)          gas ~715k
+mint        value = amount*mintPrice + protocolFee              (0.00066 per call; excess stranded) gas 180k first / ~70k
+tapeout     value = TAPEOUT_FEE exactly                         (0.0013)                           gas ~210k (+40k first) + 2.9k*(NAND+LATCH) + 20k*REF
+            burns  NAND = #NAND elements, LATCH = #LATCH elements, REF free
+eval/step   free view; gas ~50k + 2.5k * flattened gateCount
+open        value = FEE                                         (0.08; excess refunded)            gas ~175k
+execute     value = EXEC_FEE (0.0013) / executeBatch BATCH_FEE (0.0033)                             gas ~110k
+creator revenue = sum(amount*mintPrice), pulled via transistors.withdraw()
+```
+
+Measured tapeout gas: 4 gates took 247k (the first tapeout on a CPU), 100 gates 490k, 1,000 gates 3.06M, 10,000 gates 29.0M and 30,000 gates 87.7M.
+Measured eval gas: 100 gates took 274k, 1,000 gates 2.33M and 10,000 gates 23.2M.
+At 0.02 gwei even a 10,000-gate tapeout costs under 0.0006 OKB in gas, so the protocol fees dominate.
+
+Example launch with Cerebr's terms, a 1,000,000 supply at 0.00001 OKB:
+* deploy: 0.0066
+* the creator's own mint of 1,000 NAND: 0.01 + 0.00066, of which 0.01 comes back through withdraw
+* 10 tapeouts: 0.013
+* 1 opened account: 0.08
+
+The gross total is about 0.110 OKB; net of the creator refund it is about 0.100 OKB. Opening an account for every showcase circuit is the expensive part, at 0.08 each.
+
+`sdk/src/tapeout/encode.ts` implements this as `mintValue`, `quoteTapeout`, `quoteLaunch`, `tapeoutGas`, `evalGas` and `OBSERVED_FEES`.
+
+## 7. Error and revert strings seen
+
+* `"deploy fee"`, `"insufficient"`, `"bad id"`, `"zero"`, `"supply cap"`
+* `"tapeout fee"`, `"no circuit"`, `"no outputs"`, `"too few signals for outputs"`, `"NAND: future signal"`
+* `"REF: pin mismatch"`, `"REF: target not a registered CPU"`, `"has latch: use step"`
+* `ERC1155InsufficientBalance 0x03dee4c5`, `ERC721NonexistentToken 0x7e273289`, `FeeTooLow 0xf04f3db2`, `AlreadyOpened 0x1da42b26`
+* `NotRegisteredCPU 0x5c69a867`, `NotOwner 0x30cd7471`, `OnlyCall 0x90afeb14`, `ProtocolFeeTooLow 0xafd49700`
+
+## 8. Mainnet launch checklist (only the user signs)
+
+1. Rehearse on the fork with `node scripts/fork-smoke.ts`, then rehearse the real script with the real parameters.
+2. Run `createCPU("Cerebr", <symbol>, <story>, supply >= 10000, mintPrice)` with value = deployFee. Record the transistors and circuits addresses from `CPUCreated`.
+3. Mint at least 1 transistor so the CPU meets `minted >= 1` and the app lists it. Mint enough NAND for the showcase circuits.
+4. Tape out the neuron circuits, leaf circuits first, then the REF-composed networks. Verify each one with `truthTable` or `eval`.
+5. Optionally `open()` the flagship circuit's account (0.08 OKB).
