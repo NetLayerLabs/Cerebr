@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { decode, type Element } from '@cerebr/sdk'
 import { dieShotSvg, svgDataUri } from '../lib/dieShot.ts'
@@ -34,11 +34,19 @@ export function DieShot(p: Props) {
       return undefined
     }
   }, [p.elements, p.netlist, p.nIn, p.nOut, p.title, p.subtitle])
-  const src = onchain.data ?? local
+  // An on-chain image that fails to render (an owner can write labels that make the SVG invalid XML)
+  // falls back to the die shot drawn locally from the same netlist.
+  const [badOnchain, setBadOnchain] = useState<string | undefined>()
+  const showOnchain = !!onchain.data && onchain.data !== badOnchain
+  const src = showOnchain ? onchain.data! : local
   return (
     <div className="art">
-      {src ? <img src={src} alt={p.title ?? 'circuit die shot'} loading="lazy" /> : <div className="art-ph" />}
-      {onchain.data && <span className="art-tag">on-chain SVG</span>}
+      {src ? (
+        <img src={src} alt={p.title ?? 'circuit die shot'} loading="lazy" onError={showOnchain ? () => setBadOnchain(onchain.data!) : undefined} />
+      ) : (
+        <div className="art-ph" />
+      )}
+      {showOnchain && <span className="art-tag">on-chain SVG</span>}
     </div>
   )
 }
