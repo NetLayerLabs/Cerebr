@@ -44,6 +44,8 @@
 
   "withdrawCreatorRevenue": true,
 
+  "scope": "0x2640F8E89b2B107919568FFd42dFb46A1866e528",
+
   "pins": {
     "$comment": "TapeOut is upgradeable. The launcher aborts if any implementation differs from these pins (re-verify on a fork, then update, or pass --allow-impl-change).",
     "factoryImpl": "0x74956236ab64ed143933040b4137e8a352e4d17b",
