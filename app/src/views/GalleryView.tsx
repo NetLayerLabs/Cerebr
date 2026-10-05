@@ -140,11 +140,11 @@ function CircuitCard({ c, wallet }: { c: CircuitRow; wallet?: Wallet }) {
               {wallet ? `${fmt(wallet.balance, 4)} OKB` : ''}{' '}
               <span className={`pill ${wallet?.opened ? 'on' : ''}`}>{wallet ? (wallet.opened ? 'open' : 'not opened') : '…'}</span>
             </span>
-            {wallet && !wallet.opened && cpu && (
+            {wallet && !wallet.opened && cpu && mine && (
               <button
                 className="btn small"
                 disabled={!!busy}
-                title="Deploys the circuit's native TapeOut account (ERC-6551). Anyone may pay; only the circuit owner controls it."
+                title="Deploys this circuit's native TapeOut account (ERC-6551). You control it while you own the circuit."
                 onClick={() => send(`Open brain wallet #${c.id}`, openTx(cpu.circuits, c.id, cpu.fees.openFee))}
               >
                 Open · {fmt(cpu.fees.openFee, 3)} OKB
