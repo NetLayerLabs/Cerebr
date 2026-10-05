@@ -8,10 +8,8 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "abi": "node scripts/gen-abi.mjs",
-    "sync": "node scripts/sync-deployments.mjs",
-    "smoke": "node scripts/smoke.ts",
-    "keeper": "node scripts/keeper.ts"
+    "sync": "node scripts/sync-cpu.mjs",
+    "smoke": "node --import ./scripts/sdk-alias.mjs scripts/smoke-tapeout.ts"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.104.1",
