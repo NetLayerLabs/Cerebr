@@ -4,7 +4,7 @@
   "chainId": 196,
   "deployer": "0xc742AdA2872a042dD36D2E706907b4036968960C",
   "startedAt": "2026-10-05T20:01:56.113Z",
-  "updatedAt": "2026-10-05T20:05:30.571Z",
+  "updatedAt": "2026-10-05T21:37:31.787Z",
   "mints": [
     {
       "id": "NAND",
@@ -50,7 +50,7 @@
       "verified": {
         "ok": true,
         "cases": 4,
-        "at": "2026-10-05T20:02:22.214Z",
+        "at": "2026-10-05T21:35:15.610Z",
         "checks": [
           "netlist bytes",
           "circuitInfo",
@@ -78,7 +78,7 @@
       "verified": {
         "ok": true,
         "cases": 4,
-        "at": "2026-10-05T20:02:29.167Z",
+        "at": "2026-10-05T21:35:16.856Z",
         "checks": [
           "netlist bytes",
           "circuitInfo",
@@ -106,7 +106,7 @@
       "verified": {
         "ok": true,
         "cases": 4,
-        "at": "2026-10-05T20:02:34.675Z",
+        "at": "2026-10-05T21:35:18.887Z",
         "checks": [
           "netlist bytes",
           "circuitInfo",
@@ -134,7 +134,7 @@
       "verified": {
         "ok": true,
         "cases": 4,
-        "at": "2026-10-05T20:02:40.217Z",
+        "at": "2026-10-05T21:35:20.953Z",
         "checks": [
           "netlist bytes",
           "circuitInfo",
@@ -162,7 +162,7 @@
       "verified": {
         "ok": true,
         "cases": 4,
-        "at": "2026-10-05T20:02:46.708Z",
+        "at": "2026-10-05T21:35:22.607Z",
         "checks": [
           "netlist bytes",
           "circuitInfo",
@@ -190,7 +190,7 @@
       "verified": {
         "ok": true,
         "cases": 8,
-        "at": "2026-10-05T20:02:54.972Z",
+        "at": "2026-10-05T21:35:25.270Z",
         "checks": [
           "netlist bytes",
           "circuitInfo",
@@ -218,7 +218,7 @@
       "verified": {
         "ok": true,
         "cases": 32,
-        "at": "2026-10-05T20:03:01.003Z",
+        "at": "2026-10-05T21:35:28.939Z",
         "checks": [
           "netlist bytes",
           "circuitInfo",
@@ -246,7 +246,7 @@
       "verified": {
         "ok": true,
         "cases": 32,
-        "at": "2026-10-05T20:03:09.962Z",
+        "at": "2026-10-05T21:35:33.101Z",
         "checks": [
           "netlist bytes",
           "circuitInfo",
@@ -274,7 +274,7 @@
       "verified": {
         "ok": true,
         "cases": 8,
-        "at": "2026-10-05T20:03:15.711Z",
+        "at": "2026-10-05T21:35:35.322Z",
         "checks": [
           "netlist bytes",
           "circuitInfo",
@@ -302,7 +302,7 @@
       "verified": {
         "ok": true,
         "cases": 8,
-        "at": "2026-10-05T20:03:21.965Z",
+        "at": "2026-10-05T21:35:37.202Z",
         "checks": [
           "netlist bytes",
           "circuitInfo",
@@ -330,7 +330,7 @@
       "verified": {
         "ok": true,
         "cases": 512,
-        "at": "2026-10-05T20:04:05.482Z",
+        "at": "2026-10-05T21:36:18.520Z",
         "checks": [
           "netlist bytes",
           "circuitInfo",
@@ -358,7 +358,7 @@
       "verified": {
         "ok": true,
         "cases": 512,
-        "at": "2026-10-05T20:04:48.792Z",
+        "at": "2026-10-05T21:37:00.093Z",
         "checks": [
           "netlist bytes",
           "circuitInfo",
@@ -386,7 +386,7 @@
       "verified": {
         "ok": true,
         "cases": 16,
-        "at": "2026-10-05T20:04:53.643Z",
+        "at": "2026-10-05T21:37:03.290Z",
         "checks": [
           "netlist bytes",
           "circuitInfo",
@@ -414,7 +414,7 @@
       "verified": {
         "ok": true,
         "cases": 16,
-        "at": "2026-10-05T20:05:01.720Z",
+        "at": "2026-10-05T21:37:06.527Z",
         "checks": [
           "netlist bytes",
           "circuitInfo",
@@ -425,7 +425,18 @@
       }
     }
   },
-  "accounts": {},
+  "accounts": {
+    "xor-net-ref": {
+      "account": "0x9E1d3eC3B3D0fe84997df0E065a96a7c93c13166",
+      "tx": {
+        "hash": "0x8781ed8467f4cef1d10dce3ec48cf1da99cfea615b250da8a352eda7a538dad3",
+        "block": "72466843",
+        "gasUsed": "167234",
+        "gasCost": "3344680167234",
+        "value": "80000000000000000"
+      }
+    }
+  },
   "withdrawals": [
     {
       "amount": "12410000000000000",
@@ -450,5 +461,5 @@
       "value": "6600000000000000"
     }
   },
-  "done": "2026-10-05T20:05:30.571Z"
+  "done": "2026-10-05T21:31:44.181Z"
 }
