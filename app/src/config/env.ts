@@ -7,8 +7,8 @@ import { generatedCpus } from '../generated/cpus.ts'
 const env = import.meta.env
 const vars = env as unknown as Record<string, string | undefined>
 
-/** The local X Layer fork is offered in `vite dev`, or in a build with VITE_ENABLE_ANVIL=true. */
-export const anvilEnabled = env.DEV || env.VITE_ENABLE_ANVIL === 'true'
+/** The app shows X Layer mainnet only. The local fork is a developer opt-in: VITE_ENABLE_ANVIL=true. */
+export const anvilEnabled = env.VITE_ENABLE_ANVIL === 'true'
 
 export const xLayer = makeXLayer(env.VITE_RPC_196 || undefined)
 export const xLayerFork = makeXLayerFork(env.VITE_RPC_31337 || undefined)

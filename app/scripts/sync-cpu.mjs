@@ -49,6 +49,11 @@ if (existsSync(dir)) {
     if (!f.endsWith('.json') || f.endsWith('.dry-run.json')) continue
     const j = JSON.parse(readFileSync(join(dir, f), 'utf8'))
     const fork = j.fork === true || j.network === 'fork' || /(^fork|[-.]fork\.json$)/.test(f)
+    // Fork rehearsals are left out unless asked for (npm run sync -- --fork): the app ships mainnet only.
+    if (fork && !process.argv.includes('--fork')) {
+      console.log(`skip: ${f} (fork record; pass --fork to include it)`)
+      continue
+    }
     const chainId = fork ? FORK_CHAIN_ID : Number(j.chainId ?? /^(\d+)\.json$/.exec(f)?.[1])
     if (!Number.isInteger(chainId)) throw new Error(`${f}: no chainId`)
     const cpu = j.processor ?? j.cpu ?? j
