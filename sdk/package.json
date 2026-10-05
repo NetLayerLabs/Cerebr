@@ -1,0 +1,16 @@
+{
+  "name": "@cerebr/sdk",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Cerebr SDK: TapeOut X Layer client + neural-circuit (NAND netlist) compiler and simulator",
+  "exports": { ".": "./src/index.ts" },
+  "scripts": {
+    "test": "node --test 'test/*.test.ts'",
+    "launch": "node scripts/launch.ts",
+    "typecheck": "tsc --noEmit",
+    "fork:smoke": "node scripts/fork-smoke.ts"
+  },
+  "dependencies": { "viem": "^2.57.2" },
+  "devDependencies": { "typescript": "^5.9.0", "@types/node": "^24.0.0" }
+}
