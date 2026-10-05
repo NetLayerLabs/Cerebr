@@ -18,9 +18,12 @@
 //        --as <address> (fork: impersonate this wallet; mainnet dry run without a key)
 //        --fund <okb> (fork: set the deployer balance)  --fresh (fork: archive old state)
 //        --no-open  --allow-impl-change
+//        --launch-dir <dir> (state + out files; default launch/, e.g. a scratch copy for rehearsals)
+//        --continue-after-done (mainnet: allow sending after the recorded launch completed)
+//        --allow-second-cpu (createCPU even though this deployer already has a processor)
 
 import { parseArgs } from 'node:util';
-import { getAddress, isAddress, parseAbi, parseEther, parseEventLogs, type Address } from 'viem';
+import { decodeFunctionData, getAddress, isAddress, parseAbi, parseEther, parseEventLogs, type Address } from 'viem';
 import {
   LATCH_ID,
   LISTING_QUALITY,
@@ -38,11 +41,12 @@ import {
   transistorsAbi,
   type TapeoutFees,
 } from '../src/tapeout/index.ts';
-import { DEFAULT_CONFIG, loadConfig } from './lib/config.ts';
-import { FORK_CHAIN_IDS, FORK_DEPLOYER, connect, readImplementations, send, txRecord, verifyOnChain, type Net, type NetworkName } from './lib/chain.ts';
+import { DEFAULT_CONFIG, LAUNCH_DIR as DEFAULT_LAUNCH_DIR, loadConfig } from './lib/config.ts';
+import { FORK_CHAIN_IDS, FORK_DEPLOYER, connect, readImplementations, redactSecrets, send, txRecord, verifyOnChain, type Net, type NetworkName } from './lib/chain.ts';
 import { writeOut } from './lib/out.ts';
-import { buildPlan, compile, deployedTargets, fmt, printPlan, verifyLocally, type CompiledCircuit } from './lib/plan.ts';
-import { StateFile, type CircuitRecord } from './lib/state.ts';
+import { doneGuard, secondCpuGuard } from './lib/guards.ts';
+import { buildPlan, compile, deployedTargets, effectiveKeep, fmt, printPlan, verifyLocally, type CompiledCircuit } from './lib/plan.ts';
+import { StateFile, getLaunchDir, setLaunchDir, type CircuitRecord } from './lib/state.ts';
 
 const { values: args } = parseArgs({
   options: {
@@ -57,6 +61,9 @@ const { values: args } = parseArgs({
     fresh: { type: 'boolean', default: false },
     'no-open': { type: 'boolean', default: false },
     'allow-impl-change': { type: 'boolean', default: false },
+    'launch-dir': { type: 'string' },
+    'continue-after-done': { type: 'boolean', default: false },
+    'allow-second-cpu': { type: 'boolean', default: false },
   },
   strict: true,
 });
@@ -69,6 +76,7 @@ const verifyOnly = args['verify-only'];
 const sends = !dryRun && !verifyOnly;
 if (args.as !== undefined && !isAddress(args.as, { strict: false })) throw new Error('--as must be an address');
 if (mainnet && (args.fund || args.fresh)) throw new Error('--fund and --fresh are fork-only');
+if (args['launch-dir']) setLaunchDir(args['launch-dir']);
 
 const line = (s = '') => console.log(s);
 
@@ -98,6 +106,11 @@ async function main() {
     state.archive('--fresh');
     state = StateFile.open(network, chainId, net.deployer);
   }
+  if (getLaunchDir() !== DEFAULT_LAUNCH_DIR) line(`Launch dir: ${getLaunchDir()}`);
+
+  // A finished mainnet launch never sends again by accident (missing --dry-run, an edited config).
+  const doneMsg = doneGuard({ mainnet, sends, done: state.data.done, statePath: state.path, continueAfterDone: args['continue-after-done'] });
+  if (doneMsg) throw new Error(doneMsg);
 
   // Fork funding: --fund sets the balance; the synthetic wallet is topped up to 10 OKB when below 1.
   // Rehearsing as your real wallet (--as) without --fund uses its real forked balance.
@@ -111,7 +124,7 @@ async function main() {
 
   // 3. Preflight: implementation pins, fees, balances.
   const impl = await readImplementations(net.pc, cfg.pins);
-  line(`\nTapeOut implementations: factory ${impl.factoryImpl}, transistors ${impl.transistorImpl}, circuits ${impl.circuitImpl}, sealed=${impl.sealed}`);
+  line(`\nTapeOut implementations: factory ${impl.factoryImpl}, transistors ${impl.transistorImpl}, circuits ${impl.circuitImpl}, accounts ${impl.accountBeaconImpl} (beacon ${impl.accountBeacon}), sealed=${impl.sealed}`);
   if (impl.mismatches.length) {
     const msg = `TapeOut was upgraded since the pins were verified:\n  ${impl.mismatches.join('\n  ')}`;
     if (!args['allow-impl-change']) throw new Error(`${msg}\nRe-run the fork rehearsal against the new code, update launch/config.json pins, or pass --allow-impl-change.`);
@@ -128,6 +141,14 @@ async function main() {
   const fees = await readFees(net.pc, state.data.cpu);
   printFees(fees);
 
+  // Idempotence must not depend on the state file alone: with no processor in state, make sure this
+  // deployer does not already have one before planning createCPU. (--fresh on a fork means "start a
+  // new processor" and implies --allow-second-cpu.)
+  if (!state.data.cpu && !verifyOnly && !args['allow-second-cpu'] && !args.fresh) {
+    const msg = await secondCpuGuard({ pc: net.pc, mainnet, chainId, deployer: net.deployer, statePath: state.path });
+    if (msg) throw new Error(msg);
+  }
+
   let compiled = await reconcile(net, state, cfg);
   const balances = state.data.cpu ? await transistorBalances(net.pc, state.data.cpu.transistors, net.deployer) : { nand: 0n, latch: 0n };
   const opened = await openedSet(net, state, cfg.openAccounts);
@@ -139,7 +160,7 @@ async function main() {
   const plan = buildPlan({ cfg, state: state.data, compiled, fees, mintPrice, balances, openedAlready: opened, skipOpen: args['no-open'], owed, gasPrice });
 
   printIssuance(cfg, state);
-  printPlan(plan, state.data.cpu?.circuits, cfg.keep);
+  printPlan(plan, state.data.cpu?.circuits, effectiveKeep(cfg.keep, state.data.mints));
 
   const balance = await net.pc.getBalance({ address: net.deployer });
   const need = plan.gross + plan.gross / 10n;
@@ -239,6 +260,13 @@ async function resume(net: Net, state: StateFile) {
       const [ev] = parseEventLogs({ abi: factoryAbi, eventName: 'CPUCreated', logs: r.logs });
       if (ev) state.data.cpu = { circuits: ev.args.circuits, transistors: ev.args.transistors, tx: txRecord(r, (await net.pc.getTransaction({ hash: p.hash })).value) };
     }
+    // A recovered mint is recorded, so keep (minted once per token) is not applied a second time.
+    if (r?.status === 'success' && (p.step === 'mint NAND' || p.step === 'mint LATCH') && !state.data.mints.some((m) => m.tx.hash === p.hash)) {
+      const tx = await net.pc.getTransaction({ hash: p.hash });
+      const { args: mintArgs } = decodeFunctionData({ abi: transistorsAbi, data: tx.input });
+      const amount = (mintArgs?.[1] as bigint | undefined) ?? 0n;
+      state.data.mints.push({ id: p.step === 'mint NAND' ? 'NAND' : 'LATCH', amount: amount.toString(), value: tx.value.toString(), tx: txRecord(r, tx.value) });
+    }
     // Other steps are reconciled from chain state (balances, circuits, isOpened, owed).
     state.data.pending = undefined;
     state.save();
@@ -319,8 +347,10 @@ async function createCpu(net: Net, state: StateFile, cfg: ReturnType<typeof load
 async function mintDeficit(net: Net, state: StateFile, compiled: CompiledCircuit[], fees: TapeoutFees, keep: { nand: bigint; latch: bigint }) {
   const cpu = state.data.cpu!;
   const todo = compiled.filter((c) => !state.data.circuits[c.entry.id]);
-  // What the remaining tapeouts burn, plus the transistors the deployer keeps (launch/config.json keep).
-  const need = { nand: todo.reduce((s, c) => s + BigInt(c.nand), 0n) + keep.nand, latch: todo.reduce((s, c) => s + BigInt(c.latch), 0n) + keep.latch };
+  // What the remaining tapeouts burn, plus the transistors the deployer keeps (launch/config.json
+  // keep), which are minted once per token: not again once the state records a mint of that token.
+  const k = effectiveKeep(keep, state.data.mints);
+  const need = { nand: todo.reduce((s, c) => s + BigInt(c.nand), 0n) + k.nand, latch: todo.reduce((s, c) => s + BigInt(c.latch), 0n) + k.latch };
   const have = await transistorBalances(net.pc, cpu.transistors, net.deployer);
   const price = await net.pc.readContract({ address: cpu.transistors, abi: transistorsAbi, functionName: 'mintPrice' });
   for (const [name, id, want, got] of [['NAND', NAND_ID, need.nand, have.nand], ['LATCH', LATCH_ID, need.latch, have.latch]] as const) {
@@ -442,7 +472,8 @@ function printIssuance(cfg: ReturnType<typeof loadConfig>, state: StateFile) {
 }
 
 main().catch((e) => {
-  console.error(`\nERROR ${e instanceof Error ? e.message : String(e)}`);
+  // Error text is redacted defensively: no message may carry the PRIVATE_KEY value.
+  console.error(`\nERROR ${redactSecrets(e instanceof Error ? e.message : String(e))}`);
   process.exitCode = 1;
 });
 
