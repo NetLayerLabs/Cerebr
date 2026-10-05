@@ -2,9 +2,9 @@
 
 This is the runbook for putting Cerebr live on X Layer mainnet: one processor (CPU) created through the TapeOut factory, plus the neural-circuit library taped out on it. A single script does the work, `sdk/scripts/launch.ts`:
 
-1. **Preflight.** It checks the chain id and confirms TapeOut's implementations still match the versions we tested (TapeOut is upgradeable). It reads the live fees, checks the wallet balance, prints the plan with its exact OKB cost, and waits for `--yes` before sending anything.
+1. **Preflight.** It checks the chain id and confirms TapeOut's implementations still match the versions we tested (TapeOut is upgradeable): the factory, transistor and circuit beacons, the opener's account proxy, and the implementation behind that proxy's beacon (`pins.accountBeaconImpl`). It reads the live fees, checks the wallet balance, prints the plan with its exact OKB cost, and waits for `--yes` before sending anything.
 2. **`createCPU`.** It creates the processor through the TapeOut factory. The supply cap and unit price go on chain in this transaction.
-3. **Mint.** It mints exactly the NAND and LATCH transistors that the circuits will burn, and no more.
+3. **Mint.** It mints the NAND and LATCH transistors that the circuits will burn, plus the configured `keep` (minted once per token).
 4. **Tape out.** It tapes out the 14 catalog circuits in dependency order. Before each REF-composed network, the REF placeholders are filled in with the real circuit ids of the neurons it reuses.
 5. **Verify.** Each circuit is checked on chain right after its tapeout. The stored netlist bytes must match the compiled ones, and `circuitInfo` and the `TapedOut` event must match the simulator. `eval` is compared with the simulator on every possible input; for the spiking neuron, `step` is compared on every state and input pair.
 6. **Open an account.** It opens the TapeOut native account ("brain wallet") of the flagship circuit.
@@ -16,6 +16,10 @@ The run is **idempotent and resumable**. `launch/state.196.json` is rewritten af
 > Fork and mainnet can share chain id 196. Fork runs write `state.<chainId>.fork.json` and `out/<chainId>.fork.json`, and mainnet runs write `state.196.json` and `out/196.json`, so a rehearsal can never be mistaken for the real launch. Fork mode also accepts an anvil started with `--chain-id 31337`, the dApp's local-fork id, so one fork can serve the launch script, `npm run sync` and the dApp (fork records always map to chain 31337 in the app). Fork records are git-ignored; mainnet records are committed.
 >
 > **Resume safety.** If a pending transaction from an interrupted run still has no receipt (still in the mempool, or the RPC failed), the script stops and sends nothing instead of guessing. Before any send it also refuses to continue while the wallet has unconfirmed transactions in flight (`pending nonce > latest nonce`). Run the same command again once they settle.
+>
+> **After the launch.** Idempotence does not rest on the state file alone:
+> * A mainnet state marked `done` refuses every sending run unless you pass `--continue-after-done` (for example, to tape out a circuit you added to the config later). `--dry-run` and `--verify-only` still work.
+> * When the state has no processor, the script refuses to plan `createCPU` if `launch/out/196.json` exists (mainnet) or if the TapeOut factory already lists a processor whose creator is the deployer (checked on forks too, by walking `factory.cpus(i)`; X Layer's RPC caps `eth_getLogs` at 100 blocks). It prints the existing processor; restore the state file instead, or pass `--allow-second-cpu` if you really want another one. `--fresh` (fork only) implies it. On a fresh fork the first walk over ~280 processors can take a few minutes while anvil fetches the storage.
 
 ## Mainnet launch record (2026-10-05)
 
@@ -80,6 +84,8 @@ The actual mainnet cost is in the launch record above (net 0.02621748 OKB). Fees
 
 `launch/config.json` → `keep` mints transistors on top of what the tapeouts burn, in the same mint calls (no extra protocol fee). They stay in the deployment wallet. Because the deployer is the processor's creator, their unit price comes back with `withdraw()`, so they cost only gas. The default, used at launch, is **1,000 NAND and 100 LATCH** (disclosed in ISSUANCE.md §6); the run's Result prints `your transistors: …` as proof. Set both to `"0"` to keep none.
 
+`keep` is **minted once per token**, not a target balance: it is added only to the first NAND (resp. LATCH) mint, and once the state file records a mint of that token it no longer applies. Spending or transferring kept transistors therefore never makes a re-run mint them again. A later run (say, after adding a circuit) mints only what its tapeouts still need beyond your current balance, so it may use up kept transistors.
+
 ## Steps to go live
 
 All commands run from `sdk/` (`cd sdk && npm install` once). The launch needs Node 26 or newer, which runs the TypeScript directly.
@@ -124,7 +130,7 @@ node --env-file=.env scripts/launch.ts --network xlayer --dry-run
 
 Check the plan, the issuance terms (they must show `confirmed by user yes`), the live fees, and the balance line. If TapeOut upgraded its contracts since 2026-10-04, the preflight stops with a pin mismatch. In that case, rehearse on a fork again (step 2), then update `pins` in the config, or pass `--allow-impl-change` once you're satisfied.
 
-### 6. Launch (done 2026-10-05, except the brain-wallet open)
+### 6. Launch (done 2026-10-05; brain wallet opened afterwards)
 
 ```sh
 node --env-file=.env scripts/launch.ts --network xlayer --yes
@@ -134,7 +140,7 @@ Mainnet needs all three of `--network xlayer`, `PRIVATE_KEY` and `--yes`, and th
 
 ### 6b. Deploy CerebrScope (done: [`0x2640…e528`](https://www.oklink.com/xlayer/address/0x2640F8E89b2B107919568FFd42dFb46A1866e528), Sourcify-verified)
 
-CerebrScope is a separate, no-admin lens contract (about 6M gas, roughly 0.0003 OKB). It is not part of the hackathon's required deployment, but the demo shows its on-chain images. From the repo root, rehearse on a fork first, then sign on mainnet yourself:
+CerebrScope is a separate, no-admin lens contract (4.60M gas on mainnet, about 0.00009 OKB). It is not part of the hackathon's required deployment, but the demo shows its on-chain images. From the repo root, rehearse on a fork first, then sign on mainnet yourself:
 
 ```sh
 # fork rehearsal (nothing leaves the machine)
@@ -173,6 +179,7 @@ Commit `launch/out/196.json` and `launch/state.196.json`. Neither contains a sec
 node scripts/launch.ts [--network fork|xlayer] [--rpc URL] [--config PATH]
                        [--dry-run | --yes | --verify-only]
                        [--as ADDRESS] [--fund OKB] [--fresh] [--no-open] [--allow-impl-change]
+                       [--launch-dir DIR] [--continue-after-done] [--allow-second-cpu]
 ```
 
 | Flag | Meaning |
@@ -187,6 +194,9 @@ node scripts/launch.ts [--network fork|xlayer] [--rpc URL] [--config PATH]
 | `--fresh` | fork only: archive the state file and start a new processor |
 | `--no-open` | skip opening native accounts |
 | `--allow-impl-change` | continue even though TapeOut's implementations differ from `pins` |
+| `--launch-dir` | read and write the state and out files in this directory instead of `launch/` (e.g. a scratch copy for a rehearsal or a read-only check) |
+| `--continue-after-done` | mainnet: allow sending although the state says the launch is `done` |
+| `--allow-second-cpu` | allow `createCPU` although this deployer already has a processor (out file or factory) |
 
 Exit codes: 0 means done and verified, 1 means an error or a failed verification, 2 means the plan was printed and `--yes` is needed.
 
@@ -206,6 +216,7 @@ interface LaunchOut {
   tapeout: {
     factory: Address; opener: Address; registry: Address; accountImpl: Address; multicall3: Address;
     implementations: { factoryImpl; transistorImpl; circuitImpl; openerImplementation: Address;
+                       accountBeacon; accountBeaconImpl: Address;   // the account proxy's beacon and its logic (pinned)
                        openerCodeHash: Hex; sealed: boolean };
   };
   processor: {
