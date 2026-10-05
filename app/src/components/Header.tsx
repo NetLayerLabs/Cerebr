@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { useBalance, useChains, useConnect, useConnection, useConnectors, useDisconnect, useSwitchChain } from 'wagmi'
 import type { Connector } from 'wagmi'
-import { ANVIL_ID } from '../config/chains.ts'
-import { useCerebr } from '../hooks/useCerebr.ts'
+import { FORK_CHAIN_ID } from '../config/chains.ts'
+import { useNet } from '../hooks/useCpu.ts'
 import { fmt, shortAddr } from '../lib/format.ts'
 import { errorMessage } from '../lib/errors.ts'
 import { Logo } from './Logo.tsx'
@@ -16,12 +16,12 @@ function useWalletOptions(chainId: number) {
   return all
     .filter((c) => {
       if (c.id === 'okxWallet') return !discoveredOkx // prefer the EIP-6963 entry when present
-      if (c.type === 'mock') return chainId === ANVIL_ID
+      if (c.type === 'mock') return chainId === FORK_CHAIN_ID
       return true
     })
     .map((c) => ({
       connector: c,
-      label: c.type === 'mock' ? 'Anvil dev account #0 (local)' : c.id === 'injected' ? 'Browser wallet' : c.name,
+      label: c.type === 'mock' ? 'Fork dev account #2 (local)' : c.id === 'injected' ? 'Browser wallet' : c.name,
       okx: isOkx(c),
       unavailable: c.id === 'okxWallet' && !okxInjected,
     }))
@@ -29,7 +29,7 @@ function useWalletOptions(chainId: number) {
 }
 
 export function Header() {
-  const { chainId, chain, blockNumber } = useCerebr()
+  const { chainId, chain, blockNumber } = useNet()
   const chains = useChains()
   const { address, chainId: walletChainId, isConnected } = useConnection()
   const { mutate: switchChain } = useSwitchChain()
@@ -57,7 +57,7 @@ export function Header() {
         <Logo />
         <div>
           <div className="brand-name">CEREBR</div>
-          <div className="brand-sub">neural processor · X Layer</div>
+          <div className="brand-sub">neural processor · TapeOut · X Layer</div>
         </div>
       </a>
 
