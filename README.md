@@ -1,148 +1,140 @@
 # Cerebr
 
-**Mint compute. Burn it into AI brains. Every burn makes the reserve stronger.**
+**A neural processor, taped out on X Layer.**
 
-Cerebr is an on-chain "chip fab" on **X Layer**. Users buy **Transistors ($CBR)** from a bonding curve backed by native OKB, then *tape out* **Neural Circuits**: ERC-721 AI brains with fully on-chain SVG art, four tiers and commit-reveal traits. Two Circuits can be *fused* into a higher tier. Every Circuit owns an **ERC-6551 brain wallet**, and fused parents live inside their child's wallet. Every tape-out and fusion burns $CBR, while the OKB that paid for those tokens stays locked in the Processor for good. The result is that the curve gets more over-collateralised with every burn, and anyone can check this on-chain.
+Cerebr is a processor created through the [TapeOut](https://tapeout.net) factory on X Layer mainnet, together with a compiler that turns neurons into real NAND netlists. We tape those neurons out as circuits on our own processor. Anyone can run them on-chain for free with `eval()`, and anyone can compose them into deeper networks with `REF`.
 
-Built for the IGNIX X Layer TapeOut hackathon.
+- **Transistors are synapses.** The processor's transistors are the asset. Each NAND gate in a neuron burns one of them.
+- **Circuits are neurons.** Threshold units, majority votes and a spiking integrate-and-fire neuron each compile to a few NAND gates.
+- **Networks are composed.** The XOR problem, which no single neuron can solve, is a 2-layer network of three taped-out neurons, wired together by `REF`.
+- **Inference is a view call.** `eval(id, inputs)` runs the circuit gate by gate on-chain. There is no oracle and no trusted server.
+- **Every neuron can have a wallet.** We use TapeOut's native ERC-6551 circuit accounts.
+- **Circuits can be seen.** CerebrScope draws an SVG "die shot" of each circuit from its actual gates. TapeOut's own `tokenURI` is empty on X Layer.
 
-## The economic loop
+Built for the IGNIX X Layer TapeOut Genesis Transistor hackathon.
 
-```mermaid
-flowchart LR
-    U([User]) -- "OKB" --> B["buyTransistors()<br/>linear bonding curve"]
-    B -- "$CBR (price ↑)" --> U
-    U -- "$CBR" --> S["sellTransistors()<br/>never pausable"]
-    S -- "OKB − 1% fee" --> U
-    U -- "burn 5k / 20k / 100k $CBR" --> T["tapeOutCircuitTier()"]
-    T -- "sealed Circuit NFT" --> U
-    U -- "2 revealed same-tier Circuits<br/>+ burn tier cost" --> F["fuseCircuits()"]
-    F -- "next-tier Circuit<br/>(parents inside its brain wallet)" --> U
-    T & F -. "burned $CBR's OKB backing stays" .-> R[("Reserve<br/>surplusReserve() ↑<br/>totalCbrBurned() ↑")]
-    B -. "OKB in" .-> R
-    S -. "OKB out (curve value)" .-> R
-```
+## Hackathon requirements
 
-- **Price** is `BASE_PRICE + SLOPE · supply`. Buys round up and sells round down, so `balance ≥ reserveRequired() + protocolFees` always holds.
-- **Sinks.** Basic costs 5k CBR, Pro 20k and Quantum 100k. A fusion burns the cost of the input tier. Singularity can only be reached by fusion.
-- **Surplus.** `surplusReserve()` is OKB that nobody can withdraw, not even the owner. It grows with each burn. A burn lowers the spot price but over-collateralises everything that is left. The full model is in [TOKENOMICS.md](TOKENOMICS.md).
-
-## Features
-
-| # | Feature | Where |
+| Requirement | How Cerebr meets it | Where |
 |---|---|---|
-| 1 | **Tiers.** Basic, Pro, Quantum and fusion-only Singularity. Higher tiers get better rarity odds and trait ranges. `tapeOutCircuit()` makes a Basic; `tapeOutCircuitTier(tier)` makes any mintable tier. | `CerebrProcessor`, `CerebrCircuit` |
-| 2 | **Fusion.** Two revealed Circuits of the same tier plus the tier's CBR cost make one Circuit of the next tier. The parents move into the child's ERC-6551 wallet. Each Circuit can be a fusion parent only once. | `fuseCircuits`, `fusedInto` |
-| 3 | **Commit-reveal traits with on-chain auto-reveal.** The seed is the hash of the block after the mint, so reverting a transaction can't re-roll it. A FIFO reveal queue settles ready Circuits inside every tape-out and fusion (up to 2) and buy (up to 1), so owners can't wait out the hash window while the protocol is in use. Anyone can also reveal; an expired hash re-commits instead of using zero. Unrevealed Circuits show a sealed-wafer SVG. | `reveal`, `processRevealQueue`, `revealQueueHead`, `tokenURI` |
-| 4 | **Fair-launch guard.** Net buys are capped per wallet and per block for the first N blocks. Sells are never capped. | `launchActive`, `launchCapRemaining` |
-| 5 | **Live deflation counters:** `surplusReserve()`, `totalCbrBurned()`, `mintedByTier()` | Processor / Circuit |
-| 6 | **ERC-6551 brain wallets.** A minimal account (CALL only, ERC-1271, ERC-721/1155 receiver, `state` counter) works with the canonical registry on mainnet and a vendored registry on testnet. Wallets are created lazily, never at mint. The Circuit contract blocks ownership cycles and operator pulls out of a wallet. | `src/erc6551/` |
-| 7 | **Lens.** One-call views for the dApp: an exact `quoteBuyExactOKB`, protocol and user snapshots, and curve points for charts. | `CerebrLens` |
-| 8 | **Subgraph.** Indexes every Processor, Circuit and registry event (trades, tape-outs, fusions, reveals, wallets, daily snapshots). | [indexer/](indexer/README.md) |
-| 9 | **dApp.** Vite, React, viem and wagmi. OKX Wallet is listed first. It has a live curve chart, buy/sell with slippage, tape-out per tier, a fusion picker, reveal, a gallery and brain wallets. | [app/](app/README.md) |
-| 10 | **Security review.** Two rounds of multi-agent audits plus the round-3 auto-reveal fix, 219 tests, 15 stateful invariants (plus a liveness suite) and 98% line coverage. | [AUDIT.md](AUDIT.md) |
+| Processor deployed on X Layer mainnet **through the TapeOut factory** | `createCPU("Cerebr", "CRBR", story, supply, price)` on factory `0x1f09…0761`. **Live since 2026-10-05:** processor [`0xB04EB79D1A5EECaabAAfF7B77d7c27578EE693FF`](https://www.oklink.com/xlayer/address/0xB04EB79D1A5EECaabAAfF7B77d7c27578EE693FF), [create tx](https://www.oklink.com/xlayer/tx/0x3295efc1ceec4aba0f918f89e5316fd62f1f705abdc52d483715e4fcada86815) | `sdk/scripts/launch.ts`, [LAUNCH.md](LAUNCH.md) |
+| Transistor supply, unit price and cap disclosed at deployment | They are the parameters of `createCPU`, published on the landing page and in ISSUANCE.md: **1,000,000 transistors at 0.00001 OKB** | `launch/config.json`, [ISSUANCE.md](ISSUANCE.md) |
+| At least one circuit taped out on it | 14 catalog circuits (ids #1–#14), from a 1-gate inhibitory neuron to an 11-REF line detector, each checked on mainnet against the simulator on every input | `sdk/src/neuro/library.ts`, `launch/out/196.json` |
+| A clear use case | Verifiable on-chain inference: game AI, decision primitives for DeAI agents, and public neurons other teams can `REF` | [SUBMISSION.md](SUBMISSION.md) |
+
+How it maps to the judging criteria:
+
+| Criterion | Cerebr |
+|---|---|
+| Innovation | A neural compiler for TapeOut. Gates become neurons, `REF` becomes synapses between them, and `eval` becomes inference. |
+| Depth of TapeOut integration | Uses every TapeOut primitive: `createCPU`, `mint`, `tapeout`, `REF`, `eval`, `step` (LATCH-based spiking neuron), the circuit NFTs and native accounts (`opener.open`, `accountOf`). Each was verified on a mainnet fork ([TAPEOUT.md](TAPEOUT.md)). |
+| Product completeness and UX | A dApp to mint, build a neuron, tape it out, test it live and browse the gallery, plus a landing page, an SDK and a one-command launch script. |
+| Asset issuance design | One asset, the transistor: 1,000,000 at 0.00001 OKB, fixed by Cerebr at `createCPU` (enforced by TapeOut's upgradeable contracts), burned by use. REF makes reuse free. No reserved allocation and no curve; the creator's 1,100 publicly minted transistors are disclosed ([ISSUANCE.md](ISSUANCE.md)). |
+| X Layer integration | Native OKB fees, OKX Wallet support, OKLink links, and around 1-second blocks that make a live tape-out-and-test flow possible. |
+| Growth potential | Public, composable neurons. Every network built on them by `REF` adds to the graph. |
+| Security and economic model | No custody, a no-admin, no-funds Scope (its only state is an owner-written label registry), exact-fee sends, fork-verified behaviour, and TapeOut's risks disclosed ([AUDIT.md](AUDIT.md)). |
 
 ## Architecture
 
 ```mermaid
-flowchart TB
-    subgraph CORE ["Core"]
-      P["CerebrProcessor<br/>ERC-20 $CBR · bonding curve · sinks<br/>fair launch · fees · Ownable2Step · Pausable"]
-      C["CerebrCircuit<br/>ERC-721 · tiers · commit-reveal<br/>on-chain SVG · fusion · TBA guards"]
+flowchart LR
+    subgraph TO ["TapeOut on X Layer (chain 196)"]
+      F["Factory<br/>createCPU()"]
+      OP["Opener<br/>open() · accountOf()"]
+      REG["ERC-6551 registry"]
     end
-    subgraph E6551 ["ERC-6551"]
-      REG["ERC6551Registry<br/>(canonical on 196, vendored on 1952)"]
-      ACC["CerebrAccount<br/>implementation"]
-      TBA["Brain wallet proxies<br/>(one per Circuit, created on demand)"]
+    subgraph CPU ["Cerebr CPU"]
+      T["Transistors (ERC-1155)<br/>NAND = 0 · LATCH = 1<br/>mint() · cap and price set at createCPU"]
+      C["Circuits (ERC-721)<br/>tapeout() · eval() · step()<br/>netlist() · circuitInfo()"]
     end
-    L["CerebrLens<br/>(read-only)"]
-    APP["dApp (app/)"] --> L
-    APP --> P
-    APP --> C
-    APP --> REG
-    IDX["Subgraph (indexer/)"] -. events .-> P & C & REG
-    KEEP["Reveal keeper, optional backup<br/>(app/scripts/keeper.ts)"] -.-> C
-    P -- "deploys in constructor;<br/>mint() / fuse()" --> C
-    C -- "account() view<br/>(counterfactual TBA address)" --> REG
-    REG -- "createAccount() → ERC-1167 proxy" --> TBA
-    TBA -- delegates to --> ACC
-    ACC -- "owner() = ownerOf(tokenId)" --> C
-    L --> P & C
+    F -- "deploys" --> T & C
+    C -- "burns 1 per NAND / LATCH" --> T
+    C -. "REF (free reuse,<br/>any CPU)" .-> C
+    OP -- "createAccount" --> REG
+    REG -- "brain wallet per circuit" --> ACC["Native account<br/>owner() = ownerOf(circuit)"]
+
+    subgraph SDK ["sdk/ (@cerebr/sdk)"]
+      N["neuro: compiler<br/>neuron → NAND netlist<br/>simulator · catalog"]
+      TC["tapeout: viem client<br/>fees · quotes · reads/writes"]
+    end
+    N -- "netlists" --> TC
+    TC --> F & T & C & OP
+    S["CerebrScope (Solidity, no admin, no funds)<br/>die-shot SVG · metadata · truth tables · labels"] -- "reads" --> C & T & OP
+    APP["dApp + landing (app/)"] --> SDK
+    APP --> S
+    L["launch script<br/>(sdk/scripts/launch.ts)"] --> SDK
 ```
 
-- **`CerebrProcessor`** is the only minter of $CBR and of Circuits. It holds every OKB.
-  - The owner can pause buys, tape-outs and fusions, and can withdraw the 1% sell fees.
-  - The owner cannot reach the reserve, pause sells, change parameters or renounce ownership.
-- **`CerebrCircuit`** stores each Circuit in one packed slot: tier, revealed flag and commit block.
-  - A FIFO auto-reveal queue (one cursor packed with `totalMinted`) reveals ready Circuits during `mint`, `fuse` and buys, strictly bounded and never reverting.
-  - It keeps the reverse lookup `tokenOfAccount` (TBA → Circuit) and `fusedInto`.
-  - On every transfer it walks up to 16 TBA hops to block ownership cycles.
-  - It refuses to let an operator move a Circuit out of a Circuit TBA.
-- **`CerebrAccount`** is controlled by whoever owns the NFT. Nesting works: the owner of a child Circuit controls the parents' wallets through nested `execute` calls.
-- **`CerebrLens`** is a stateless view helper. The dApp only needs the Lens address; it reads every other address from `protocolState()`.
+- **`sdk/src/neuro`** is the compiler. `NetlistBuilder` and `Logic` produce NAND logic that simplifies constants and reuses identical gates. `neuron()` tries four constructions per threshold unit and keeps the smallest. `refNetwork()` composes taped-out neurons with REF. Its simulator matches TapeOut's own client byte for byte on random netlists that include LATCH and REF.
+- **`sdk/src/tapeout`** is a typed viem client for the factory, transistors, circuits, opener and accounts. It covers fee reads, cost quotes and gas estimates.
+- **`src/scope/CerebrScope.sol`** is a lens over any TapeOut processor. It has batch views, parses the gate mix from the netlist bytes, renders on-chain SVG die shots and ERC-721 JSON metadata, computes truth tables, and keeps an optional label registry that only a circuit's owner can write. It holds no funds and has no admin.
+- **`app/`** contains the landing page (`/`) and the dApp (`/app`): mint transistors, build a neural circuit, tape it out, test it live, open its wallet and browse the gallery.
+- **`sdk/scripts/launch.ts`** is the resumable launch runbook. It runs createCPU, mints exactly what the catalog burns, tapes the circuits out in dependency order, verifies each against the simulator, and writes `launch/out/<chainId>.json`.
 
 ## Quickstart
 
-Requirements: [Foundry](https://book.getfoundry.sh/), and Node ≥ 23.6 for the dApp scripts.
+Requirements: Node 23.6 or later (TypeScript runs natively) and [Foundry](https://book.getfoundry.sh/).
 
 ```bash
-git clone <this repo> && cd Cerebr
+# SDK: compiler + TapeOut client
+cd sdk && npm install
+npm test                              # compiler, simulator, catalog and client unit tests
+npx tsc --noEmit
+
+# Contracts: CerebrScope (without SCOPE_FORK_RPC the fork suite is skipped; CI runs it that way)
 forge build
-forge test                       # 219 tests: unit, fuzz (1,000 runs), 2 × 15 stateful invariants + liveness suite
-forge test --gas-report
-forge coverage --report summary
+forge test
+
+# Rehearse everything on a local copy of X Layer mainnet (nothing is broadcast).
+# One fork with the dApp's local chain id 31337 serves the launch script, the smoke tests and the dApp.
+anvil --fork-url https://rpc.xlayer.tech --chain-id 31337 --auto-impersonate --port 8545
+SCOPE_FORK_RPC=http://127.0.0.1:8545 forge test                       # + 15 CerebrScope fork tests
+cd sdk && FORK_RPC=http://127.0.0.1:8545 node scripts/fork-smoke.ts   # every TapeOut fact, checked
+node scripts/launch.ts --dry-run && node scripts/launch.ts --yes      # full launch rehearsal on the fork
+cd ../app && npm install && npm run sync                               # launch/out -> the dApp's config
+FORK_RPC=http://127.0.0.1:8545 npm run smoke                           # dApp code paths end to end
+npm run dev                                                            # pick "X Layer fork (local)"
 ```
 
-**Local end-to-end demo** (anvil, nothing public):
+The mainnet launch is signed only by the deployment wallet's owner. [LAUNCH.md](LAUNCH.md) has the checklist.
 
-```bash
-app/scripts/local-demo.sh 8545          # anvil + deploy + seeded Circuits + fusion + ABIs + addresses
-cd app && npm install
-VITE_RPC_31337=http://127.0.0.1:8545 VITE_DEFAULT_CHAIN_ID=31337 VITE_ANVIL_AUTOCONNECT=true npm run dev
-RPC_URL=http://127.0.0.1:8545 npm run smoke     # 33 on-chain checks through the dApp's own config
-RPC_URL=http://127.0.0.1:8545 npm run keeper    # optional reveal keeper (backup for quiet periods)
-```
+## Deployments (X Layer mainnet, chain 196)
 
-**Indexer:** `cd indexer && npm install && npm run codegen && npm run build`. See [indexer/README.md](indexer/README.md).
+Launched 2026-10-05. Full record: [`launch/out/196.json`](launch/out/196.json) and [LAUNCH.md](LAUNCH.md#mainnet-launch-record-2026-10-05).
 
-**Deploy to X Layer:** see [DEPLOY.md](DEPLOY.md). It covers the testnet → mainnet flow, registry handling, OKLink verification and the recommended fair-launch parameters.
-
-## Deployments
-
-| Contract | X Layer testnet (1952) | X Layer mainnet (196) |
-|---|---|---|
-| CerebrProcessor ($CBR) | _TBD_ | _TBD_ |
-| CerebrCircuit (NFT) | _TBD_ | _TBD_ |
-| CerebrLens | _TBD_ | _TBD_ |
-| CerebrAccount (implementation) | _TBD_ | _TBD_ |
-| ERC6551Registry | _TBD_ (vendored) | `0x000000006551c19487814612e58FE06813775758` (canonical) |
-| dApp / Subgraph | _TBD_ | _TBD_ |
+| What | Address |
+|---|---|
+| TapeOut factory | `0x1f09daefa827f02cbb40967cc91b259763760761` |
+| TapeOut opener (brain wallets) | `0x536add8f30f03b69f6fbf29d425a816a0dc50106` |
+| **Cerebr transistors** | [`0x84b5a5c6fE305319458113b87c09a2A241427D2D`](https://www.oklink.com/xlayer/address/0x84b5a5c6fE305319458113b87c09a2A241427D2D) |
+| **Cerebr circuits** (the processor) | [`0xB04EB79D1A5EECaabAAfF7B77d7c27578EE693FF`](https://www.oklink.com/xlayer/address/0xB04EB79D1A5EECaabAAfF7B77d7c27578EE693FF) |
+| CerebrScope | **Pending** (LAUNCH.md step 6b) |
+| Deployment wallet (creator) | [`0xc742AdA2872a042dD36D2E706907b4036968960C`](https://www.oklink.com/xlayer/address/0xc742AdA2872a042dD36D2E706907b4036968960C) |
 
 ## Repository layout
 
 ```
-src/                 CerebrProcessor, CerebrCircuit, CerebrLens, erc6551/{CerebrAccount, ERC6551Registry, interfaces}
-test/                unit, fuzz, features, ERC-6551, Lens and invariant suites
-script/              Deploy.s.sol (X Layer), LocalDemo.s.sol (anvil only)
-app/                 dApp, smoke test, optional reveal keeper
-indexer/             subgraph (schema, mappings, networks)
-deployments/         <chainId>.json written by the deploy script
+sdk/src/neuro/       neural compiler: netlist builder, logic, neurons, simulator, catalog
+sdk/src/tapeout/     TapeOut client: addresses, ABIs, encoding and quotes, viem reads and writes
+sdk/scripts/         fork-smoke.ts (verifies TapeOut on a fork), launch.ts (launch runbook)
+src/scope/           CerebrScope (lens, die-shot SVG, metadata, labels)
+script/              DeployScope.s.sol
+test/scope/          CerebrScope tests
+launch/              config.json (identity and issuance terms), out/ (launch records)
+app/                 landing page and dApp (Vite, React, wagmi, viem)
 ```
 
 ## Documentation
 
-- [TOKENOMICS.md](TOKENOMICS.md): curve, sinks, tiers, fusion, fair launch, surplus
-- [AUDIT.md](AUDIT.md): scope, methodology, both audit rounds, invariants, coverage, gas, risks
-- [DEPLOY.md](DEPLOY.md): testnet → mainnet, verification, parameters, checklist
-- [app/README.md](app/README.md): dApp, smoke test, optional keeper
-- [indexer/README.md](indexer/README.md): subgraph entities, deploy, example queries
+- [TAPEOUT.md](TAPEOUT.md): the TapeOut integration spec as verified on a mainnet fork, with addresses, fees, netlist format, REF rules, costs and error strings
+- [LAUNCH.md](LAUNCH.md): the mainnet launch runbook and checklist
+- [ISSUANCE.md](ISSUANCE.md): transistor issuance design, supply and price options, the cost of each circuit, fee flows and the anti-wash-trading stance
+- [SUBMISSION.md](SUBMISSION.md): the hackathon submission draft and demo script
+- [AUDIT.md](AUDIT.md): internal security review (not a third-party audit)
 
-## Open decisions
+## Risks
 
-1. **Fusion versus direct tape-out pricing.** Fusion reaches Pro for 15k CBR (direct: 20k) and Quantum for 50k (direct: 100k). Should direct prices be lowered, should fusion cost more, or should this stay as a convenience premium? (AUDIT 2-4)
-2. **Final launch parameters and curve parameters** for mainnet (see DEPLOY.md).
-
-Resolved: **on-chain auto-reveal** (AUDIT 2-6) is implemented. Tape-outs and fusions reveal up to 2 queued Circuits and buys reveal 1, at about +31k gas per mint in steady state. The keeper is now an optional backup.
+TapeOut's X Layer contracts are in a test phase. They are upgradeable and unaudited, and their owner can change code and fees. Cerebr holds no user funds. CerebrScope is a lens with no payable functions and no admin. Circuits run as view calls, so on-chain networks stay small, from tens to hundreds of gates. See [ISSUANCE.md](ISSUANCE.md) and [AUDIT.md](AUDIT.md).
 
 ## License
 
