@@ -358,9 +358,15 @@ export function encodeHex(netlist: Netlist | Element[], refs?: RefResolver): `0x
 }
 
 /**
- * Decode netlist bytes. Validation mirrors TapeOut's decoder exactly: NAND / REF inputs must be
- * < the next signal index (note: that bound is taken after the element's own outputs are allocated),
- * LATCH d is not checked.
+ * Decode netlist bytes, enforcing the same signal rules as TapeOut's on-chain tapeout():
+ *  - NAND and REF inputs must reference signals strictly before the element's own outputs
+ *    (a NAND reading its own output reverts "NAND: future signal", a REF input equal to one of its
+ *    own outputs reverts "REF: future signal");
+ *  - LATCH d may point forward (feedback) but must be < the total signal count
+ *    ("LATCH d out of range").
+ * TapeOut's shipped client decoder (sdk/reference/tapeout-netlist-src.js, f5) is laxer: it bounds
+ * NAND/REF inputs only after allocating the element's outputs and never bounds LATCH d. This decoder
+ * intentionally follows the contract, so it never accepts a netlist the chain would reject.
  */
 export function decode(bytes: Uint8Array | string, nIn: number): Element[] {
   const b = typeof bytes === 'string' ? fromHex(bytes) : bytes;
@@ -375,13 +381,14 @@ export function decode(bytes: Uint8Array | string, nIn: number): Element[] {
 
   const elements: Element[] = [];
   let next = 2 + nIn;
+  // checked against `next` BEFORE the element's own outputs are allocated
   const ok = (s: number) => s >= 0 && s < next;
   while (p < b.length) {
     const op = u8();
     if (op === OP.NAND) {
-      const a = u24(), bb = u24(), out = next++;
-      if (!ok(a) || !ok(bb)) throw new Error(`NAND@${out}: input references future signal (a=${a},b=${bb})`);
-      elements.push({ op: OP.NAND, a, b: bb, out });
+      const a = u24(), bb = u24();
+      if (!ok(a) || !ok(bb)) throw new Error(`NAND@${next}: input references future signal (a=${a},b=${bb})`);
+      elements.push({ op: OP.NAND, a, b: bb, out: next++ });
     } else if (op === OP.LATCH) {
       const d = u24(), out = next++;
       elements.push({ op: OP.LATCH, d, out });
@@ -389,13 +396,16 @@ export function decode(bytes: Uint8Array | string, nIn: number): Element[] {
       const cpu = addr(), circuitId = u64(), nIns = u8(), nOut = u8();
       const ins: number[] = [];
       for (let i = 0; i < nIns; i++) ins.push(u24());
+      for (const s of ins) if (!ok(s)) throw new Error(`REF: input references future signal (${s})`);
       const outs: number[] = [];
       for (let i = 0; i < nOut; i++) outs.push(next++);
-      for (const s of ins) if (!ok(s)) throw new Error(`REF: input references future signal (${s})`);
       elements.push({ op: OP.REF, target: { cpu, circuitId }, ins, nOut, outs });
     } else {
       throw new Error(`unknown opcode 0x${op.toString(16)} at byte ${p - 1}`);
     }
+  }
+  for (const e of elements) {
+    if (e.op === OP.LATCH && e.d >= next) throw new Error(`LATCH@${e.out}: d out of range (${e.d} >= ${next} signals)`);
   }
   return elements;
 }

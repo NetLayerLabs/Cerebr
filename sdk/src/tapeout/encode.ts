@@ -76,8 +76,10 @@ export interface NetlistStats {
 
 /**
  * Scans a netlist and enforces the same rules as `tapeout()` that can be checked offline:
- * unknown opcodes / truncation, NAND and REF inputs must reference earlier signals
- * ("NAND: future signal"), nOut >= 1 ("no outputs"), and elementSignals >= nOut
+ * unknown opcodes / truncation, NAND and REF inputs must reference signals strictly before the
+ * element's own outputs ("NAND: future signal" / "REF: future signal"), LATCH d must be < the total
+ * signal count ("LATCH d out of range"; it may point forward for feedback), nOut >= 1
+ * ("no outputs"), and elementSignals >= nOut
  * ("too few signals for outputs": the outputs are the LAST nOut element signals, they can never
  * be a raw input or constant). REF pin counts and target registration are checked on-chain only.
  */
@@ -98,6 +100,7 @@ export function scanNetlist(netlist: Hex | Uint8Array, nIn: number, nOut: number
   let latch = 0;
   const refs: NetlistRef[] = [];
   let elements = 0;
+  let maxLatchD = -1;
   while (p < b.length) {
     const op = b[p++];
     elements++;
@@ -108,7 +111,7 @@ export function scanNetlist(netlist: Hex | Uint8Array, nIn: number, nOut: number
       next++;
       nand++;
     } else if (op === 1) {
-      u24(); // d may point forward (feedback)
+      maxLatchD = Math.max(maxLatchD, u24()); // d may point forward (feedback), bounded below
       next++;
       latch++;
     } else if (op === 2) {
@@ -129,6 +132,7 @@ export function scanNetlist(netlist: Hex | Uint8Array, nIn: number, nOut: number
       throw new Error(`unknown opcode 0x${op.toString(16)} at byte ${p - 1}`);
     }
   }
+  if (maxLatchD >= next) throw new Error(`LATCH d out of range (${maxLatchD} >= ${next} signals)`);
   if (nOut < 1) throw new Error('no outputs');
   const elementSignals = next - 2 - nIn;
   if (elementSignals < nOut) throw new Error('too few signals for outputs');

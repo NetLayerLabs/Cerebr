@@ -1,5 +1,10 @@
 // Cross-checks the netlist encoder/decoder/simulator against TapeOut's own shipped client code
 // (sdk/reference/tapeout-netlist-src.js), loaded verbatim.
+//
+// Our decoder intentionally follows the on-chain tapeout() rules, which are stricter than the
+// bundle's f5 (self-referencing NAND/REF inputs and out-of-range LATCH d revert on chain but pass
+// f5). The equivalence tests therefore only compare on chain-valid netlists (randomElements
+// generates nothing else); the differences are pinned by 'decode rejects what the chain rejects'.
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -8,6 +13,7 @@ import {
   NetlistBuilder, OP, decode, encode, toHex, fromHex, finalize, type Element,
   prepare, run, packBits, unpackBits, evalPacked, stepPacked, type CircuitResolver, type Program,
 } from '../src/neuro/index.ts';
+import { scanNetlist } from '../src/tapeout/index.ts';
 
 // ---------------------------------------------------------------- load the reference implementation
 const src = readFileSync(new URL('../reference/tapeout-netlist-src.js', import.meta.url), 'utf8');
@@ -68,7 +74,8 @@ function randomElements(r: () => number, nIn: number, count: number, allowRef = 
       const a = pick(), b = pick();
       els.push({ op: OP.NAND, a, b, out: next++ });
     } else if (k < 0.85 || !allowRef) {
-      // LATCH d may point anywhere (forward feedback included), as the decoder allows
+      // LATCH d may point anywhere (forward feedback included) below the total signal count,
+      // which is >= 2 + nIn + count (a REF adds >= 1 signal), as the chain requires
       els.push({ op: OP.LATCH, d: Math.floor(r() * (2 + nIn + count)), out: next++ });
     } else {
       const t = subTargets[Math.floor(r() * subTargets.length)];
@@ -125,9 +132,28 @@ test('decode rejects what TapeOut rejects', () => {
     assert.throws(() => decode(b, 1));
     assert.throws(() => ref.f5(b, 1));
   }
-  // quirk kept for fidelity: a NAND may name its own output index
-  assert.doesNotThrow(() => decode(Uint8Array.from([0, 0, 0, 3, 0, 0, 2]), 1));
-  assert.doesNotThrow(() => ref.f5(Uint8Array.from([0, 0, 0, 3, 0, 0, 2]), 1));
+});
+
+test('decode rejects what the chain rejects (stricter than the bundle f5)', () => {
+  // nIn = 1: signals 0,1 constants, 2 input, first element output is 3.
+  const selfNand = Uint8Array.from([0, 0, 0, 3, 0, 0, 2]); // NAND@3 reads 3: "NAND: future signal"
+  const selfNandB = Uint8Array.from([0, 0, 0, 2, 0, 0, 3]);
+  const selfRef = Uint8Array.from([2, ...new Array(20).fill(0x11), 0, 0, 0, 0, 0, 0, 0, 7, 2, 2, 0, 0, 2, 0, 0, 3]); // REF outs 3,4 reads 3: "REF: future signal"
+  const latchFar = Uint8Array.from([1, 0, 0, 4, 0, 0, 0, 2, 0, 0, 2]); // 2 elements -> 5 signals; d=4 ok
+  const latchOut = Uint8Array.from([1, 0, 0, 5, 0, 0, 0, 2, 0, 0, 2]); // d=5 >= 5 signals: "LATCH d out of range"
+  for (const b of [selfNand, selfNandB, selfRef]) {
+    assert.throws(() => decode(b, 1), /future signal/);
+    assert.doesNotThrow(() => ref.f5(b, 1)); // the client bundle accepts it; the chain does not
+    assert.throws(() => scanNetlist(b, 1, 1), /future signal/);
+  }
+  assert.doesNotThrow(() => decode(latchFar, 1));
+  assert.doesNotThrow(() => scanNetlist(latchFar, 1, 1));
+  assert.throws(() => decode(latchOut, 1), /out of range/);
+  assert.doesNotThrow(() => ref.f5(latchOut, 1));
+  assert.throws(() => scanNetlist(latchOut, 1, 1), /LATCH d out of range/);
+  // prepare() (the simulator) goes through decode, so it rejects them too
+  assert.throws(() => prepare(selfNand, 1, 1), /future signal/);
+  assert.throws(() => prepare(latchOut, 1, 1), /out of range/);
 });
 
 test('simulator matches TapeOut p5/m5 (outputs, newState, every signal) on random netlists', () => {
