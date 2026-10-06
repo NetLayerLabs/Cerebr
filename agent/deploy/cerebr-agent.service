@@ -8,8 +8,7 @@
 Description=Cerebr Agent keeper (CerebrAgent.act on X Layer)
 After=network-online.target
 Wants=network-online.target
-StartLimitIntervalSec=600
-StartLimitBurst=5
+StartLimitIntervalSec=0
 
 [Service]
 Type=simple
@@ -24,7 +23,7 @@ ExecStart=/usr/bin/node src/main.ts
 KillSignal=SIGTERM
 TimeoutStopSec=45
 Restart=on-failure
-RestartSec=30
+RestartSec=60
 StateDirectory=cerebr-agent
 NoNewPrivileges=yes
 ProtectSystem=strict

@@ -20,6 +20,9 @@ services:
       - agent-data:/data
     ports:
       - "127.0.0.1:8787:8787" # status endpoint on the VPS loopback only
+    mem_limit: 256m
+    cpus: 0.5
+    pids_limit: 128
     stop_grace_period: 45s
     read_only: true
     tmpfs:

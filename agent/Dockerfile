@@ -15,6 +15,9 @@ RUN npm ci --omit=dev --no-audit --no-fund && npm cache clean --force
 # Only the viem-free neuro sources the daemon needs, then the daemon itself (Node runs the .ts natively).
 COPY sdk/src/neuro /app/sdk/src/neuro
 COPY agent/src ./src
+# Make the sources readable by the node user whatever the checkout's file modes are
+# (a 600 checkout otherwise crash-loops with EACCES on package.json).
+RUN chmod -R a+rX /app
 
 RUN mkdir -p /data && chown node:node /data
 USER node
