@@ -429,8 +429,10 @@ button.pin:hover { border-color: var(--text); }
 .bench-info { min-width: 0; }
 .bench-info p { margin: 8px 0 0; line-height: 1.5; overflow-wrap: anywhere; }
 .pixels-wrap { display: flex; gap: 18px; align-items: center; flex-wrap: wrap; margin-top: 8px; }
-.pixels { display: grid; grid-template-columns: repeat(3, 56px); gap: 4px; padding: 8px; border-radius: 2px; background: var(--bg); border: 1px solid var(--line-2); }
-.px { width: 56px; height: 56px; border-radius: 1px; border: 1px solid var(--line-2); background: var(--panel-solid); cursor: pointer; transition: background 0.12s, box-shadow 0.12s, border-color 0.12s; }
+.pixels { --px: 56px; display: grid; grid-template-columns: repeat(var(--cols, 3), var(--px)); gap: 4px; padding: 8px; border-radius: 2px; background: var(--bg); border: 1px solid var(--line-2); }
+.pixels[data-cols='4'] { --px: 46px; }
+.pixels[data-cols='5'], .pixels[data-cols='6'], .pixels[data-cols='7'], .pixels[data-cols='8'] { --px: 34px; }
+.px { width: var(--px); height: var(--px); border-radius: 1px; border: 1px solid var(--line-2); background: var(--panel-solid); cursor: pointer; transition: background 0.12s, box-shadow 0.12s, border-color 0.12s; }
 .px:hover { border-color: var(--text); }
 .px.on { background: var(--amber); border-color: var(--amber); box-shadow: 0 0 18px color-mix(in srgb, var(--amber) 40%, transparent); }
 .pixels-wrap .chips { flex: 1; min-width: 160px; margin: 0; }
@@ -502,8 +504,7 @@ html:lang(zh) :is(.ds-kicker, .ds-sec-bar, .ds-table-head, .ds-table th, .ds-her
   .compare { grid-template-columns: 1fr; }
   .lib-row { grid-template-columns: minmax(0, 1fr) auto; }
   .lib-spec { display: none; }
-  .px { width: 64px; height: 64px; }
-  .pixels { grid-template-columns: repeat(3, 64px); }
+  .pixels[data-cols='3'] { --px: 64px; }
   .nav a { padding: 12px 14px 11px 0; margin-right: 14px; font-size: 13px; }
   .section-head .seg { margin-left: 0; }
 }

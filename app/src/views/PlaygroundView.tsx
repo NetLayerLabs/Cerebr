@@ -21,8 +21,34 @@ const cacheFor = (chainId: number) => {
   return programCaches.get(k)!
 }
 
-/** A 3×3 image input (catalog line detector: bit = 3·row + col). */
-const isPixelGrid = (labels: string[]) => labels.length === 9 && labels.every((l, i) => l === `r${Math.floor(i / 3)}c${i % 3}`)
+/**
+ * An image input: pins named r<row>c<col>, row-major (bit = cols·row + col), as the catalog line
+ * detector (3×3) and Train's pixel presets (3×3, 4×4) name them. Returns the grid size, else undefined.
+ */
+type Grid = { rows: number; cols: number }
+function gridOf(labels: string[]): Grid | undefined {
+  const m = /^r(\d+)c(\d+)$/.exec(labels[labels.length - 1] ?? '')
+  if (!m) return undefined
+  const rows = Number(m[1]) + 1
+  const cols = Number(m[2]) + 1
+  if (rows < 2 || cols < 2 || rows > 8 || cols > 8 || rows * cols !== labels.length) return undefined
+  return labels.every((l, i) => l === `r${Math.floor(i / cols)}c${i % cols}`) ? { rows, cols } : undefined
+}
+
+/** Presets drawn for any grid size: the middle row, the middle column, the diagonal, a cross, an L. */
+function gridPresets({ rows, cols }: Grid): [Key, number[]][] {
+  const mr = Math.floor((rows - 1) / 2)
+  const mc = Math.floor((cols - 1) / 2)
+  const draw = (on: (r: number, c: number) => boolean) => Array.from({ length: rows * cols }, (_, i) => (on(Math.floor(i / cols), i % cols) ? 1 : 0))
+  return [
+    ['pg.grid.row', draw((r) => r === mr)],
+    ['pg.grid.column', draw((_, c) => c === mc)],
+    ['pg.grid.diagonal', draw((r, c) => r === c)],
+    ['pg.grid.cross', draw((r, c) => r === mr || c === mc)],
+    ['pg.grid.l', draw((r, c) => c === 0 || r === rows - 1)],
+    ['pg.grid.clear', draw(() => false)],
+  ]
+}
 
 export function PlaygroundView({ circuitId }: { circuitId?: string }) {
   const { circuits, isLoading } = useCircuits()
@@ -70,6 +96,7 @@ function Bench({ c, all }: { c: CircuitRow; all: CircuitRow[] }) {
   const { t } = useI18n()
   const ct = useCircuitText()
   const toggle = (i: number) => setBits((b) => b.map((v, j) => (j === i ? (v ? 0 : 1) : v)))
+  const grid = gridOf(c.label.inputs)
 
   return (
     <>
@@ -93,13 +120,13 @@ function Bench({ c, all }: { c: CircuitRow; all: CircuitRow[] }) {
               <b>{ct.name(c.label.name)}</b>
               {c.label.description && <p className="muted">{ct.description(c.label.description)}</p>}
               <p className="mono muted">
-                {t('pg.specs', { i: c.nIn, o: c.nOut, g: c.gateCount })}
+                {t(c.gateCount === 1 ? 'pg.specsOne' : 'pg.specs', { i: c.nIn, o: c.nOut, g: c.gateCount })}
                 {c.nState ? t('pg.stateBits', { n: c.nState }) : ''}
               </p>
             </div>
           </div>
           <div className="tiny muted pins-head">{sequential ? t('pg.inputsSeq') : t('pg.inputsComb')}</div>
-          {isPixelGrid(c.label.inputs) ? <PixelGrid bits={bits} onChange={setBits} /> : <Pins labels={ct.pins(c.label.inputs)} bits={bits} onToggle={toggle} />}
+          {grid ? <PixelGrid grid={grid} bits={bits} onChange={setBits} /> : <Pins labels={ct.pins(c.label.inputs)} bits={bits} onToggle={toggle} />}
         </div>
         {sequential ? <Clocked c={c} prog={prog.data} inputs={bits} /> : <Evaluated c={c} prog={prog.data} inputs={bits} />}
       </section>
@@ -109,41 +136,35 @@ function Bench({ c, all }: { c: CircuitRow; all: CircuitRow[] }) {
 }
 
 function defaultInputs(c: CircuitRow): number[] {
-  if (isPixelGrid(c.label.inputs)) return [0, 0, 0, 1, 1, 1, 0, 0, 0]
+  const grid = gridOf(c.label.inputs)
+  if (grid) return gridPresets(grid)[0][1]
   return Array(c.nIn).fill(0).map((_, i) => (i === 0 ? 1 : 0))
 }
 
-const GRID_PRESETS: [Key, number[]][] = [
-  ['pg.grid.row', [0, 0, 0, 1, 1, 1, 0, 0, 0]],
-  ['pg.grid.column', [0, 1, 0, 0, 1, 0, 0, 1, 0]],
-  ['pg.grid.diagonal', [1, 0, 0, 0, 1, 0, 0, 0, 1]],
-  ['pg.grid.cross', [0, 1, 0, 1, 1, 1, 0, 1, 0]],
-  ['pg.grid.l', [1, 0, 0, 1, 0, 0, 1, 1, 0]],
-  ['pg.grid.clear', [0, 0, 0, 0, 0, 0, 0, 0, 0]],
-]
-
-function PixelGrid({ bits, onChange }: { bits: number[]; onChange: (b: number[]) => void }) {
+function PixelGrid({ grid, bits, onChange }: { grid: Grid; bits: number[]; onChange: (b: number[]) => void }) {
   const { t } = useI18n()
+  const { rows, cols } = grid
+  const presets = useMemo(() => gridPresets(grid), [rows, cols]) // eslint-disable-line react-hooks/exhaustive-deps
   return (
     <div className="pixels-wrap">
-      <div className="pixels" role="grid" aria-label={t('pg.gridAria')}>
+      <div className="pixels" role="grid" aria-label={t('pg.gridAria', { r: rows, c: cols })} data-cols={cols} style={{ ['--cols' as string]: cols }}>
         {bits.map((b, i) => (
           <button
             key={i}
             className={`px ${b ? 'on' : ''}`}
             aria-pressed={!!b}
-            aria-label={t('pg.pxAria', { r: Math.floor(i / 3), c: i % 3 })}
+            aria-label={t('pg.pxAria', { r: Math.floor(i / cols), c: i % cols })}
             onClick={() => onChange(bits.map((v, j) => (j === i ? (v ? 0 : 1) : v)))}
           />
         ))}
       </div>
       <div className="chips">
-        {GRID_PRESETS.map(([l, p]) => (
+        {presets.map(([l, p]) => (
           <button key={l} className="chip" onClick={() => onChange(p)}>
             {t(l)}
           </button>
         ))}
-        <button className="chip" onClick={() => onChange(Array.from({ length: 9 }, () => (Math.random() < 0.45 ? 1 : 0)))}>
+        <button className="chip" onClick={() => onChange(Array.from({ length: rows * cols }, () => (Math.random() < 0.45 ? 1 : 0)))}>
           {t('pg.grid.random')}
         </button>
       </div>
