@@ -208,7 +208,7 @@ function Equation({ spec, inputs }: { spec: NeuronSpec; inputs?: string[] }) {
   const { t } = useI18n()
   return (
     <div className="equation mono">
-      y = [ {terms.replace(/^\+ /, '') || '0'} ≥ {spec.theta} ]
+      y = [ {terms.replace(/^\+ /, '') || '0'} ≥ {spec.theta < 0 ? `−${-spec.theta}` : spec.theta} ]
       {tr && (
         <span className="tiny muted">
           {' '}
@@ -263,14 +263,17 @@ function NeuronEditor({ spec, onChange }: { spec: NeuronSpec; onChange: (s: Neur
 function NetworkEditor({ net, onChange }: { net: NetState; onChange: (n: NetState) => void }) {
   const hiddenLabels = net.hidden.map((_, i) => `h${i}`)
   const { t } = useI18n()
-  const setHidden = (hidden: NeuronSpec[]) => {
+  const setHidden = (hidden: NeuronSpec[], nIn = net.nIn) => {
     const weights = hidden.map((_, i) => net.out.weights[i] ?? 1)
     const r = thetaRange(weights)
-    onChange({ ...net, hidden, out: { weights, theta: Math.min(r.hi, Math.max(r.lo, net.out.theta)) } })
+    onChange({ ...net, nIn, hidden, out: { weights, theta: Math.min(r.hi, Math.max(r.lo, net.out.theta)) } })
   }
   const setNeuron = (i: number, s: NeuronSpec) => setHidden(net.hidden.map((h, j) => (j === i ? s : h)))
   const setIn = (nIn: number) =>
-    setHidden(net.hidden.map((h) => clampTheta({ weights: Array.from({ length: nIn }, (_, i) => h.weights[i] ?? 0), theta: h.theta })))
+    setHidden(
+      net.hidden.map((h) => clampTheta({ weights: Array.from({ length: nIn }, (_, i) => h.weights[i] ?? 0), theta: h.theta })),
+      nIn,
+    )
   return (
     <div className="editor">
       <div className="editor-row">
