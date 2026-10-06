@@ -58,7 +58,7 @@ Cerebr deploys **no contract that holds funds** and has **no admin keys**. The p
 
 - **Mainnet needs all of:** `--network xlayer`, `PRIVATE_KEY` in the environment, `--yes`, `issuance.confirmed: true` in `launch/config.json`, and a non-loopback RPC. Fork mode requires a loopback RPC that reports itself as anvil and a fork chain id (196 or 31337). The key is never printed or written (an invalid key fails with a generic message, and every error is redacted before printing); state and output files hold only addresses and hashes.
 - **Pinned TapeOut implementations.** The factory, transistor, circuit and opener implementations, and the implementation behind the account proxy's beacon (the native accounts' logic), are compared with the versions we tested; a mismatch stops the run unless `--allow-impl-change`.
-- **Resumable without paying twice.** The tx hash is saved before waiting. On resume, a pending tx without a receipt now **stops the run** (unless the node no longer knows it and nothing is in flight, i.e. it was dropped), and every sending run refuses to start while the wallet has unconfirmed transactions (`pending nonce > latest`). Circuits already on chain are adopted by netlist bytes, mints are topped up only to the deficit, and `keep` is minted once per token (never re-minted after the kept transistors are spent).
+- **Resumable without paying twice.** The tx hash is saved before waiting. On resume, a pending tx without a receipt now **stops the run** (unless the node no longer knows it and nothing is in flight, i.e. it was dropped), and every sending run refuses to start while the wallet has unconfirmed transactions (`pending nonce > latest`). Circuits already onchain are adopted by netlist bytes, mints are topped up only to the deficit, and `keep` is minted once per token (never re-minted after the kept transistors are spent).
 - **No accidental second launch.** A mainnet state marked `done` refuses to send without `--continue-after-done`. With no processor in state, `createCPU` is refused if the mainnet out file exists or the factory already lists a processor created by the deployer, unless `--allow-second-cpu`.
 - **Verification.** Every circuit is checked right after tapeout: netlist bytes, `circuitInfo`, the `TapedOut` event, owner, and `eval`/`step` against the simulator on every input (and every state × input).
 - Optional `scope` in the config must be a CerebrScope bound to the TapeOut factory (checked via `FACTORY()`).
@@ -144,7 +144,9 @@ Read-only checks of the live deployment against every figure in the docs.
 | 4 | Info | README cited "three internal review rounds" and fuzz figures that this document did not yet record; "listed in TapeOut's own app" was not directly verifiable. | **Fixed.** Rounds 2 and 3 recorded here; README cites this document and states the listing rule instead. |
 | 5 | Info | The demo script re-taped a duplicate of catalog #8 and described the old landing page. | **Fixed.** The demo tapes out a new design and follows the current UI; demo transactions are to be disclosed in ISSUANCE §6. |
 
-## 8. Test results (2026-10-06)
+## 8. Test results (round 3, 2026-10-06)
+
+A dated snapshot from round 3; the final audit's results are in [section 10](#10-final-audit-2026-10-06).
 
 | Suite | Result |
 |---|---|
@@ -159,5 +161,27 @@ Read-only checks of the live deployment against every figure in the docs.
 - **Fees are protocol-set.** Quotes are read live; the 0.08 OKB account-open fee dominates launch cost.
 - **Circuits are small by design.** `eval` is a view call; networks of tens to hundreds of gates are practical. Very large circuits may exceed RPC `eth_call` gas caps for `eval` or Scope rendering.
 - **Self-locking accounts.** TapeOut allows sending a circuit NFT into its own account. The dApp offers no transfers, but other tools can do it.
-- **Names of custom designs.** A circuit without a CerebrScope label shows its catalog name or "Circuit #N"; the Studio offers onchain naming right after tape-out. All 15 current circuits are labelled.
+- **Names of custom designs.** A circuit without a CerebrScope label shows its catalog name or "Circuit #N"; the Studio offers onchain naming right after tape-out. All 16 current circuits are labelled.
 - **This review is internal.** It is not a substitute for a professional audit of either Cerebr or TapeOut.
+
+## 10. Final audit (2026-10-06)
+
+| Check | Result |
+|---|---|
+| `sdk`: `npm test` | 90 / 90 |
+| `forge test` (no fork) | 43 unit and fuzz tests pass (3 fork-only tests skipped) |
+| Fork suites against the real TapeOut contracts | CerebrAgentFork 5 / 5, NeuralArenaFork 9 / 9, CerebrScope 15 / 15 |
+| Contract source | CerebrScope, NeuralArena and CerebrAgent all Sourcify `exact_match` |
+| CerebrAgent decisions | every stored decision replays `true` against `eval(8, inputs)` |
+| Onchain names | all 16 circuits labelled in CerebrScope (#15 "Vote-with-veto neuron", #16 "Neural Arena Bot") |
+
+No critical, high or medium findings.
+
+| # | Severity | Finding | Resolution |
+|---|---|---|---|
+| 1 | Low | Keeper Dockerfile file modes. | **Fixed.** |
+| 2 | Low | Keeper compose file had no resource limits. | **Fixed.** |
+| 3 | Low | Keeper systemd unit had no restart limit. | **Fixed.** |
+| 4 | Low | CerebrScope `clearLabel` lacks `_requireCPU`, so anyone can emit spoofed `LabelSet` events for fake processors (no effect on real processors' labels). | **Accepted.** The contract is deployed and immutable; indexers should filter on real CPUs. |
+| 5 | Low | The keeper broadcasts before persisting its state, and replaces a stuck transaction without re-simulating it. | **Accepted.** The worst case is bounded gas waste from the 0.02 OKB gas-only wallet. |
+| 6 | Low | The keeper's key is visible through `docker inspect` (passed with `env_file`). | **Accepted.** Docker Compose secrets are recommended. |

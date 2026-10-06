@@ -121,9 +121,9 @@ ARENA_FORK_RPC=http://127.0.0.1:8603 forge test --match-path 'test/arena/*' -vv 
 * **Unit tests** cover constructor validation, game flow, events and replayable receipts, every revert, and the low-gas grief guard. Eleven misbehaving circuits (revert, gas burn, empty, long, raw garbage, 1 MB return bomb, bad offset, multi-hot, zero, padding bit, occupied cell) each fall back and still finish the game. A Solidity NAND interpreter runs the real netlist: 2,000 fuzz boards match the Solidity reference policy, the full game tree through the contract has 0 human wins, and 500 random games never brick.
 * **Fork tests** run against the real Cerebr processor. The creator wallet tapes out the bot (`circuitInfo` reports 590 gates, the netlist is stored byte-exact, 404 NAND are left). Then: 1,000 fuzz boards from `eval` match the reference, the full game tree through the real circuit has **457 games, 0 human wins**, scripted bot-win and draw games play out, invalid moves revert, 64 random games never brick, a fresh CPU goes from factory to mint to tapeout to play, and wrong circuits are rejected.
 
-## Mainnet rollout plan (not executed)
+## Mainnet rollout plan (executed 2026-10-06)
 
-Everything below was rehearsed on an anvil fork with the creator wallet impersonated. Only the user signs. The keys come from the CLI (`--account` / `--ledger`), never from a file.
+Everything below was rehearsed on an anvil fork with the creator wallet impersonated, then signed on mainnet by the user on 2026-10-06 (results in [Live on X Layer mainnet](#live-on-x-layer-mainnet-2026-10-06)). The inline values (994 NAND, next id 15, 404 left, ~0.0587 OKB) are the pre-rollout readings, kept as the plan was written. Only the user signs. The keys come from the CLI (`--account` / `--ledger`), never from a file.
 
 ```bash
 RPC=https://rpc.xlayer.tech
@@ -132,7 +132,7 @@ T=0x84b5a5c6fE305319458113b87c09a2A241427D2D      # Cerebr transistors
 S=0x2640F8E89b2B107919568FFd42dFb46A1866e528      # CerebrScope
 CREATOR=0xc742AdA2872a042dD36D2E706907b4036968960C
 
-# 0. preflight: creator NAND >= 590 (994 today), fee 0.0013 OKB, the next id (15 today, so the bot becomes #16)
+# 0. preflight: creator NAND >= 590 (994 before the rollout), fee 0.0013 OKB, the next id (15 before the rollout, so the bot became #16)
 cast call $T "balanceOf(address,uint256)(uint256)" $CREATOR 0 --rpc-url $RPC
 cast call $C "TAPEOUT_FEE()(uint256)" --rpc-url $RPC
 cast call $C "nextId()(uint256)" --rpc-url $RPC
@@ -155,12 +155,12 @@ cast send $S "setLabel(address,uint256,(string,string,string[],string[]))" $C $I
 
 | Step | Transistors | OKB (gas at 0.02 gwei) |
 |---|---|---|
-| Tape out | 590 NAND burned from the creator's 994 (404 left); already minted, so no new mint | 0.0013 fee + ~0.00004 gas |
+| Tape out | 590 NAND burned from the creator's 994 (404 left; pre-rollout figures); already minted, so no new mint | 0.0013 fee + ~0.00004 gas |
 | Deploy NeuralArena | none | ~0.000055 |
 | setLabel | none | ~0.00002 |
-| **Total** | **590 NAND** | **~0.00142 OKB**; the creator holds ~0.0587 OKB |
+| **Total** | **590 NAND** | **~0.00142 OKB**; the creator held ~0.0587 OKB before the rollout |
 
-After the rollout, record the circuit id, arena address and transaction hashes in `launch/out/196.json` and the README, and verify the arena source on Sourcify as was done for CerebrScope.
+After the rollout, record the circuit id, arena address and transaction hashes in `launch/out/196.json` and the README, and verify the arena source on Sourcify as was done for CerebrScope. The label actually written onchain in step 3 is a later wording of the one above, with pin names `bot0`/`human0` … `bot8`/`human8` (read it with `labelOf(C, 16)` on CerebrScope).
 
 ## Live on X Layer mainnet (2026-10-06)
 

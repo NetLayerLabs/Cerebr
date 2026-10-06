@@ -82,7 +82,7 @@ Everything below is live on X Layer mainnet (chain 196) and was checked by direc
 | Agent keeper wallet (gas only) | [`0x09a00521Ff00407f81963FcE5D4D20917289902A`](https://www.okx.com/web3/explorer/xlayer/address/0x09a00521Ff00407f81963FcE5D4D20917289902A) |
 | TapeOut factory | [`0x1f09daefa827f02cbb40967cc91b259763760761`](https://www.okx.com/web3/explorer/xlayer/address/0x1f09daefa827f02cbb40967cc91b259763760761) |
 | TapeOut account opener | [`0x536add8f30f03b69f6fbf29d425a816a0dc50106`](https://www.okx.com/web3/explorer/xlayer/address/0x536add8f30f03b69f6fbf29d425a816a0dc50106) |
-| TapeOut drops (Genesis Drop #1) | [`0xf037a5543f19619a2291009ae1542b71d50ff9b9`](https://www.okx.com/web3/explorer/xlayer/address/0xf037a5543f19619a2291009ae1542b71d50ff9b9) |
+| Drops (Genesis Drop #1): an ownerless instance of TapeOut's drops contract, deployed by Cerebr | [`0xf037a5543f19619a2291009ae1542b71d50ff9b9`](https://www.okx.com/web3/explorer/xlayer/address/0xf037a5543f19619a2291009ae1542b71d50ff9b9) |
 | TapeOut circuit market | [`0xd89f358c48a7B632c9845af2a02A32eB90DD75DB`](https://www.okx.com/web3/explorer/xlayer/address/0xd89f358c48a7B632c9845af2a02A32eB90DD75DB) |
 
 **Key transactions**
@@ -94,8 +94,11 @@ Everything below is live on X Layer mainnet (chain 196) and was checked by direc
 | Brain wallet of circuit #5 opened | [0x8781…dad3](https://www.okx.com/web3/explorer/xlayer/tx/0x8781ed8467f4cef1d10dce3ec48cf1da99cfea615b250da8a352eda7a538dad3) → account [`0x9E1d…3166`](https://www.okx.com/web3/explorer/xlayer/address/0x9E1d3eC3B3D0fe84997df0E065a96a7c93c13166) |
 | CerebrScope deployed | [0x17d0…9cfd](https://www.okx.com/web3/explorer/xlayer/tx/0x17d01f5dbdc49a9dc88d6fc2f7b347dd55bc903e17fa70cfd2d34ea036359cfd) |
 | Onchain names for circuits #1-#14 | 14 `setLabel` transactions on CerebrScope, written by [`sdk/scripts/label-catalog.ts`](sdk/scripts/label-catalog.ts) |
-| Real-wallet test through the live app | mint 10 NAND [0x1fb9…3f2a](https://www.okx.com/web3/explorer/xlayer/tx/0x1fb9dc0eb048bd2d88f985694dc7d7005235dfd7ff27790d44fd4d474af53f2a), tape out #15 [0x4133…1c15](https://www.okx.com/web3/explorer/xlayer/tx/0x413387037233847f2d2dd24c2bfa0733a5300d93e4e4f195d3ac9bd4ca1f1c15), name it [0xc5ff…95fb](https://www.okx.com/web3/explorer/xlayer/tx/0xc5ffa319abb3f5dd0202c4b194efaab71ab6f22d677074050d1403d0f33f95fb) |
+| Real-wallet test through the live app | mint 10 NAND [0x1fb9…3f2a](https://www.okx.com/web3/explorer/xlayer/tx/0x1fb9dc0eb048bd2d88f985694dc7d7005235dfd7ff27790d44fd4d474af53f2a), tape out #15 [0x4133…1c15](https://www.okx.com/web3/explorer/xlayer/tx/0x413387037233847f2d2dd24c2bfa0733a5300d93e4e4f195d3ac9bd4ca1f1c15), name it [0xc5ff…95fb](https://www.okx.com/web3/explorer/xlayer/tx/0xc5ffa319abb3f5dd0202c4b194efaab71ab6f22d677074050d1403d0f33f95fb), relabel it "Vote-with-veto neuron" [0x2778…099a](https://www.okx.com/web3/explorer/xlayer/tx/0x277868e6de15edc615d8dd963074018fb559470e15d27daac193089f17f8099a) (block 72,516,013) |
 | NeuralArena bot taped out (#16, 590 NAND) | [0x0867…6f78](https://www.okx.com/web3/explorer/xlayer/tx/0x0867ed331fa75965a70facd01b0a0f0f456c9c0be33b4e0f5787f5eec70b6f78), named [0x8ba8…f65c](https://www.okx.com/web3/explorer/xlayer/tx/0x8ba86cbbad574129c4060c19d7f9be7a7148810ef01c7a4b4d2913e6c2b7f65c) |
+| Drops contract deployed (TapeOut's published drops bytecode, ownerless) | [0xd0f4…8e02](https://www.okx.com/web3/explorer/xlayer/tx/0xd0f4367fc525a3500658953c334adafbe490b16040e71cdbab6f8ad3bfcb8e02) (block 72,516,039) |
+| Genesis Drop #1 created (400 NAND, 16 per claim) | [0x2d7c…8f20](https://www.okx.com/web3/explorer/xlayer/tx/0x2d7c052914b7e7a441b721ed025ce7e9bf832fb9804b85b885e6160ab1598f20) (block 72,516,049) |
+| First Genesis Drop claim (Cerebr team test wallet, disclosed, 16 NAND) | [0x4d18…2db6](https://www.okx.com/web3/explorer/xlayer/tx/0x4d186077dfab5eb3f5c25e0876d549ef9367ac1ac385105939928cde91ec2db6) (block 72,527,608) |
 | NeuralArena deployed | [0xd794…4748](https://www.okx.com/web3/explorer/xlayer/tx/0xd794960051024427817ca50db7025090e2dddf6ab664050caf184fd027d34748) |
 | CerebrAgent deployed | [0xa9aa…a31f](https://www.okx.com/web3/explorer/xlayer/tx/0xa9aaacef0f3af99dc0046a67d5e3132879c65301415fca4b10202d617e15a31f) |
 | Agent keeper funded (0.02 OKB) | [0x0905…263a](https://www.okx.com/web3/explorer/xlayer/tx/0x0905fa6ea415e31ccd8e473ff3643620835cda2946fcdd32c10ec850aaa3263a) |
@@ -116,9 +119,9 @@ State at time of writing: **16 circuits** (`nextId()` = 16), **1,251** transisto
 | Judging criterion | Cerebr |
 |---|---|
 | **Application innovation** | A neural compiler for TapeOut: gates become neurons, `REF` becomes the connections between them, `eval` becomes inference. A spiking neuron runs on LATCH state with `step()`. In-browser training that finds the hidden layer when one neuron is not enough. An autonomous agent whose policy is a taped-out circuit, and a game opponent that is a 590-gate network. |
-| **Depth of TapeOut integration** | Uses every TapeOut primitive: `createCPU`, `mint` (NAND and LATCH), `tapeout`, `REF`, `eval`, `step`, the circuit NFTs, native brain wallets (`opener.open`, `accountOf`), the drops contract and the circuit marketplace. Two of our contracts call `eval()` from inside a transaction. Every behaviour was verified on a mainnet fork, then on mainnet ([TAPEOUT.md](TAPEOUT.md)). |
+| **Depth of TapeOut integration** | Uses every TapeOut primitive: `createCPU`, `mint` (NAND and LATCH), `tapeout`, `REF`, `eval`, `step`, the circuit NFTs, native brain wallets (`opener.open`, `accountOf`), the drops contract (an ownerless instance of TapeOut's published bytecode, deployed by Cerebr) and the circuit marketplace. Two of our contracts call `eval()` from inside a transaction. Every behaviour was verified on a mainnet fork, then on mainnet ([TAPEOUT.md](TAPEOUT.md)). |
 | **Product completeness and UX** | A landing page whose every figure is read live from X Layer and a 7-view dApp (Processor, Circuit Studio, Train, Inference, Arena, Gallery, Agent). Two languages, two themes, mobile wallet deep links, simulated writes and exact fee quotes. Plus an SDK, three verified contracts, a launch runbook and a production keeper service. |
-| **Asset issuance design** | One asset, the transistor: fixed supply and price, burned by use, reuse through `REF` is free. No curve, no presale, no reserved allocation; the creator's mints are disclosed. A Genesis Drop hands 400 NAND to new builders, 16 each. See [Asset issuance](#asset-issuance). |
+| **Asset issuance design** | One asset, the transistor: fixed supply and price, burned by use, reuse through `REF` is free. No curve, no presale, no reserved allocation; the creator's mints are disclosed. A Genesis Drop of 400 NAND hands new builders 16 each; the one claim so far is our own disclosed test. See [Asset issuance](#asset-issuance). |
 | **Quality of X Layer integration** | Native OKB fees, OKX Wallet first (with deep links into the OKX and MetaMask apps on mobile), OKX Explorer links throughout, batched reads against the public X Layer RPC, gas from `eth_estimateGas`, and ~1-second blocks that make a live tape-out-and-test loop and a 10-minute agent practical. Handles X Layer specifics such as `eth_call` seeing a basefee of 0. |
 | **User growth potential** | A first neuron costs two transactions; the Genesis Drop pays the transistors. Every taped-out neuron is a public building block that any team on any TapeOut processor can `REF` for free. Circuits can be listed and bought on the TapeOut market. The Arena and Agent give non-builders a reason to visit. |
 | **Contract security and economic model** | No custody. Our three contracts have no admin and no payable functions, and their source is verified. Gas-capped inference with strict decoding, so a bad circuit can never block a game or the agent. The keeper is permissionless and holds only gas money. Internal review rounds, fuzzing and fork tests ([AUDIT.md](AUDIT.md), an internal review, not a third-party audit). |
@@ -131,7 +134,7 @@ The app at [`/app`](https://usecerebr.vercel.app/app) talks only to X Layer main
 
 ![Processor view](media/processor.png)
 
-**Genesis Drop**: drop #1 on TapeOut's ownerless drops contract hands out 400 NAND, 16 per address, one claim each. The app reads the drop live, simulates the claim, then sends the claimer to the Studio with a 16-NAND neuron that is not onchain yet (picked from 10, so claimers do not all copy one circuit). A first tape-out then costs only TapeOut's fee.
+**Genesis Drop**: drop #1, on an ownerless instance of TapeOut's drops contract deployed by Cerebr, hands out 400 NAND, 16 per address, one claim each. The app reads the drop live, simulates the claim, then sends the claimer to the Studio with a 16-NAND neuron that is not onchain yet (picked from 10, so claimers do not all copy one circuit). A first tape-out then costs only TapeOut's fee.
 
 **Circuit Studio**: pick a catalog circuit, design a threshold neuron with a toggle per synapse and a threshold slider, or compose a network from taped-out neurons. The netlist, gate count, cost and full truth table update live. Taping out mints any missing transistors, tapes the circuit out and writes its name onchain.
 
@@ -284,7 +287,7 @@ It runs on our VPS as its own Docker container, isolated from the other services
 | `act()`, steady state | ~128,000-160,000 | ~0.0000026-0.0000032 |
 | Per day at 10-minute cycles | | ~0.00037 |
 
-The keeper's 0.02 OKB lasts about 50 days. Everything else, from the input mapping to verification commands, is in [AGENT.md](AGENT.md) and [agent/README.md](agent/README.md).
+The keeper's 0.02 OKB lasts about 51 days. Everything else, from the input mapping to verification commands, is in [AGENT.md](AGENT.md) and [agent/README.md](agent/README.md).
 
 ## NeuralArena: play a neural network
 
@@ -317,7 +320,7 @@ Every circuit is compiled by the SDK, checked against its reference model on eve
 | #12 | Line Detector (REF-composed) | 9 → 3 | 11 REF | 47 | [0x65fa…48ea](https://www.okx.com/web3/explorer/xlayer/tx/0x65fa37ad39f3d62ff4088ef352904ec9ee8520ec7ada0326652f13cccc2648ea) |
 | #13 | 2-bit Adder | 4 → 3 | 14 NAND | 14 | [0xdbbe…f3f3](https://www.okx.com/web3/explorer/xlayer/tx/0xdbbec9cd6b0909f3e505e3927f6f9e8e3f60e63039fd2aaae9ac01a141dbf3f3) |
 | #14 | Integrate-and-Fire Neuron | 2 → 1 | 17 NAND + 2 LATCH | 19 | [0x91e5…7016](https://www.okx.com/web3/explorer/xlayer/tx/0x91e5a6585576e608318a33d7d616b0e6fe769bce3aa3510b9e08782ca11d7016) |
-| #15 | Studio test neuron (y = [x0 + x1 + x2 - x3 ≥ 2]) | 4 → 1 | 16 NAND | 16 | [0x4133…1c15](https://www.okx.com/web3/explorer/xlayer/tx/0x413387037233847f2d2dd24c2bfa0733a5300d93e4e4f195d3ac9bd4ca1f1c15) |
+| #15 | Vote-with-veto neuron (y = [x0 + x1 + x2 - x3 ≥ 2]), taped out through the Studio in the real-wallet test | 4 → 1 | 16 NAND | 16 | [0x4133…1c15](https://www.okx.com/web3/explorer/xlayer/tx/0x413387037233847f2d2dd24c2bfa0733a5300d93e4e4f195d3ac9bd4ca1f1c15) |
 | #16 | Neural Arena Bot (7-layer tic-tac-toe network) | 18 → 9 | 590 NAND | 590 | [0x0867…6f78](https://www.okx.com/web3/explorer/xlayer/tx/0x0867ed331fa75965a70facd01b0a0f0f456c9c0be33b4e0f5787f5eec70b6f78) |
 
 #1-#14 were taped out by the launch runbook; #15 through the live app's Circuit Studio during the real-wallet test; #16 is the NeuralArena bot. All 16 are owned by the deployment wallet (checked onchain) and named onchain in CerebrScope. Gate costs are exact: a circuit burns exactly its NAND and LATCH count in transistors, and `REF`s burn nothing.
@@ -329,7 +332,7 @@ flowchart LR
     subgraph TO ["TapeOut on X Layer (chain 196)"]
       F["Factory<br/>createCPU()"]
       OP["Opener<br/>open() · accountOf()"]
-      DR["Drops<br/>Genesis Drop #1"]
+      DR["Drops (TapeOut bytecode,<br/>deployed by Cerebr)<br/>Genesis Drop #1"]
       MK["Circuit market<br/>list · buy"]
     end
     subgraph CPU ["Cerebr processor"]
@@ -387,14 +390,14 @@ Cerebr has no token of its own. **The asset is the Cerebr processor's transistor
 
 Why these terms: a neural circuit uses many gates, so cheap gates keep a community neuron at a fraction of a cent in transistors (a 150-gate network is about 0.0015 OKB plus fees), while a 1,000,000 cap leaves room for thousands of circuits. Burns never free room under the cap, so transistors only get scarcer with use, and `REF` makes reusing a taped-out neuron free.
 
-**Genesis Drop.** 400 NAND sit in drop #1 on TapeOut's ownerless drops contract: 16 per address, one claim each, enough for a first neuron. It moves transistors to new builders through a capped, transparent onchain drop instead of trades.
+**Genesis Drop.** Drop #1 was funded with 400 NAND on an ownerless instance of TapeOut's drops contract, deployed by Cerebr from TapeOut's published bytecode: 16 per address, one claim each, enough for a first neuron. It moves transistors to new builders through a capped, transparent onchain drop instead of trades. At time of writing (block 72,529,688) it has **1 claim and 384 NAND remaining**. That claim is a Cerebr team wallet, [`0xcd0a…3c02`](https://www.okx.com/web3/explorer/xlayer/address/0xcd0a2370f2dc12c1802707b7d9ab3fec891e3c02), testing the claim flow on mainnet in [0x4d18…2db6](https://www.okx.com/web3/explorer/xlayer/tx/0x4d186077dfab5eb3f5c25e0876d549ef9367ac1ac385105939928cde91ec2db6) (block 72,527,608), disclosed here; the other 24 claims are open to the public.
 
-**Disclosed creator activity** (no trades; the only transfer is the 400-NAND Genesis Drop deposit; every mint a primary mint at the public price):
+**Disclosed creator activity** (no trades; the creator's only transfer is the 400-NAND Genesis Drop deposit; every mint a primary mint at the public price):
 
 - Launch: 1,139 NAND + 102 LATCH minted; 141 burned into the 14 catalog circuits; the unit price came back to the creator through `withdraw()`.
-- 2026-10-06 real-wallet test of the live app: 10 NAND minted and 16 burned into circuit #15.
-- 2026-10-06: 590 NAND burned into circuit #16 (the NeuralArena bot) and 400 NAND deposited into the Genesis Drop.
-- The deployment wallet holds the rest: **4 NAND and 100 LATCH** at time of writing (747 burned in total, 400 in the drop).
+- 2026-10-06 real-wallet test of the live app: 10 NAND minted and 16 burned into circuit #15, later renamed "Vote-with-veto neuron" onchain ([0x2778…099a](https://www.okx.com/web3/explorer/xlayer/tx/0x277868e6de15edc615d8dd963074018fb559470e15d27daac193089f17f8099a)).
+- 2026-10-06: 590 NAND burned into circuit #16 (the NeuralArena bot); the drops contract deployed ([0xd0f4…8e02](https://www.okx.com/web3/explorer/xlayer/tx/0xd0f4367fc525a3500658953c334adafbe490b16040e71cdbab6f8ad3bfcb8e02)) and 400 NAND deposited into the Genesis Drop ([0x2d7c…8f20](https://www.okx.com/web3/explorer/xlayer/tx/0x2d7c052914b7e7a441b721ed025ce7e9bf832fb9804b85b885e6160ab1598f20)).
+- The deployment wallet holds the rest: **4 NAND and 100 LATCH** at time of writing (747 burned in total, 400 deposited in the drop).
 
 No self-trading and no wash trading: Cerebr's wallets never buy on the marketplace, and the app enforces it. Full design, alternatives and the cost of every circuit: [ISSUANCE.md](ISSUANCE.md).
 

@@ -3,15 +3,15 @@
 This is the runbook for putting Cerebr live on X Layer mainnet: one processor (CPU) created through the TapeOut factory, plus the neural-circuit library taped out on it. A single script does the work, `sdk/scripts/launch.ts`:
 
 1. **Preflight.** It checks the chain id and confirms TapeOut's implementations still match the versions we tested (TapeOut is upgradeable): the factory, transistor and circuit beacons, the opener's account proxy, and the implementation behind that proxy's beacon (`pins.accountBeaconImpl`). It reads the live fees, checks the wallet balance, prints the plan with its exact OKB cost, and waits for `--yes` before sending anything.
-2. **`createCPU`.** It creates the processor through the TapeOut factory. The supply cap and unit price go on chain in this transaction.
+2. **`createCPU`.** It creates the processor through the TapeOut factory. The supply cap and unit price go onchain in this transaction.
 3. **Mint.** It mints the NAND and LATCH transistors that the circuits will burn, plus the configured `keep` (minted once per token).
 4. **Tape out.** It tapes out the 14 catalog circuits in dependency order. Before each REF-composed network, the REF placeholders are filled in with the real circuit ids of the neurons it reuses.
-5. **Verify.** Each circuit is checked on chain right after its tapeout. The stored netlist bytes must match the compiled ones, and `circuitInfo` and the `TapedOut` event must match the simulator. `eval` is compared with the simulator on every possible input; for the spiking neuron, `step` is compared on every state and input pair.
+5. **Verify.** Each circuit is checked onchain right after its tapeout. The stored netlist bytes must match the compiled ones, and `circuitInfo` and the `TapedOut` event must match the simulator. `eval` is compared with the simulator on every possible input; for the spiking neuron, `step` is compared on every state and input pair.
 6. **Open an account.** It opens the TapeOut native account ("brain wallet") of the flagship circuit.
 7. **Withdraw.** It withdraws the creator's mint revenue. You are the creator, so your own mint payments come back to you.
 8. **Write the output.** The result goes to `launch/out/196.json`, which the dApp reads.
 
-The run is **idempotent and resumable**. `launch/state.196.json` is rewritten after every step, and also *before* the script waits on each transaction. If the run is interrupted (Ctrl-C, a dropped RPC, a closed laptop), run the same command again. It finishes the pending transaction, finds any circuits that already landed on chain (by matching netlist bytes), and carries on without paying for anything twice. This was tested on the fork by killing the run during a mint and again during a tapeout.
+The run is **idempotent and resumable**. `launch/state.196.json` is rewritten after every step, and also *before* the script waits on each transaction. If the run is interrupted (Ctrl-C, a dropped RPC, a closed laptop), run the same command again. It finishes the pending transaction, finds any circuits that already landed onchain (by matching netlist bytes), and carries on without paying for anything twice. This was tested on the fork by killing the run during a mint and again during a tapeout.
 
 > Fork and mainnet can share chain id 196. Fork runs write `state.<chainId>.fork.json` and `out/<chainId>.fork.json`, and mainnet runs write `state.196.json` and `out/196.json`, so a rehearsal can never be mistaken for the real launch. Fork mode also accepts an anvil started with `--chain-id 31337`, the dApp's local-fork id, so one fork can serve the launch script, `npm run sync` and the dApp (fork records always map to chain 31337 in the app). Fork records are git-ignored; mainnet records are committed.
 >
@@ -62,16 +62,18 @@ All 14 circuits were taped out once each and every one passed the onchain checks
 
 **After launch (2026-10-06):**
 - Catalog circuits #1-#14 named onchain in CerebrScope by `sdk/scripts/label-catalog.ts` (14 `setLabel` transactions).
-- Real-wallet test of the live app's Circuit Studio by the deployment wallet: mint 10 NAND ([0x1fb9…3f2a](https://www.okx.com/web3/explorer/xlayer/tx/0x1fb9dc0eb048bd2d88f985694dc7d7005235dfd7ff27790d44fd4d474af53f2a)), tape out a new design as **#15** "Studio test neuron", y = [x0 + x1 + x2 - x3 ≥ 2], 4 → 1, 16 NAND ([0x4133…1c15](https://www.okx.com/web3/explorer/xlayer/tx/0x413387037233847f2d2dd24c2bfa0733a5300d93e4e4f195d3ac9bd4ca1f1c15)), and name it onchain ([0xc5ff…95fb](https://www.okx.com/web3/explorer/xlayer/tx/0xc5ffa319abb3f5dd0202c4b194efaab71ab6f22d677074050d1403d0f33f95fb)).
+- Real-wallet test of the live app's Circuit Studio by the deployment wallet: mint 10 NAND ([0x1fb9…3f2a](https://www.okx.com/web3/explorer/xlayer/tx/0x1fb9dc0eb048bd2d88f985694dc7d7005235dfd7ff27790d44fd4d474af53f2a)), tape out a new design as **#15** (first named "Studio test neuron"), y = [x0 + x1 + x2 - x3 ≥ 2], 4 → 1, 16 NAND ([0x4133…1c15](https://www.okx.com/web3/explorer/xlayer/tx/0x413387037233847f2d2dd24c2bfa0733a5300d93e4e4f195d3ac9bd4ca1f1c15)), and name it onchain ([0xc5ff…95fb](https://www.okx.com/web3/explorer/xlayer/tx/0xc5ffa319abb3f5dd0202c4b194efaab71ab6f22d677074050d1403d0f33f95fb)).
 - State after that: `minted()` 1,251, 157 burned (141 into #1-#14, 16 into #15), creator holds 994 NAND + 100 LATCH, `owed()` 0.0001 OKB (not withdrawn), circuits #1-#15 all owned by the creator and all labelled. These transactions are not in `launch/out/196.json`, which records the launch run only. Disclosed in [ISSUANCE.md](ISSUANCE.md) §6.
+- Circuit #15 relabelled "Vote-with-veto neuron" in CerebrScope ([0x2778…099a](https://www.okx.com/web3/explorer/xlayer/tx/0x277868e6de15edc615d8dd963074018fb559470e15d27daac193089f17f8099a), block 72,516,013).
+- Genesis Drop: the creator deployed an ownerless instance of TapeOut's drops contract from TapeOut's published bytecode, [`0xf037a5543f19619a2291009ae1542b71d50ff9b9`](https://www.okx.com/web3/explorer/xlayer/address/0xf037a5543f19619a2291009ae1542b71d50ff9b9) ([0xd0f4…8e02](https://www.okx.com/web3/explorer/xlayer/tx/0xd0f4367fc525a3500658953c334adafbe490b16040e71cdbab6f8ad3bfcb8e02), block 72,516,039), approved it ([0x2fba…1eaf](https://www.okx.com/web3/explorer/xlayer/tx/0x2fbaaaec60be0aef742d758e1b51d1cb5212d9d83c09639f6a1afae5c0791eaf)), created drop #1 with 400 NAND at 16 per claim ([0x2d7c…8f20](https://www.okx.com/web3/explorer/xlayer/tx/0x2d7c052914b7e7a441b721ed025ce7e9bf832fb9804b85b885e6160ab1598f20), block 72,516,049) and revoked the approval ([0x4242…f708](https://www.okx.com/web3/explorer/xlayer/tx/0x42424e51b9044008a39f98c4506241e746fad4853a7a9100fb05aec5d851f708)). Circuit #16, the NeuralArena bot, burned 590 NAND ([0x0867…6f78](https://www.okx.com/web3/explorer/xlayer/tx/0x0867ed331fa75965a70facd01b0a0f0f456c9c0be33b4e0f5787f5eec70b6f78), [ARENA.md](ARENA.md)). The creator now holds 4 NAND + 100 LATCH.
 
-## Issuance terms (disclosed on chain at `createCPU`)
+## Issuance terms (disclosed onchain at `createCPU`)
 
 | Term | Value | Notes |
 |---|---|---|
 | Processor name | `Cerebr` | `launch/config.json` → `cpu.name` |
 | Symbol | `CRBR` | `cpu.symbol` |
-| Story | "Cerebr is an on-chain neural processor. Its transistors are synapses …" | `cpu.story`, stored on chain |
+| Story | "Cerebr is an on-chain neural processor. Its transistors are synapses …" | `cpu.story`, stored onchain |
 | Transistor supply cap | **1,000,000** | shared by NAND (id 0) and LATCH (id 1); burns don't free supply |
 | Unit price | **0.00001 OKB** | creator revenue, pulled with `withdraw()` |
 | TapeOut protocol fee | 0.00066 OKB per `mint()` call | set by TapeOut, read live |

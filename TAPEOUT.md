@@ -37,7 +37,7 @@ At the fork block there were 275 CPUs. CPU #0 is TapeOut's own `OnlyTestXLayer` 
 
 ## 3. Transistors (ERC-1155, one per CPU)
 
-* Token ids are verified on-chain: `NAND() = 0` and `LATCH() = 1`. `mint` with any other id reverts `"bad id"`, and an amount of 0 reverts `"zero"`.
+* Token ids are verified onchain: `NAND() = 0` and `LATCH() = 1`. `mint` with any other id reverts `"bad id"`, and an amount of 0 reverts `"zero"`.
 * `mint(uint256 id, uint256 amount) payable`: requires `msg.value >= amount*mintPrice + protocolFee`, otherwise it reverts `"insufficient"`. The **protocolFee is a flat 0.00066 OKB per mint call, not per transistor.** Payment is pull-based: `owed(creator) += amount*mintPrice` and `owed(protocolWallet) += protocolFee`. **Any excess is stranded in the contract** (owed to nobody). The creator collects with `withdraw()`, which was verified to pay out exactly `owed`.
   `event Minted(address indexed to, uint256 indexed id, uint256 amount, uint256 paid)`, where `paid` is the full msg.value. Gas: 180k for the first mint on a CPU and about 69k afterwards (a 40,000-transistor mint costs the same as a 4-transistor one).
 * `supplyCap` is **shared by NAND and LATCH**, and `minted()` counts both. Going over the cap reverts `"supply cap"`. Burns do not reduce `minted`.
@@ -53,7 +53,7 @@ At the fork block there were 275 CPUs. CPU #0 is TapeOut's own `OnlyTestXLayer` 
 * Ids start at **1**. **CORRECTED:** `nextId()` returns the **last assigned id**, which equals the circuit count, not the next id. A fresh CPU returns 0, and returns 1 after the first tapeout.
 * `circuitInfo(id) returns (uint32 nIn, uint32 nOut, uint32 nState, uint32 gateCount)`. `gateCount` and `nState` are **flattened through REFs**. For example, a circuit with 2 REFs to a 4-gate XOR reports gateCount 8. A non-existent id reverts `"no circuit"`.
 * `netlist(id)` returns the bytes exactly as submitted. `ownerOf`, `balanceOf`, `transferFrom`, `safeTransferFrom` and approvals work. ERC-721 and Metadata are supported; Enumerable is not.
-  **`tokenURI(id)` returns `""`.** TapeOut has no on-chain metadata on X Layer, and CerebrScope fills that gap.
+  **`tokenURI(id)` returns `""`.** TapeOut has no onchain metadata on X Layer, and CerebrScope fills that gap.
 * Views: `TAPEOUT_FEE()`, `TREASURY()`, `transistors()`, `transistorsContract()`, `factory()`, `name()`, `symbol()` (= cpuName/cpuSymbol), plus `sweepFees()`.
 
 ### 4.1 Netlist rules (all verified with reverting tapeouts)
@@ -191,7 +191,7 @@ The hackathon voids self-trading (wash trading). **Cerebr will never trade with 
 
 Verified on 2026-10-06 against mainnet reads, TapeOut's live client, and an anvil fork at block 72,514,975 (`anvil --fork-url https://rpc.xlayer.tech --chain-id 196 --auto-impersonate --port 8601`). Nothing was broadcast.
 
-### 10.1 TapeOut has no drops contract on X Layer
+### 10.1 TapeOut has no shared drops contract on X Layer
 
 * TapeOut's drops contract (the "Airdrop" or 空投 pool) exists **only on BNB Chain**: `0x7Fd055496b638aD81f58B33Fd04d6e90bbC2a672` (chainId 56, `factory()` = `0x68224F…F7e2`, `nextDropId()` = 131 on 2026-10-06). It is not a proxy: all three EIP-1967 slots are zero. TapeOut describes it as having no owner, no upgrade path, no pause and no fee.
 * Evidence that X Layer has none:
@@ -200,7 +200,7 @@ Verified on 2026-10-06 against mainnet reads, TapeOut's live client, and an anvi
   3. `cast code 0x7Fd0…a672 --rpc-url https://rpc.xlayer.tech` returns `0x`.
   4. A `DropCreated` topic scan (`0x75fa255e…c3f8`) over all of X Layer from the factory block 70,995,047 to 72,514,406 matched 0 logs from any contract. It used TapeOut's `/rpc-xlayer` log node with 10k-block ranges, and the same scan found 298 `CPUCreated` logs, which shows the scan works.
 * TapeOut publishes the contract's creation code in its client (`/assets/artifacts-BZhnQij0.js`, `Airdrop.{abi,bytecode}`, used by its "DeployAirdrop" page). Its only constructor argument is the factory. **When deployed on the fork with the BSC factory as the argument, it reproduced the BSC runtime byte for byte**, so it is the same contract. Deployed with the X Layer factory `0x1f09…0761`, it works unchanged against X Layer CPUs. The runtime codehash is `0xcda21775…229d` for the X Layer instance and `0x5d887615…454a` for BSC. The creation code hash is `0xe461553c…6c04`.
-* **To run a Genesis Drop on X Layer, Cerebr must deploy this exact contract once** (`deployDrops()`, 1,346,828 gas), because no shared instance exists. TapeOut's own UI will not show X Layer drops, since its drops page reads chain 56 only. Cerebr's app lists them with `listDrops()`.
+* **To run a Genesis Drop on X Layer, Cerebr had to deploy this exact contract once** (`deployDrops()`, 1,346,828 gas), because no shared instance exists. It did so on 2026-10-06: the Cerebr creator deployed the ownerless instance [`0xf037a5543f19619a2291009ae1542b71d50ff9b9`](https://www.okx.com/web3/explorer/xlayer/address/0xf037a5543f19619a2291009ae1542b71d50ff9b9) (tx [0xd0f4…8e02](https://www.okx.com/web3/explorer/xlayer/tx/0xd0f4367fc525a3500658953c334adafbe490b16040e71cdbab6f8ad3bfcb8e02), block 72,516,039, 1,346,828 gas, `factory()` = `0x1f09…0761`, runtime codehash `0xcda21775…229d`). The topic scan above predates it. TapeOut's own UI will not show X Layer drops, since its drops page reads chain 56 only. Cerebr's app lists them with `listDrops()`.
 
 ### 10.2 Interface (selectors match `cast selectors` on the BSC bytecode)
 
@@ -237,14 +237,14 @@ Verified on 2026-10-06 against mainnet reads, TapeOut's live client, and an anvi
 1. Deploy (1,346,828 gas, `verifyDrops` ok).
 2. The impersonated Cerebr creator `0xc742…960C` (994 NAND) approves and creates **400 NAND at 16 per claim** (dropId 1, 25 shares).
 3. Three fresh addresses claim 16 each. A double claim, a cancel by a stranger, an unknown id, a contract claimer and a direct transfer all revert as listed above.
-4. A claimer holding only the 16 claimed NAND tapes out the **Genesis Neuron**, `y = [e0+e1+e2 − 2·inhibit ≥ 1]`. It is `thresholdNeuronCircuit([-2,1,1,1], 1)`: exactly 16 NAND, with all 16 cases verified locally. It became Cerebr circuit #16 on the fork, with 264,291 gas and the claimer's NAND balance back to 0. The claimer paid exactly `TAPEOUT_FEE` (0.0013 OKB) plus gas. The on-chain truth table matched.
+4. A claimer holding only the 16 claimed NAND tapes out the **Genesis Neuron**, `y = [e0+e1+e2 − 2·inhibit ≥ 1]`. It is `thresholdNeuronCircuit([-2,1,1,1], 1)`: exactly 16 NAND, with all 16 cases verified locally. It became Cerebr circuit #16 on the fork, with 264,291 gas and the claimer's NAND balance back to 0. The claimer paid exactly `TAPEOUT_FEE` (0.0013 OKB) plus gas. The onchain truth table matched.
 5. The creator cancels and gets back 352. A claim after the cancel reverts `"cancelled"`.
 6. A 20/16 drop leaves dust of 4. The second claim reverts `"drained"`, and `cancelTo` returns the 4. With `revokeApproval: true` the approval is cleared.
 
 ### 10.4 SDK (`sdk/src/tapeout/drops.ts`)
 
 * Constants:
-  * `XLAYER_DROPS` (`undefined` until the mainnet deploy) and `BSC_DROPS`
+  * `XLAYER_DROPS` (set to `0xf037…f9b9` since the 2026-10-06 mainnet deploy) and `BSC_DROPS`
   * the codehashes, `DROPS_CREATION_CODE`
   * `dropsAbi` and `erc1155ApprovalAbi` (typed `as const`)
   * `DROP_ERRORS`
@@ -272,7 +272,9 @@ Verified on 2026-10-06 against mainnet reads, TapeOut's live client, and an anvi
 
 There are no drop fees. The only cost to the creator is the NAND given away, worth `mintPrice` = 0.00001 OKB each. Because `mintPrice` is paid to the creator through `withdraw()`, the creator can re-mint NAND for just the 0.00066 OKB protocol fee per mint call.
 
-### 10.6 Genesis Drop: mainnet steps (proposed; only the user signs)
+### 10.6 Genesis Drop: mainnet steps (executed 2026-10-06; only the user signs)
+
+Done on mainnet by the creator: deploy [0xd0f4…8e02](https://www.okx.com/web3/explorer/xlayer/tx/0xd0f4367fc525a3500658953c334adafbe490b16040e71cdbab6f8ad3bfcb8e02) (block 72,516,039), approval [0x2fba…1eaf](https://www.okx.com/web3/explorer/xlayer/tx/0x2fbaaaec60be0aef742d758e1b51d1cb5212d9d83c09639f6a1afae5c0791eaf) (block 72,516,045), `create(0x84b5…2D2D, 0, 400, 16)` [0x2d7c…8f20](https://www.okx.com/web3/explorer/xlayer/tx/0x2d7c052914b7e7a441b721ed025ce7e9bf832fb9804b85b885e6160ab1598f20) (block 72,516,049, dropId 1, 196,300 gas) and approval revoked [0x4242…f708](https://www.okx.com/web3/explorer/xlayer/tx/0x42424e51b9044008a39f98c4506241e746fad4853a7a9100fb05aec5d851f708) (block 72,516,053). The first claim is a Cerebr team test wallet, `0xcd0a…3c02` ([0x4d18…2db6](https://www.okx.com/web3/explorer/xlayer/tx/0x4d186077dfab5eb3f5c25e0876d549ef9367ac1ac385105939928cde91ec2db6), block 72,527,608); at time of writing drop #1 has 1 claim and 384 NAND remaining. The steps as planned:
 
 1. Rehearse with `scripts/fork-drop.ts`.
 2. Deploy: send a transaction with data `dropsDeployData(XLAYER.factory)`, value 0 and about 1.35M gas, from any key (the contract has no owner). Check the deployment with `verifyDrops(pc, addr)` (codehash `0xcda21775…229d`). Then set `XLAYER_DROPS` in `drops.ts`.
