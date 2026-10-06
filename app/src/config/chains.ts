@@ -12,7 +12,15 @@ export function makeXLayer(rpc = 'https://rpc.xlayer.tech') {
     name: 'X Layer',
     nativeCurrency: okb,
     rpcUrls: { default: { http: [rpc] } },
-    blockExplorers: { default: { name: 'OKLink', url: 'https://www.oklink.com/xlayer' } },
+    blockExplorers: { default: { name: 'OKX Explorer', url: 'https://www.okx.com/web3/explorer/xlayer' } },
     contracts: { multicall3 },
   })
+}
+
+/** wallet_addEthereumChain parameters for X Layer (public RPC, OKB, OKX Explorer), used when a wallet does not know chain 196 yet (error 4902). */
+export const XLAYER_ADD_CHAIN = {
+  chainName: 'X Layer',
+  rpcUrls: ['https://rpc.xlayer.tech'],
+  nativeCurrency: okb,
+  blockExplorerUrls: ['https://www.okx.com/web3/explorer/xlayer'],
 }
