@@ -1,192 +1,302 @@
 import { Logo } from '../components/Logo.tsx'
-import { HeroChip } from './HeroChip.tsx'
-import { EXPLORER, FEES, ISSUANCE, okb } from './issuance.ts'
-import { useCpuStats } from './useCpuStats.ts'
+import { BuiltBy } from '../components/BuiltBy.tsx'
+import { formatGwei } from 'viem'
+import type { CpuInfo, TapeoutFees } from '@cerebr/sdk/tapeout'
+import { Pinout, TimingDiagram } from './Pinout.tsx'
+import { EXPLORER, ISSUANCE, okb, short } from './issuance.ts'
+import {
+  useCircuits,
+  useCpuStats,
+  useCreatorHoldings,
+  useFees,
+  useMisc,
+  useTiming,
+  useXor,
+  type Counts,
+  type LiveCircuit,
+  type Misc,
+  type Timing,
+  type XorLive,
+} from './useCpuStats.ts'
 import './landing.css'
 
 const APP_HREF = '/app'
 const TAPEOUT_HREF = 'https://tapeout.net'
-const SET_AT_LAUNCH = 'Set at launch'
+const REPO_HREF = 'https://github.com/NetLayerLabs/Cerebr'
+const DOC = 'CRB-DS-001'
 
-function LaunchButton({ big }: { big?: boolean }) {
+const int = (n: bigint | number) => Number(n).toLocaleString('en-US')
+/** A live value, or a neutral '…' until its read lands. */
+const L = <T,>(x: T | undefined, f: (x: T) => React.ReactNode = String): React.ReactNode => (x === undefined ? '…' : f(x))
+const gates = (c: Counts) =>
+  [`${c.nand} NAND`, c.latch ? `${c.latch} LATCH` : '', c.ref ? `${c.ref} REF` : ''].filter(Boolean).join(' + ')
+const burns = (c: Counts) => c.nand + c.latch
+
+// Copy keys: which catalog circuit each part of the page talks about (matched to chain by id).
+const FLAT_XOR = 4
+const XOR_REF = 5
+const SPIKING = 14
+const LINE_REF = 12
+const WALLET_ID = 5n
+const SPIKES = [1, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0]
+const playground = (id: number) => `${APP_HREF}#playground/${id}`
+
+function Launch({ size = 'md' }: { size?: 'md' | 'lg' }) {
   return (
-    <a className={`btn primary lp-launch${big ? ' lp-launch-big' : ''}`} href={APP_HREF}>
-      Launch App <span aria-hidden>→</span>
+    <a className={`ds-btn ds-btn-acc ds-btn-${size}`} href={APP_HREF}>
+      Launch app <span aria-hidden>↗</span>
     </a>
   )
 }
 
-const int = (n: bigint | number) => Number(n).toLocaleString('en-US')
+interface Live {
+  cpu?: CpuInfo
+  fees?: TapeoutFees
+  circuits?: LiveCircuit[]
+  byId: (id: number) => LiveCircuit | undefined
+  misc?: Misc
+  xor?: XorLive
+  timing?: Timing
+}
+
+function useLive(): Live {
+  const cpu = useCpuStats()
+  const fees = useFees()
+  const circuits = useCircuits(CATALOG_IDS)
+  const byId = (id: number) => circuits?.find((c) => Number(c.id) === id)
+  const misc = useMisc(WALLET_ID)
+  const xor = useXor(byId(XOR_REF))
+  const timing = useTiming(byId(SPIKING), circuits, SPIKES)
+  return { cpu, fees, circuits, byId, misc, xor, timing }
+}
 
 export function Landing() {
+  const live = useLive()
   return (
-    <div className="lp">
-      <div className="bg-grid" aria-hidden />
+    <div className="ds">
       <Nav />
-      <Hero />
-      <HowItWorks />
-      <XorStory />
-      <Catalog />
-      <IssuanceSection />
-      <BrainWallets />
-      <UseCases />
-      <Builders />
-      <Security />
-      <Faq />
-      <FinalCta />
-      <LandingFooter />
+      <main>
+        <Hero live={live} />
+        <Characteristics />
+        <HowItWorks />
+        <XorStory live={live} />
+        <Catalog live={live} />
+        <Stateful live={live} />
+        <IssuanceSection live={live} />
+        <BrainWallets live={live} />
+        <Applications />
+        <Builders />
+        <Security live={live} />
+        <Faq />
+        <FinalCta />
+      </main>
+      <Footer />
     </div>
   )
 }
 
+/* ------------------------------------------------------------------------------------------------ */
+
 function Nav() {
   return (
-    <header className="lp-nav">
-      <a className="brand" href="/">
-        <Logo />
-        <div>
-          <div className="brand-name">CEREBR</div>
-          <div className="brand-sub">neural processor · TapeOut · X Layer</div>
-        </div>
+    <header className="ds-nav">
+      <a className="ds-brand" href="/">
+        <Logo size={26} />
+        <span className="ds-brand-name">Cerebr</span>
+        <span className="ds-brand-tag">CRB-1</span>
       </a>
-      <nav className="lp-links">
-        <a href="#how">How it works</a>
+      <nav className="ds-links">
+        <a href="#how">Architecture</a>
         <a href="#xor">XOR</a>
         <a href="#catalog">Circuits</a>
         <a href="#issuance">Issuance</a>
-        <a href="#wallets">Brain wallets</a>
+        <a href="#wallets">Wallets</a>
         <a href="#security">Security</a>
         <a href="#faq">FAQ</a>
       </nav>
-      <LaunchButton />
     </header>
   )
 }
 
-function Hero() {
+/** Datasheet section header: a ruled bar with the section number, title and page meta. */
+function Sec({ id, n, label, meta, title, children }: { id?: string; n: string; label: string; meta?: string; title: React.ReactNode; children?: React.ReactNode }) {
   return (
-    <section className="lp-hero">
-      <div className="lp-hero-copy">
-        <span className="lp-eyebrow">
-          <span className="dot live" /> Built on TapeOut · X Layer mainnet
-        </span>
-        <h1>
+    <div className="ds-sec" id={id}>
+      <div className="ds-sec-bar">
+        <span className="ds-sec-n">§{n}</span>
+        <span className="ds-sec-label">{label}</span>
+        <span className="ds-sec-fill" />
+        <span className="ds-sec-meta">{meta ?? `${DOC} · p.${n}`}</span>
+      </div>
+      <h2 className="ds-h2">{title}</h2>
+      {children && <p className="ds-lede">{children}</p>}
+    </div>
+  )
+}
+
+function Hero({ live }: { live: Live }) {
+  const { cpu, circuits, misc, xor, timing } = live
+  const reads = new Set<string>()
+  if (circuits) ['circuitInfo()', 'netlist()', 'ownerOf()'].forEach((r) => reads.add(r))
+  if (xor) reads.add('eval()')
+  if (timing?.verified) reads.add('step()')
+  return (
+    <section className="ds-hero">
+      <div className="ds-hero-copy">
+        <div className="ds-kicker">
+          <span className="ds-live" /> Live on X Layer mainnet · built on TapeOut
+        </div>
+        <h1 className="ds-h1">
           A neural processor,
           <br />
-          <span className="grad">taped out on X Layer.</span>
+          <em>taped out</em> onchain.
         </h1>
-        <p className="lp-lede">
+        <p className="ds-hero-lede">
           Cerebr compiles neurons into real NAND netlists and tapes them out on its own TapeOut processor. Every
-          transistor is a synapse, every circuit is a neuron you own, and anyone can run inference on-chain with{' '}
+          transistor is a synapse, every circuit is a neuron you own, and anyone can run inference onchain with{' '}
           <code>eval()</code>.
         </p>
-        <div className="lp-cta-row">
-          <LaunchButton big />
-          <a className="btn lp-ghost" href="#xor">
+        <div className="ds-cta">
+          <Launch size="lg" />
+          <a className="ds-btn ds-btn-line ds-btn-lg" href="#xor">
             See a neuron solve XOR
           </a>
         </div>
-        <ul className="lp-proof">
-          <li>Real gates, not pictures of gates</li>
-          <li>Inference you can verify on-chain</li>
-          <li>Neurons any team can REF</li>
-        </ul>
+        <dl className="ds-hero-spec">
+          <div>
+            <dt>Gates</dt>
+            <dd>NAND · LATCH · REF</dd>
+          </div>
+          <div>
+            <dt>Inference</dt>
+            <dd>eval() · step()</dd>
+          </div>
+          <div>
+            <dt>Network</dt>
+            <dd>X Layer · {L(misc?.chainId)}</dd>
+          </div>
+        </dl>
       </div>
-      <div className="lp-hero-art">
-        <HeroChip />
-      </div>
-      <LiveStrip />
+      <figure className="ds-hero-fig">
+        <Pinout
+          name={cpu?.name}
+          symbol={cpu?.symbol}
+          circuits={cpu ? Number(cpu.circuitCount) : undefined}
+          cpu={ISSUANCE.cpu}
+          chainId={misc?.chainId}
+          reads={reads}
+        />
+        <figcaption>
+          Fig. 1 - Schematic of the live processor, top view. Pins are its TapeOut functions (lit when this page has
+          read them onchain); one die cell per taped-out circuit.
+        </figcaption>
+      </figure>
     </section>
   )
 }
 
-/** Live CPU numbers from transistors/circuits via the SDK; hidden until a CPU is configured and readable. */
-function LiveStrip() {
+/** Live CPU state as a datasheet "electrical characteristics" table; config values until the read lands. */
+function Characteristics() {
   const s = useCpuStats()
-  if (!s) return null
-  const pct = s.supplyCap > 0n ? Number((s.minted * 10_000n) / s.supplyCap) / 100 : 0
-  const items: [string, string, string][] = [
-    ['Processor', s.name, s.symbol],
-    ['Transistors minted', int(s.minted), `of ${int(s.supplyCap)} (${pct}%)`],
-    ['Remaining', int(s.remaining), 'NAND + LATCH share the cap'],
-    ['Unit price', okb(s.mintPrice), 'OKB per transistor'],
-    ['Circuits taped out', int(s.circuitCount), 'on this CPU'],
-    ['Tape-out fee', okb(s.tapeoutFee), 'OKB, to TapeOut'],
+  const pct = s && s.supplyCap > 0n ? Number((s.minted * 10_000n) / s.supplyCap) / 100 : undefined
+  const rows: [string, string, React.ReactNode, string][] = [
+    ['Processor', '-', L(s?.name), s?.symbol ?? '…'],
+    ['Transistor supply cap', 'N_cap', L(s?.supplyCap, int), 'NAND + LATCH'],
+    ['Transistors minted', 'N_min', L(s?.minted, int), pct !== undefined ? `${pct}% of cap` : ''],
+    ['Unit price', 'P_t', L(s?.mintPrice, okb), 'OKB / transistor'],
+    ['Mint fee', 'F_m', L(s?.protocolFee, okb), 'OKB / call → TapeOut'],
+    ['Tape-out fee', 'F_t', L(s?.tapeoutFee, okb), 'OKB / circuit → TapeOut'],
+    ['Circuits taped out', 'C', L(s?.circuitCount, int), 'on this processor'],
   ]
   return (
-    <div className="lp-live">
-      <div className="lp-live-head tiny">
-        <span className="dot live" /> Live from X Layer ·{' '}
-        <a href={`${EXPLORER}/address/${s.transistors}`} target="_blank" rel="noreferrer">
-          view on OKLink
-        </a>
+    <section className="ds-section ds-char">
+      <div className="ds-table-head">
+        <span>Electrical characteristics</span>
+        <span className="ds-table-meta">
+          {s ? (
+            <>
+              <span className="ds-live" /> read live from chain ·{' '}
+              <a href={`${EXPLORER}/address/${s.transistors}`} target="_blank" rel="noreferrer">
+                OKLink ↗
+              </a>
+            </>
+          ) : (
+            'reading from X Layer…'
+          )}
+        </span>
       </div>
-      <div className="lp-live-grid">
-        {items.map(([k, v, u], i) => (
-          <div key={k} className={`lp-live-item${i === 1 || i === 4 ? ' accent' : ''}`}>
-            <div className="stat-label">{k}</div>
-            <div className="lp-live-value mono" title={v}>
-              {v}
-            </div>
-            <div className="stat-unit">{u}</div>
-          </div>
-        ))}
+      <div className="ds-table-wrap">
+        <table className="ds-table">
+          <thead>
+            <tr>
+              <th>Parameter</th>
+              <th>Symbol</th>
+              <th className="r">Value</th>
+              <th>Unit</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map(([p, sym, v, u]) => (
+              <tr key={p}>
+                <td>{p}</td>
+                <td className="ds-sym">{sym}</td>
+                <td className="r ds-val">{v}</td>
+                <td className="ds-unit">{u}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
-    </div>
+    </section>
   )
 }
 
-function SectionHead({ id, kicker, title, children }: { id?: string; kicker: string; title: React.ReactNode; children?: React.ReactNode }) {
-  return (
-    <div className="lp-head" id={id}>
-      <span className="lp-kicker">{kicker}</span>
-      <h2>{title}</h2>
-      {children && <p className="muted">{children}</p>}
-    </div>
-  )
-}
+/* ------------------------------------------------------------------------------------------------ */
 
 const STEPS = [
   {
-    n: '01',
+    n: 'A',
     title: 'Mint transistors',
     body: 'Transistors are the synapses. Mint NAND (and LATCH, for memory) from the Cerebr processor’s fixed supply at a fixed unit price.',
-    fn: 'transistors.mint(NAND, amount)',
+    fn: 'transistors.mint(NAND, n)',
   },
   {
-    n: '02',
+    n: 'B',
     title: 'Compile a neuron',
     body: 'Give the compiler integer weights and a threshold. It tries four constructions and keeps the netlist with the fewest NAND gates.',
-    fn: 'neuron({ weights, theta }) → netlist',
+    fn: 'neuron({ weights, theta })',
   },
   {
-    n: '03',
+    n: 'C',
     title: 'Tape it out',
-    body: 'The netlist goes on-chain as a circuit NFT. Each NAND burns one transistor, so every neuron is paid for in real silicon.',
+    body: 'The netlist goes onchain as a circuit NFT. Each NAND burns one transistor, so every neuron is paid for in real silicon.',
     fn: 'circuits.tapeout(nl, nIn, nOut)',
   },
   {
-    n: '04',
-    title: 'Compose and infer',
-    body: 'Wire taped-out neurons into networks with REF, which reuses a circuit without burning more transistors. Run any of them for free with eval.',
+    n: 'D',
+    title: 'Compose & infer',
+    body: 'Wire taped-out neurons into networks with REF, which reuses a circuit without burning transistors. Run any of them for free with eval.',
     fn: 'circuits.eval(id, inputs)',
   },
 ]
 
 function HowItWorks() {
   return (
-    <section className="lp-section">
-      <SectionHead id="how" kicker="How it works" title="From transistors to neurons to networks">
+    <section className="ds-section">
+      <Sec id="how" n="01" label="Functional description" title={<>From transistors to neurons <em>to networks.</em></>}>
         TapeOut gives every processor two contracts: transistors you mint and circuits you tape out by burning them.
         Cerebr adds the missing piece, a compiler that turns neural networks into those circuits.
-      </SectionHead>
-      <ol className="lp-steps">
-        {STEPS.map((s) => (
-          <li key={s.n} className="card lp-step">
-            <span className="lp-step-n mono">{s.n}</span>
+      </Sec>
+      <ol className="ds-blocks">
+        {STEPS.map((s, i) => (
+          <li key={s.n} className="ds-block">
+            <div className="ds-block-top">
+              <span className="ds-block-n">{s.n}</span>
+              {i < STEPS.length - 1 && <span className="ds-block-arrow" aria-hidden>→</span>}
+            </div>
             <h3>{s.title}</h3>
-            <p className="muted">{s.body}</p>
-            <code className="lp-fn">{s.fn}</code>
+            <p>{s.body}</p>
+            <code className="ds-fn">{s.fn}</code>
           </li>
         ))}
       </ol>
@@ -194,137 +304,145 @@ function HowItWorks() {
   )
 }
 
-const XOR_ROWS: [number, number, number, number, number][] = [
-  // x0, x1, OR, NAND, y = AND(OR, NAND)
-  [0, 0, 0, 1, 0],
-  [0, 1, 1, 1, 1],
-  [1, 0, 1, 1, 1],
-  [1, 1, 1, 0, 0],
-]
+/* ------------------------------------------------------------------------------------------------ */
 
-function XorStory() {
+function XorStory({ live }: { live: Live }) {
+  const { xor, byId } = live
+  const flat = byId(FLAT_XOR)
+  const net = byId(XOR_REF)
+  const [h1, h2, out] = xor?.refs ?? []
+  // eval(5, 0b10): x1 = 1, x0 = 0 is row 1
+  const y10 = xor?.rows[1][4]
   return (
-    <section className="lp-section">
-      <SectionHead id="xor" kicker="The XOR problem" title="One neuron can’t. Two layers of taped-out neurons can.">
-        In 1969 Minsky and Papert showed that a single threshold neuron can never compute XOR, because no straight line
-        separates its true cases from its false ones. Add a hidden layer and the problem disappears. Cerebr tapes out
-        that exact network and runs it on-chain.
-      </SectionHead>
-      <div className="lp-split">
-        <div className="card lp-xor-card">
-          <XorNetwork />
+    <section className="ds-section">
+      <Sec id="xor" n="02" label="Application note · XOR" title={<>One neuron can’t. <em>Two layers can.</em></>}>
+        In 1969 Minsky and Papert showed that a single threshold neuron can never compute XOR: no straight line separates
+        its true cases from its false ones. Add a hidden layer and the problem disappears. Cerebr tapes out that exact
+        network and runs it onchain.
+      </Sec>
+      <div className="ds-grid-xor">
+        <figure className="ds-fig ds-fig-wide">
+          <XorNetwork refs={xor?.refs} />
+          <figcaption>Fig. 2 - Two-layer network. Each node is a taped-out circuit; each edge is a REF.</figcaption>
+        </figure>
+        <figure className="ds-fig">
+          <XorPlane />
+          <figcaption>Fig. 3 - Input plane. Two hidden neurons, two lines; XOR is the band between.</figcaption>
+        </figure>
+        <figure className="ds-fig">
+          <table className="ds-truth">
+            <thead>
+              <tr>
+                <th>x0</th>
+                <th>x1</th>
+                <th>OR</th>
+                <th>NAND</th>
+                <th>y</th>
+              </tr>
+            </thead>
+            <tbody>
+              {xor
+                ? xor.rows.map((r) => (
+                    <tr key={r.slice(0, 2).join('')}>
+                      {r.map((v, i) => (
+                        <td key={i} className={i === 4 ? (v ? 'hi' : 'lo') : undefined}>
+                          {v}
+                        </td>
+                      ))}
+                    </tr>
+                  ))
+                : [0, 1, 2, 3].map((r) => (
+                    <tr key={r}>
+                      <td>{r >> 1}</td>
+                      <td>{r & 1}</td>
+                      <td>…</td>
+                      <td>…</td>
+                      <td>…</td>
+                    </tr>
+                  ))}
+            </tbody>
+          </table>
+          <figcaption>
+            Table 1 - Truth table, y = AND(OR, NAND).{' '}
+            {xor ? (
+              <>
+                <span className="ds-live" /> eval(#{XOR_REF}) read live; OR and NAND are eval(#{h1}) and eval(#{h2}).
+              </>
+            ) : (
+              'Running eval() on X Layer…'
+            )}
+          </figcaption>
+        </figure>
+      </div>
+      <div className="ds-facts3">
+        <div>
+          <b>{L(flat && gates(flat.counts))}</b>
+          <span>
+            flattened into one circuit (#{FLAT_XOR}), burning {L(flat && burns(flat.counts))} transistors
+          </span>
         </div>
-        <div className="lp-xor-side">
-          <div className="card lp-xor-plane-card">
-            <XorPlane />
-            <p className="tiny muted">
-              The two hidden neurons each draw one line. The output neuron fires only between them.
-            </p>
-          </div>
-          <div className="card lp-truth">
-            <table>
-              <thead>
-                <tr>
-                  <th>x0</th>
-                  <th>x1</th>
-                  <th>OR</th>
-                  <th>NAND</th>
-                  <th>y = XOR</th>
-                </tr>
-              </thead>
-              <tbody>
-                {XOR_ROWS.map((r) => (
-                  <tr key={r.join('')}>
-                    {r.map((v, i) => (
-                      <td key={i} className={i === 4 ? (v ? 'on' : 'off') : undefined}>
-                        {v}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+        <div>
+          <b>{L(net && gates(net.counts))}</b>
+          <span>
+            built from the taped-out OR, NAND and AND neurons ({xor ? `#${h1}, #${h2}, #${out}` : '…'}) as circuit #
+            {XOR_REF}, burning {net ? (burns(net.counts) ? `${burns(net.counts)} transistors` : 'nothing new') : '…'}
+          </span>
+        </div>
+        <div>
+          <b>eval({XOR_REF}, 0b10) → {L(y10)}</b>
+          <span>
+            a free view call, so anyone can check the answer -{' '}
+            <a href={playground(5)}>run it ↗</a>
+          </span>
         </div>
       </div>
-      <ul className="lp-xor-facts">
-        <li>
-          <b className="mono">6 NAND</b>
-          <span className="muted">flattened into one circuit, so it burns 6 transistors</span>
-        </li>
-        <li>
-          <b className="mono">0 NAND + 3 REF</b>
-          <span className="muted">built from the taped-out OR, NAND and AND neurons, burning nothing new</span>
-        </li>
-        <li>
-          <b className="mono">eval(id, 0b10) → 1</b>
-          <span className="muted">a free view call, so anyone can check the answer</span>
-        </li>
-      </ul>
     </section>
   )
 }
 
-function XorNetwork() {
-  const node = (x: number, y: number, label: string, sub: string, color: string) => (
+function XorNetwork({ refs }: { refs?: number[] }) {
+  const id = (k: number) => (refs?.[k] !== undefined ? `#${refs[k]}` : '…')
+  const node = (x: number, y: number, label: string, sub: string, acc = false) => (
     <g>
-      <circle cx={x} cy={y} r="27" fill="#101622" stroke={color} strokeWidth="2" />
-      <text x={x} y={y + 1} textAnchor="middle" fill={color} className="lp-svg-title">
-        {label}
-      </text>
-      <text x={x} y={y + 15} textAnchor="middle" fill="#8b98a9" className="lp-svg-label">
-        {sub}
-      </text>
+      <circle cx={x} cy={y} r="28" className={acc ? 'ds-node ds-node-acc' : 'ds-node'} />
+      <text x={x} y={y + 2} textAnchor="middle" className="ds-node-t">{label}</text>
+      <text x={x} y={y + 16} textAnchor="middle" className="ds-node-s">{sub}</text>
     </g>
   )
-  // weight labels sit near the target node so the crossing edges stay readable
   const edge = (x1: number, y1: number, x2: number, y2: number, w: string, t = 0.7) => {
     const lx = x1 + (x2 - x1) * t
     const ly = y1 + (y2 - y1) * t
     return (
       <g>
-        <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="url(#xorG)" strokeWidth="1.6" />
-        <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="url(#xorG)" strokeWidth="2" className="lp-trace" pathLength={100} />
-        <rect x={lx - 13} y={ly - 9} width="26" height="16" rx="5" fill="#0b0f17" stroke="#26324a" />
-        <text x={lx} y={ly + 3} textAnchor="middle" fill="#e6edf3" className="lp-svg-label">
-          {w}
-        </text>
+        <line x1={x1} y1={y1} x2={x2} y2={y2} className="ds-edge" />
+        <line x1={x1} y1={y1} x2={x2} y2={y2} className="ds-edge-sig" pathLength={100} />
+        <rect x={lx - 14} y={ly - 9} width="28" height="17" rx="2" className="ds-w" />
+        <text x={lx} y={ly + 3.5} textAnchor="middle" className="ds-w-t">{w}</text>
       </g>
     )
   }
   return (
-    <svg viewBox="0 0 420 260" className="lp-xor-svg" role="img" aria-label="Two-layer neural network computing XOR: OR and NAND hidden neurons feeding an AND output neuron">
-      <defs>
-        <linearGradient id="xorG" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" stopColor="#3ddc97" />
-          <stop offset="1" stopColor="#2bb3ff" />
-        </linearGradient>
-      </defs>
-      <text x="50" y="22" textAnchor="middle" fill="#8b98a9" className="lp-svg-label">inputs</text>
-      <text x="200" y="22" textAnchor="middle" fill="#8b98a9" className="lp-svg-label">hidden layer</text>
-      <text x="345" y="22" textAnchor="middle" fill="#8b98a9" className="lp-svg-label">output</text>
-      {edge(77, 80, 173, 75, '+1')}
-      {edge(77, 80, 173, 185, '−1', 0.78)}
-      {edge(77, 190, 173, 75, '+1', 0.78)}
-      {edge(77, 190, 173, 185, '−1')}
-      {edge(227, 75, 318, 130, '+1', 0.5)}
-      {edge(227, 185, 318, 130, '+1', 0.5)}
-      {node(50, 80, 'x0', 'input', '#e6edf3')}
-      {node(50, 190, 'x1', 'input', '#e6edf3')}
-      {node(200, 75, 'OR', 'θ = 1', '#3ddc97')}
-      {node(200, 185, 'NAND', 'θ = −1', '#b26bff')}
-      {node(345, 130, 'AND', 'θ = 2', '#2bb3ff')}
-      <text x="345" y="185" textAnchor="middle" fill="#e6edf3" className="lp-svg-label">y = x0 ⊕ x1</text>
-      <text x="210" y="248" textAnchor="middle" fill="#8b98a9" className="lp-svg-label">
-        each circle is a taped-out circuit · each line is a REF
-      </text>
+    <svg viewBox="0 0 440 260" className="ds-svg" role="img" aria-label="Two-layer neural network computing XOR: OR and NAND hidden neurons feeding an AND output neuron">
+      <text x="52" y="22" textAnchor="middle" className="ds-ax">INPUT</text>
+      <text x="215" y="22" textAnchor="middle" className="ds-ax">HIDDEN</text>
+      <text x="372" y="22" textAnchor="middle" className="ds-ax">OUTPUT</text>
+      {edge(80, 80, 187, 75, '+1')}
+      {edge(80, 80, 187, 185, '−1', 0.78)}
+      {edge(80, 190, 187, 75, '+1', 0.78)}
+      {edge(80, 190, 187, 185, '−1')}
+      {edge(243, 75, 344, 130, '+1', 0.5)}
+      {edge(243, 185, 344, 130, '+1', 0.5)}
+      {node(52, 80, 'x0', 'in')}
+      {node(52, 190, 'x1', 'in')}
+      {node(215, 75, 'OR', `θ=1 · ${id(0)}`)}
+      {node(215, 185, 'NAND', `θ=−1 · ${id(1)}`)}
+      {node(372, 130, 'AND', `θ=2 · ${id(2)}`, true)}
+      <text x="372" y="186" textAnchor="middle" className="ds-node-s">y = x0 ⊕ x1</text>
     </svg>
   )
 }
 
 function XorPlane() {
-  // input plane: the four XOR cases and the two lines drawn by the hidden neurons
-  // (OR fires above x0 + x1 = 0.5, NAND fires below x0 + x1 = 1.5; XOR is the band between)
   const pts: [number, number, number][] = [
     [0, 0, 0],
     [0, 1, 1],
@@ -341,162 +459,280 @@ function XorPlane() {
     [px(1.85), py(-0.35)],
   ]
   return (
-    <svg viewBox="0 0 220 200" className="lp-plane" role="img" aria-label="The XOR cases in the input plane, separated by two lines">
+    <svg viewBox="0 0 220 200" className="ds-svg" role="img" aria-label="The XOR cases in the input plane, separated by two lines">
       <defs>
-        <clipPath id="xorPlaneClip">
+        <clipPath id="dsPlaneClip">
           <rect x="16" y="8" width="196" height="186" />
         </clipPath>
       </defs>
-      <g clipPath="url(#xorPlaneClip)">
-        <path d={`M${band.map((p) => p.join(' ')).join(' L')} Z`} fill="rgba(61,220,151,0.10)" />
-        <line {...line(0.5)} stroke="#3ddc97" strokeDasharray="5 4" />
-        <line {...line(1.5)} stroke="#b26bff" strokeDasharray="5 4" />
+      <g clipPath="url(#dsPlaneClip)">
+        <path d={`M${band.map((p) => p.join(' ')).join(' L')} Z`} className="ds-band" />
+        <line {...line(0.5)} className="ds-sep" />
+        <line {...line(1.5)} className="ds-sep" />
       </g>
-      <line x1="30" y1={py(0)} x2="205" y2={py(0)} stroke="#26324a" />
-      <line x1={px(0)} y1="14" x2={px(0)} y2="185" stroke="#26324a" />
+      <line x1="30" y1={py(0)} x2="205" y2={py(0)} className="ds-axis" />
+      <line x1={px(0)} y1="14" x2={px(0)} y2="185" className="ds-axis" />
       {pts.map(([a, b, y]) => (
         <g key={`${a}${b}`}>
-          <circle cx={px(a)} cy={py(b)} r="9" fill={y ? '#3ddc97' : '#101622'} stroke={y ? '#3ddc97' : '#ff5d73'} strokeWidth="2" />
-          <text x={px(a) + 16} y={py(b) + (b ? -10 : 22)} fill="#8b98a9" className="lp-svg-label" textAnchor="middle">
+          <circle cx={px(a)} cy={py(b)} r="8" className={y ? 'ds-pt-hi' : 'ds-pt-lo'} />
+          <text x={px(a) + 16} y={py(b) + (b ? -10 : 22)} textAnchor="middle" className="ds-ax">
             {a}
             {b}
           </text>
         </g>
       ))}
-      <text x="208" y={py(0) + 14} textAnchor="end" fill="#8b98a9" className="lp-svg-label">x0</text>
-      <text x={px(0) - 8} y="22" textAnchor="end" fill="#8b98a9" className="lp-svg-label">x1</text>
+      <text x="208" y={py(0) + 14} textAnchor="end" className="ds-ax">x0</text>
+      <text x={px(0) - 8} y="22" textAnchor="end" className="ds-ax">x1</text>
     </svg>
   )
 }
 
-type Kind = 'neuron' | 'network' | 'ref' | 'memory' | 'arith'
-const KIND_LABEL: Record<Kind, string> = {
-  neuron: 'Neuron',
-  network: 'Network',
-  ref: 'REF-composed',
-  memory: 'Stateful',
-  arith: 'Arithmetic',
+/* ------------------------------------------------------------------------------------------------ */
+
+type Kind = 'Neuron' | 'Network' | 'REF' | 'Stateful' | 'Arithmetic' | 'Circuit'
+
+// Human copy for the circuits taped out by the launch script, keyed by onchain id. I/O, gate counts
+// and the ids themselves are read from chain (each row is matched to the circuit with that id).
+const CATALOG: { part: string; id: number; name: string; kind: Kind; note: string }[] = [
+  { part: 'CRB-N2A', id: 1, name: 'AND neuron', kind: 'Neuron', note: 'Weights +1, +1, fires at 2.' },
+  { part: 'CRB-N2O', id: 2, name: 'OR neuron', kind: 'Neuron', note: 'Weights +1, +1, fires at 1.' },
+  { part: 'CRB-N2I', id: 3, name: 'Inhibitory neuron', kind: 'Neuron', note: 'Weights −1, −1, threshold −1. A single gate.' },
+  { part: 'CRB-X2', id: 4, name: 'XOR network', kind: 'Network', note: 'The two-layer network, flattened.' },
+  { part: 'CRB-X2R', id: 5, name: 'XOR network (REF)', kind: 'REF', note: 'Same truth table, built from three taped-out neurons.' },
+  { part: 'CRB-M3', id: 6, name: 'Majority-3', kind: 'Neuron', note: 'Votes yes when at least two of three inputs do.' },
+  { part: 'CRB-M5', id: 7, name: 'Majority-5', kind: 'Neuron', note: 'Five-voter consensus neuron.' },
+  { part: 'CRB-T5', id: 8, name: 'Go/No-Go neuron', kind: 'Neuron', note: 'Three excitatory and two inhibitory inputs, threshold 2.' },
+  { part: 'CRB-L9', id: 11, name: 'Line detector', kind: 'Network', note: 'Horizontal, vertical and diagonal lines on a 3×3 grid.' },
+  { part: 'CRB-L9R', id: 12, name: 'Line detector (REF)', kind: 'REF', note: 'Eight line cells and three pooling neurons, all reused.' },
+  { part: 'CRB-A2', id: 13, name: '2-bit adder', kind: 'Arithmetic', note: 'Ripple adder, the building block for counting neurons.' },
+  { part: 'CRB-S2L', id: 14, name: 'Integrate-and-fire', kind: 'Stateful', note: 'Fires on every third spike. Runs with step().' },
+]
+/** Launch-script helpers (the line cell and any-of-3 pooling neuron CRB-L9R REFs), described in the note. */
+const HELPER_IDS = [9, 10]
+const CATALOG_IDS = [...CATALOG.map((c) => c.id), ...HELPER_IDS]
+const nameOf = (id: number) => CATALOG.find((c) => c.id === id)?.name ?? `Circuit #${id}`
+
+interface Row {
+  key: string
+  part: string
+  name: string
+  kind: Kind
+  note: string
+  id?: number
+  c?: LiveCircuit
 }
 
-// Gate counts from the Cerebr neural compiler (sdk/src/neuro, direct output mode), each circuit
-// exhaustively verified against its reference model.
-const CATALOG: { name: string; io: string; gates: string; kind: Kind; note: string }[] = [
-  { name: 'AND neuron', io: '2 → 1', gates: '2 NAND', kind: 'neuron', note: 'Weights +1, +1, fires at 2.' },
-  { name: 'OR neuron', io: '2 → 1', gates: '3 NAND', kind: 'neuron', note: 'Weights +1, +1, fires at 1.' },
-  { name: 'Inhibitory neuron', io: '2 → 1', gates: '1 NAND', kind: 'neuron', note: 'Weights −1, −1, threshold −1. A single gate.' },
-  { name: 'Majority-3', io: '3 → 1', gates: '6 NAND', kind: 'neuron', note: 'Votes yes when at least two of three inputs do.' },
-  { name: 'Majority-5', io: '5 → 1', gates: '24 NAND', kind: 'neuron', note: 'Five-voter consensus neuron.' },
-  { name: 'Go/No-Go neuron', io: '5 → 1', gates: '19 NAND', kind: 'neuron', note: 'Three excitatory and two inhibitory inputs, threshold 2.' },
-  { name: 'XOR network', io: '2 → 1', gates: '6 NAND', kind: 'network', note: 'The two-layer network above, flattened.' },
-  { name: 'XOR network (REF)', io: '2 → 1', gates: '0 NAND + 3 REF', kind: 'ref', note: 'Same truth table, built from three taped-out neurons.' },
-  { name: 'Line detector', io: '9 → 3', gates: '37 NAND', kind: 'network', note: 'Finds horizontal, vertical and diagonal lines on a 3×3 grid.' },
-  { name: 'Line detector (REF)', io: '9 → 3', gates: '0 NAND + 11 REF', kind: 'ref', note: 'Eight line cells and three pooling neurons, all reused.' },
-  { name: '2-bit adder', io: '4 → 3', gates: '14 NAND', kind: 'arith', note: 'Ripple adder, the building block for counting neurons.' },
-  { name: 'Integrate-and-fire', io: '2 → 1', gates: '17 NAND + 2 LATCH', kind: 'memory', note: 'A spiking neuron that fires on every third spike. Runs with step().' },
-]
+function catalogRows(circuits: LiveCircuit[] | undefined): Row[] {
+  if (!circuits) return CATALOG.map((c) => ({ key: c.part, part: c.part, name: c.name, kind: c.kind, note: c.note }))
+  return circuits
+    .filter((c) => !HELPER_IDS.includes(Number(c.id)))
+    .map((c): Row => {
+      const id = Number(c.id)
+      const copy = CATALOG.find((x) => x.id === id)
+      if (copy) return { key: copy.part, part: copy.part, name: copy.name, kind: copy.kind, note: copy.note, id, c }
+      return {
+        key: `#${id}`,
+        part: '-',
+        name: c.label || `Circuit #${id}`,
+        kind: c.nState ? 'Stateful' : c.counts.ref ? 'REF' : 'Circuit',
+        note: c.labelDescription ?? `Taped out by ${short(c.owner)}.`,
+        id,
+        c,
+      }
+    })
+}
 
-function Catalog() {
+function Catalog({ live }: { live: Live }) {
+  const { circuits, byId } = live
+  const rows = catalogRows(circuits)
+  const lineRef = byId(LINE_REF)
+  const helpers = lineRef ? [...new Set(lineRef.refs.map((r) => r.id))].filter((id) => HELPER_IDS.includes(id)) : HELPER_IDS
   return (
-    <section className="lp-section">
-      <SectionHead id="catalog" kicker="Circuit catalog" title="Neurons you can run, own and reuse">
-        Every circuit below is compiled to a TapeOut netlist and checked against its reference model on every possible
-        input. Gate counts are exact, so a circuit costs exactly that many transistors to tape out.
-      </SectionHead>
-      <div className="lp-catalog">
-        {CATALOG.map((c) => (
-          <div key={c.name} className={`card lp-cat k-${c.kind}`}>
-            <div className="lp-cat-top">
-              <span className="lp-cat-kind tiny">{KIND_LABEL[c.kind]}</span>
-              <span className="tiny muted mono">{c.io}</span>
-            </div>
-            <h3>{c.name}</h3>
-            <div className="lp-cat-gates mono">{c.gates}</div>
-            <p className="muted small">{c.note}</p>
-          </div>
-        ))}
+    <section className="ds-section">
+      <Sec id="catalog" n="03" label="Ordering information" title={<>Neurons you can run, <em>own and reuse.</em></>}>
+        Every circuit is compiled to a TapeOut netlist and checked against its reference model on every possible input.
+        Gate counts are exact and read from each circuit’s onchain netlist: a circuit costs exactly that many
+        transistors to tape out.
+      </Sec>
+      <div className="ds-table-wrap">
+        <table className="ds-table ds-catalog">
+          <thead>
+            <tr>
+              <th>Part</th>
+              <th>Circuit</th>
+              <th>Type</th>
+              <th>I/O</th>
+              <th className="r">Gates</th>
+              <th className="ds-hide-sm">Description</th>
+              <th className="r">Onchain</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r) => (
+              <tr key={r.key}>
+                <td className="ds-part">{r.part}</td>
+                <td className="ds-strong">{r.name}</td>
+                <td>
+                  <span className={`ds-tag ds-tag-${r.kind.toLowerCase()}`}>{r.kind}</span>
+                </td>
+                <td className="ds-mono">{r.c ? `${r.c.nIn} → ${r.c.nOut}` : '…'}</td>
+                <td className="r ds-mono">{r.c ? gates(r.c.counts) : '…'}</td>
+                <td className="ds-dim-t ds-hide-sm">{r.note}</td>
+                <td className="r">
+                  {r.id !== undefined ? (
+                    <a className="ds-id" href={playground(r.id)} title={`Run circuit #${r.id} onchain`}>
+                      #{r.id} ↗
+                    </a>
+                  ) : (
+                    '…'
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
-      <p className="tiny muted lp-note">
-        REF reuses a circuit that is already taped out, on Cerebr or on any other TapeOut processor, without burning
-        more transistors. The tape-out fee still applies to each new circuit.
+      <p className="ds-note">
+        {circuits ? (
+          <>
+            <span className="ds-live" /> I/O and gates read live from {circuits.length} circuits on X Layer (
+            <code>circuitInfo</code> + decoded <code>netlist</code>).{' '}
+          </>
+        ) : (
+          'Reading circuits from X Layer… '
+        )}
+        REF reuses a circuit already taped out - on Cerebr or on any other TapeOut processor - without burning more
+        transistors. The tape-out fee still applies to each new circuit. Helper circuits{' '}
+        {helpers.map((id, i) => (
+          <span key={id}>
+            {i ? ' and ' : ''}#{id}
+          </span>
+        ))}{' '}
+        are the line cell and any-of-3 pooling neuron used by CRB-L9R.
       </p>
     </section>
   )
 }
 
-function IssuanceSection() {
-  const cap = ISSUANCE.supplyCap
-  const price = ISSUANCE.mintPrice
-  const cards: { k: string; v: string; u: string; todo?: boolean }[] = [
-    { k: 'Transistor supply cap', v: cap !== undefined ? int(cap) : SET_AT_LAUNCH, u: 'NAND + LATCH share it', todo: cap === undefined },
-    { k: 'Unit price', v: price !== undefined ? okb(price) : SET_AT_LAUNCH, u: 'OKB per transistor', todo: price === undefined },
-    { k: 'Mint fee', v: FEES.mintCall, u: 'OKB per mint call, to TapeOut' },
-    { k: 'Tape-out fee', v: FEES.tapeout, u: 'OKB per circuit, to TapeOut' },
-  ]
+function Stateful({ live }: { live: Live }) {
+  const { timing, byId } = live
+  const c = byId(SPIKING)
+  const n = SPIKES.length
   return (
-    <section className="lp-section">
-      <SectionHead id="issuance" kicker="Asset issuance" title="One asset: the transistor">
-        Cerebr has no token of its own. The asset is the Cerebr processor’s transistor, issued through the TapeOut
-        factory with a supply cap and unit price that are public from the moment it is deployed.
-      </SectionHead>
-      <div className="lp-nums">
-        {cards.map((c) => (
-          <div key={c.k} className={`lp-num${c.todo ? ' lp-todo' : ''}`}>
-            <div className="stat-label">{c.k}</div>
-            <div className="lp-num-v mono">{c.v}</div>
-            <div className="small muted">{c.u}</div>
+    <section className="ds-section">
+      <Sec n="04" label="Application note · memory" title={<>Neurons that <em>remember.</em></>}>
+        LATCH transistors hold state between calls, so a circuit can integrate over time. CRB-S2L counts input spikes in
+        {c ? ` ${c.counts.latch} latches` : ' latches'} and fires on every third one - a spiking neuron in{' '}
+        {L(c && gates(c.counts).replace(' + ', ' and '))}, stepped onchain with <code>step()</code>.
+      </Sec>
+      <figure className="ds-fig ds-fig-timing">
+        <TimingDiagram spikes={SPIKES} counts={timing?.counts} fires={timing?.fires} />
+        <figcaption>
+          Fig. 4 - CRB-S2L timing, computed from #{SPIKING}’s onchain netlist with the SDK simulator; every tick then
+          checked with <code>step()</code> on X Layer. COUNT is held in {c ? c.counts.latch : '…'} LATCHes; FIRE goes high
+          on every third spike.{' '}
+          {timing?.verified !== undefined ? (
+            timing.mismatch === undefined ? (
+              <>
+                <span className="ds-live" /> Verified onchain: {timing.verified}/{n} ticks.
+              </>
+            ) : (
+              `step() disagrees at tick ${timing.mismatch + 1} (${timing.verified}/${n} ticks match).`
+            )
+          ) : timing ? (
+            'Checking ticks with step()…'
+          ) : (
+            'Reading netlist…'
+          )}
+        </figcaption>
+      </figure>
+    </section>
+  )
+}
+
+/* ------------------------------------------------------------------------------------------------ */
+
+function IssuanceSection({ live }: { live: Live }) {
+  const { cpu, fees, byId, misc } = live
+  const holdings = useCreatorHoldings(cpu)
+  const ratings: { k: string; v: React.ReactNode; u: string }[] = [
+    { k: 'Transistor supply cap', v: L(cpu?.supplyCap, int), u: 'NAND + LATCH share it' },
+    { k: 'Unit price', v: L(cpu?.mintPrice, okb), u: 'OKB per transistor' },
+    { k: 'Mint fee', v: L(fees?.protocolFee, okb), u: 'OKB per mint call → TapeOut' },
+    { k: 'Tape-out fee', v: L(fees?.tapeoutFee, okb), u: 'OKB per circuit → TapeOut' },
+  ]
+  const gas = misc && Number(formatGwei(misc.gasPrice)).toLocaleString('en-US', { maximumSignificantDigits: 2 })
+  return (
+    <section className="ds-section">
+      <Sec id="issuance" n="05" label="Absolute ratings · issuance" title={<>One asset: <em>the transistor.</em></>}>
+        Cerebr has no token of its own. The asset is the Cerebr processor’s transistor, issued through the TapeOut factory
+        with a supply cap and unit price that are public from the moment it was deployed.
+      </Sec>
+      <div className="ds-ratings">
+        {ratings.map((r) => (
+          <div key={r.k} className="ds-rating">
+            <div className="ds-rating-k">{r.k}</div>
+            <div className="ds-rating-v">{r.v}</div>
+            <div className="ds-rating-u">{r.u}</div>
           </div>
         ))}
       </div>
-      <div className="lp-split">
-        <ul className="lp-facts">
+      <div className="ds-cols">
+        <ul className="ds-list">
           <li>
             <b>Fixed supply, fixed price.</b> Set once at <code>createCPU</code>; Cerebr cannot change them (TapeOut’s
-            contracts that enforce them are upgradeable by TapeOut). No curve, no presale and no team allocation.
-            Anyone mints at the same price until the cap is reached.
+            contracts that enforce them are upgradeable by TapeOut). No curve, no presale, no team allocation.
           </li>
           <li>
-            <b>Burned by use.</b> Each NAND gate in a taped-out circuit burns one NAND transistor, and each LATCH burns
-            one LATCH. Burns don’t free up room under the cap, so transistors only get scarcer.
+            <b>Burned by use.</b> Each NAND gate in a taped-out circuit burns one NAND transistor, each LATCH one LATCH.
+            Burns don’t free room under the cap, so transistors only get scarcer.
           </li>
           <li>
-            <b>Where the OKB goes.</b> The unit price goes to the processor’s creator, who withdraws it from the
-            contract. The mint fee and tape-out fee go to TapeOut.
+            <b>Where the OKB goes.</b> The unit price goes to the processor’s creator; the mint and tape-out fees go to
+            TapeOut.
           </li>
           <li>
-            <b>No fake activity.</b> We tape out our showcase circuits once each from the deployment wallet and say so.
-            The creator also keeps 1,000 NAND and 100 LATCH, minted at the public price and disclosed. We never trade
-            with ourselves to inflate numbers.
+            <b>No fake activity.</b> Showcase circuits were taped out once each from the deployment wallet
+            {cpu ? (
+              <>
+                {' '}
+                (
+                <a href={`${EXPLORER}/address/${cpu.creator}`} target="_blank" rel="noreferrer">
+                  {short(cpu.creator)}
+                </a>
+                )
+              </>
+            ) : null}
+            , which also holds {L(holdings?.nand, int)} NAND and {L(holdings?.latch, int)} LATCH minted at the public
+            price (read live) - all disclosed. We never trade with ourselves.
           </li>
         </ul>
-        <div className="card">
-          <h3 className="lp-h3">What a circuit costs</h3>
-          <table className="lp-cost">
+        <div className="ds-table-wrap">
+          <table className="ds-table">
             <thead>
               <tr>
                 <th>Circuit</th>
-                <th>Transistors</th>
-                <th>Fees (OKB)</th>
+                <th className="r">Transistors</th>
+                <th className="r">Fee (OKB)</th>
               </tr>
             </thead>
             <tbody>
-              {[
-                ['Inhibitory neuron', 1],
-                ['XOR network', 6],
-                ['XOR network (REF)', 0],
-                ['Line detector', 37],
-                ['Line detector (REF)', 0],
-              ].map(([n, t]) => (
-                <tr key={n}>
-                  <td>{n}</td>
-                  <td className="mono">{t}</td>
-                  <td className="mono">{FEES.tapeout}</td>
-                </tr>
-              ))}
+              {COST_IDS.map((id) => {
+                const c = byId(id)
+                return (
+                  <tr key={id}>
+                    <td>{nameOf(id)}</td>
+                    <td className="r ds-mono">{L(c && burns(c.counts))}</td>
+                    <td className="r ds-mono">{L(fees?.tapeoutFee, okb)}</td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
-          <p className="tiny muted">
-            Plus the transistors themselves at the unit price, a {FEES.mintCall} OKB fee per mint call and gas (about
-            0.02 gwei on X Layer). Fees are TapeOut’s and can change; the dApp reads them live before every quote.
+          <p className="ds-note">
+            Plus the transistors at the unit price, {L(fees?.protocolFee, okb)} OKB per mint call and gas (~{L(gas)} gwei
+            on X Layer now). Transistor counts come from each circuit’s onchain netlist; fees are TapeOut’s, can change
+            and are read live here and by the dApp before every quote.
           </p>
         </div>
       </div>
@@ -504,33 +740,36 @@ function IssuanceSection() {
   )
 }
 
-function BrainWallets() {
+function BrainWallets({ live }: { live: Live }) {
+  const { fees, misc } = live
   return (
-    <section className="lp-section">
-      <SectionHead id="wallets" kicker="Brain wallets" title="Every neuron can have a wallet">
+    <section className="ds-section">
+      <Sec id="wallets" n="06" label="Peripherals · brain wallets" title={<>Every neuron can <em>hold a wallet.</em></>}>
         Each taped-out circuit can open TapeOut’s native ERC-6551 account. A neuron can then hold OKB, tokens and NFTs
         and call contracts. Whoever owns the circuit NFT controls its wallet.
-      </SectionHead>
-      <div className="lp-split">
-        <div className="card lp-nest">
-          <WalletDiagram />
-        </div>
-        <ul className="lp-facts">
+      </Sec>
+      <div className="ds-cols">
+        <figure className="ds-fig">
+          <WalletDiagram misc={misc} />
+          <figcaption>
+            Fig. 5 - Circuit NFT and its native account. Live example: circuit #{String(WALLET_ID)}
+            {misc ? `, wallet ${misc.wallet.opened ? 'opened' : 'not opened yet'} (read live).` : '.'}
+          </figcaption>
+        </figure>
+        <ul className="ds-list">
           <li>
-            <b>Address known up front.</b> <code>accountOf(circuit)</code> returns the wallet’s address before it
-            exists, so a neuron can receive funds straight away.
+            <b>Address known up front.</b> <code>accountOf(circuit)</code> returns the wallet address before it exists,
+            so a neuron can receive funds straight away.
           </li>
           <li>
-            <b>Opened on demand.</b> <code>open()</code> deploys the account for {FEES.open} OKB, paid to TapeOut.
-            Anyone can pay to open a wallet for any circuit.
+            <b>Opened on demand.</b> <code>open()</code> deploys the account for {L(fees?.openFee, okb)} OKB, paid to TapeOut.
           </li>
           <li>
-            <b>Sold with the neuron.</b> Control follows the circuit NFT. Transfer the circuit and its wallet goes with
-            it.
+            <b>Sold with the neuron.</b> Control follows the circuit NFT. Transfer the circuit and its wallet goes with it.
           </li>
           <li>
-            <b>One rule.</b> Never send a circuit into its own wallet: the wallet would own itself and be locked for
-            good. The dApp offers no circuit transfers, so it can’t happen there.
+            <b>One rule.</b> Never send a circuit into its own wallet: it would own itself and be locked for good. The dApp
+            offers no circuit transfers, so it can’t happen there.
           </li>
         </ul>
       </div>
@@ -538,40 +777,46 @@ function BrainWallets() {
   )
 }
 
-function WalletDiagram() {
-  const box = (x: number, y: number, w: number, label: string, color: string, sub: string) => (
-    <g>
-      <rect x={x} y={y} width={w} height="46" rx="10" fill="#101622" stroke={color} strokeWidth="1.6" />
-      <text x={x + 14} y={y + 20} fill={color} className="lp-svg-title">{label}</text>
-      <text x={x + 14} y={y + 36} fill="#8b98a9" className="lp-svg-label">{sub}</text>
-    </g>
-  )
+function WalletDiagram({ misc }: { misc?: Misc }) {
+  const id = String(WALLET_ID)
   return (
-    <svg viewBox="0 0 400 250" className="lp-nest-svg" role="img" aria-label="A Cerebr circuit NFT controlling its TapeOut native account">
-      {box(110, 10, 180, 'Circuit #7 · XOR', '#2bb3ff', 'NFT owned by you')}
-      <path d="M200 56 V78" stroke="#2bb3ff" strokeDasharray="3 4" />
-      <rect x="20" y="80" width="360" height="160" rx="14" fill="rgba(43,179,255,0.05)" stroke="#2bb3ff" strokeOpacity="0.5" strokeDasharray="5 5" />
-      <text x="36" y="104" fill="#2bb3ff" className="lp-svg-title">Native account of #7 (ERC-6551)</text>
-      {box(36, 120, 150, 'OKB · tokens', '#3ddc97', 'held by the neuron')}
-      {box(214, 120, 150, 'execute()', '#b26bff', 'calls any contract')}
-      <text x="36" y="200" fill="#e6edf3" className="lp-svg-label">owner() = ownerOf(#7), at all times</text>
-      <text x="36" y="220" fill="#8b98a9" className="lp-svg-label">opener.open(circuits, 7) deploys it via the 6551 registry</text>
+    <svg viewBox="0 0 400 240" className="ds-svg" role="img" aria-label="A Cerebr circuit NFT controlling its TapeOut native account">
+      <rect x="120" y="10" width="160" height="44" className="ds-box ds-box-acc" />
+      <text x="134" y="30" className="ds-box-t">CIRCUIT #{id} · XOR</text>
+      <text x="134" y="45" className="ds-box-s">NFT · owned by you</text>
+      <line x1="200" y1="54" x2="200" y2="82" className="ds-edge" strokeDasharray="3 4" />
+      <text x="208" y="72" className="ds-box-s">owner()</text>
+      <rect x="20" y="82" width="360" height="148" className="ds-box ds-box-dash" />
+      <text x="36" y="104" className="ds-box-t">NATIVE ACCOUNT · ERC-6551</text>
+      <rect x="36" y="118" width="150" height="44" className="ds-box" />
+      <text x="50" y="137" className="ds-box-t">OKB · TOKENS</text>
+      <text x="50" y="152" className="ds-box-s">held by the neuron</text>
+      <rect x="214" y="118" width="150" height="44" className="ds-box" />
+      <text x="228" y="137" className="ds-box-t">execute()</text>
+      <text x="228" y="152" className="ds-box-s">calls any contract</text>
+      <text x="36" y="190" className="ds-box-s">owner() = ownerOf(#{id}), at all times</text>
+      <text x="36" y="208" className="ds-box-s">
+        opener.accountOf(circuits, {id}) → {misc ? short(misc.wallet.account) : '…'}
+      </text>
     </svg>
   )
 }
 
+/** Circuits in the issuance cost table (copy keys, matched onchain by id). */
+const COST_IDS = [3, 4, 5, 11, 12]
+
 const USES = [
   {
-    t: 'On-chain game AI',
+    t: 'Onchain game AI',
     b: 'Enemy logic, bot players and referees that run as real circuits. Every move can be replayed and checked by anyone with a view call.',
   },
   {
     t: 'Verifiable inference for agents',
-    b: 'DeAI agents can call a small, fixed classifier on-chain and check exactly which circuit made the decision. No oracle, no trusted server.',
+    b: 'DeAI agents call a small, fixed classifier onchain and can check exactly which circuit made the decision. No oracle, no server.',
   },
   {
     t: 'Composable neurons',
-    b: 'Our neurons are public building blocks. Any team on TapeOut can REF them into a bigger network without burning a single transistor.',
+    b: 'Our neurons are public building blocks. Any team on TapeOut can REF them into a bigger network without burning a transistor.',
   },
   {
     t: 'Teaching how brains compute',
@@ -579,18 +824,19 @@ const USES = [
   },
 ]
 
-function UseCases() {
+function Applications() {
   return (
-    <section className="lp-section">
-      <SectionHead kicker="Use cases" title="Small, honest intelligence that lives on-chain" />
-      <div className="lp-cards-4">
-        {USES.map((c) => (
-          <div key={c.t} className="card lp-mini">
-            <h3>{c.t}</h3>
-            <p className="muted">{c.b}</p>
-          </div>
+    <section className="ds-section">
+      <Sec n="07" label="Typical applications" title={<>Small, honest intelligence <em>that lives onchain.</em></>} />
+      <ol className="ds-apps">
+        {USES.map((u, i) => (
+          <li key={u.t}>
+            <span className="ds-apps-n">0{i + 1}</span>
+            <h3>{u.t}</h3>
+            <p>{u.b}</p>
+          </li>
         ))}
-      </div>
+      </ol>
     </section>
   )
 }
@@ -605,34 +851,47 @@ const { circuitId } = await tapeout.tapeout(wallet, client, {
   circuits: CEREBR, netlist: encodeHex(nl), nIn: 2, nOut: 1,
 })
 
-// run it on-chain, for free: x0 = 1, x1 = 0
+// run it onchain, for free: x0 = 1, x1 = 0
 await tapeout.evalCircuit(client, {
   circuits: CEREBR, id: circuitId, inputs: [1, 0],
 }) // → [1]`
 
 function Builders() {
+  const lines = SDK_SNIPPET.split('\n')
   return (
-    <section className="lp-section">
-      <SectionHead kicker="For builders" title="A compiler, an SDK and an on-chain renderer" />
-      <div className="lp-split">
-        <pre className="card lp-code mono">{SDK_SNIPPET}</pre>
-        <ul className="lp-facts">
+    <section className="ds-section">
+      <Sec n="08" label="Development tools" title={<>A compiler, an SDK <em>and an onchain renderer.</em></>} />
+      <div className="ds-cols">
+        <div className="ds-code">
+          <div className="ds-code-bar">
+            <span>xor.ts</span>
+            <span>@cerebr/sdk</span>
+          </div>
+          <pre>
+            {lines.map((l, i) => (
+              <div key={i} className="ds-code-line">
+                <span className="ds-code-ln">{String(i + 1).padStart(2, ' ')}</span>
+                <span className={l.trim().startsWith('//') ? 'ds-code-c' : undefined}>{l || ' '}</span>
+              </div>
+            ))}
+          </pre>
+        </div>
+        <ul className="ds-list">
           <li>
-            <b>Neural compiler.</b> Threshold neurons, majority votes, multi-layer networks and spiking neurons compile
-            to TapeOut netlists. A built-in simulator matches TapeOut’s own byte for byte.
+            <b>Neural compiler.</b> Threshold neurons, majority votes, multi-layer networks and spiking neurons compile to
+            TapeOut netlists. A built-in simulator matches TapeOut’s own, byte for byte.
           </li>
           <li>
-            <b>TapeOut SDK.</b> Typed viem helpers for every step: create a CPU, mint, tape out, eval, step and open
-            accounts, with fee quotes read live from the chain.
+            <b>TapeOut SDK.</b> Typed viem helpers for every step - create a CPU, mint, tape out, eval, step and open
+            accounts - with fee quotes read live from the chain.
           </li>
           <li>
-            <b>CerebrScope.</b> An on-chain lens that draws each circuit as an SVG die shot from its actual gates,
-            serves its metadata and runs small truth tables in one call. TapeOut circuits return an empty{' '}
-            <code>tokenURI</code> today; Scope fills that gap.
+            <b>CerebrScope.</b> An onchain lens that draws each circuit as an SVG die shot from its actual gates and
+            serves its metadata. TapeOut circuits return an empty <code>tokenURI</code> today; Scope fills that gap.
           </li>
           <li>
-            <b>Verified on a mainnet fork.</b> Every TapeOut call we rely on was checked on a local copy of X Layer
-            mainnet before any real transaction.
+            <b>Verified twice.</b> Every TapeOut call was checked on a mainnet fork, then on mainnet itself, where every
+            catalog circuit matched the simulator on every input. This page re-checks XOR and the spiking neuron live.
           </li>
         </ul>
       </div>
@@ -640,30 +899,31 @@ function Builders() {
   )
 }
 
-function Security() {
+function Security({ live }: { live: Live }) {
+  const { fees } = live
   return (
-    <section className="lp-section">
-      <SectionHead id="security" kicker="Security & honesty" title="What we control, and what we don’t">
-        Cerebr adds no custody and no token of its own. Here’s exactly where your OKB and your trust go.
-      </SectionHead>
-      <div className="lp-split">
-        <div className="card">
-          <h3 className="lp-h3">By design</h3>
-          <ul className="lp-checks">
+    <section className="ds-section">
+      <Sec id="security" n="09" label="Reliability" title={<>What we control, <em>and what we don’t.</em></>}>
+        Cerebr adds no custody and no token of its own. Here is exactly where your OKB and your trust go.
+      </Sec>
+      <div className="ds-cols ds-cols-even">
+        <div className="ds-panel">
+          <div className="ds-panel-h">Guaranteed by design</div>
+          <ul className="ds-checks">
             <li>Cerebr holds no user funds. Mints, tape-outs and wallets are direct calls to TapeOut’s contracts.</li>
-            <li>CerebrScope holds no funds and has no admin. Its only state is an optional label registry, and only a circuit’s owner can label it.</li>
-            <li>Supply cap and unit price are set once at deployment and published on this page. Cerebr has no way to change them.</li>
+            <li>CerebrScope holds no funds and has no admin; only a circuit’s owner can label it. Source verified on Sourcify.</li>
+            <li>Supply cap and unit price were set once at deployment and are read live from chain here. Cerebr cannot change them.</li>
             <li>The dApp reads fees live and sends exact amounts, so no OKB is stranded by overpaying.</li>
-            <li>Every catalog circuit is checked against its reference model on all inputs before it is taped out.</li>
+            <li>Every catalog circuit is checked against its reference model on all inputs before and after tape-out.</li>
           </ul>
         </div>
-        <div className="card">
-          <h3 className="lp-h3">Risks we disclose</h3>
-          <ul className="lp-warns">
+        <div className="ds-panel ds-panel-warn">
+          <div className="ds-panel-h">Disclosed risks</div>
+          <ul className="ds-warns">
             <li>TapeOut’s X Layer contracts are in a test phase, upgradeable and unaudited. Their owner can change code and fees.</li>
-            <li>Opening a brain wallet costs {FEES.open} OKB, paid to TapeOut, not to Cerebr.</li>
-            <li>Circuits run as view calls with gas limits, so on-chain networks stay small: tens to hundreds of gates.</li>
-            <li>Our compiler, CerebrScope, launch script and dApp had an internal review (AUDIT.md), not a professional third-party audit.</li>
+            <li>Opening a brain wallet costs {L(fees?.openFee, okb)} OKB (read live), paid to TapeOut, not to Cerebr.</li>
+            <li>Circuits run as view calls with gas limits, so onchain networks stay small: tens to hundreds of gates.</li>
+            <li>Our compiler, CerebrScope, launch script and dApp had an internal review (AUDIT.md), not a third-party audit.</li>
           </ul>
         </div>
       </div>
@@ -682,7 +942,7 @@ const FAQ = [
   ],
   [
     'Are these real neural networks?',
-    'They are binary neural networks: neurons with integer weights and a threshold, outputting 0 or 1. Small, but real, and every one runs gate by gate on-chain.',
+    'They are binary neural networks: neurons with integer weights and a threshold, outputting 0 or 1. Small, but real, and every one runs gate by gate onchain.',
   ],
   [
     'Does running a circuit cost anything?',
@@ -692,21 +952,22 @@ const FAQ = [
     'Can I use Cerebr neurons in my own circuit?',
     'Yes. Add a REF to the circuit’s id in your netlist. It burns no transistors and pays no royalty; you only pay the normal tape-out fee for your own circuit.',
   ],
-  [
-    'What do I need to start?',
-    'An injected wallet such as OKX Wallet and a little OKB on X Layer for transistors, fees and gas.',
-  ],
+  ['What do I need to start?', 'An injected wallet such as OKX Wallet and a little OKB on X Layer for transistors, fees and gas.'],
 ] as const
 
 function Faq() {
   return (
-    <section className="lp-section">
-      <SectionHead id="faq" kicker="FAQ" title="Questions, answered" />
-      <div className="lp-faq">
-        {FAQ.map(([q, a]) => (
-          <details key={q} className="card lp-qa">
-            <summary>{q}</summary>
-            <p className="muted">{a}</p>
+    <section className="ds-section">
+      <Sec id="faq" n="10" label="Frequently asked" title={<>Questions, <em>answered.</em></>} />
+      <div className="ds-faq">
+        {FAQ.map(([q, a], i) => (
+          <details key={q} className="ds-qa">
+            <summary>
+              <span className="ds-qa-n">Q{i + 1}</span>
+              <span className="ds-qa-q">{q}</span>
+              <span className="ds-qa-x" aria-hidden />
+            </summary>
+            <p>{a}</p>
           </details>
         ))}
       </div>
@@ -716,36 +977,52 @@ function Faq() {
 
 function FinalCta() {
   return (
-    <section className="lp-final card">
-      <div>
-        <h2>
-          Build a neuron. <span className="grad">Tape it out. Watch it think.</span>
+    <section className="ds-final">
+      <div className="ds-final-copy">
+        <span className="ds-sec-n">§11</span>
+        <h2 className="ds-final-h">
+          Build a neuron. Tape it out.
+          <br />
+          <em>Watch it think.</em>
         </h2>
-        <p className="muted">Mint transistors, compile a circuit, tape it out and test it live, all from the dApp.</p>
+        <p className="ds-lede">Mint transistors, compile a circuit, tape it out and test it live - all from the dApp.</p>
       </div>
-      <LaunchButton big />
+      <div className="ds-final-cta">
+        <Launch size="lg" />
+        <a className="ds-btn ds-btn-line ds-btn-lg" href={REPO_HREF} target="_blank" rel="noreferrer">
+          Read the source
+        </a>
+      </div>
     </section>
   )
 }
 
-function LandingFooter() {
+function Footer() {
   return (
-    <footer className="lp-footer">
-      <div className="brand">
-        <Logo size={26} />
-        <span className="brand-name">CEREBR</span>
+    <footer className="ds-footer">
+      <div className="ds-footer-top">
+        <div className="ds-footer-brand">
+          <a className="ds-brand" href="/">
+            <Logo size={22} />
+            <span className="ds-brand-name">Cerebr</span>
+          </a>
+          <BuiltBy />
+        </div>
+        <nav className="ds-footer-links">
+          <a href={APP_HREF}>App</a>
+          <a href={REPO_HREF} target="_blank" rel="noreferrer">
+            GitHub
+          </a>
+          <a href={TAPEOUT_HREF} target="_blank" rel="noreferrer">
+            TapeOut
+          </a>
+          {ISSUANCE.cpu && (
+            <a href={`${EXPLORER}/address/${ISSUANCE.cpu}`} target="_blank" rel="noreferrer">
+              Processor on OKLink
+            </a>
+          )}
+        </nav>
       </div>
-      <p className="tiny muted">
-        A neural processor built on{' '}
-        <a href={TAPEOUT_HREF} target="_blank" rel="noreferrer">
-          TapeOut
-        </a>{' '}
-        for the IGNIX X Layer hackathon. Smart contracts carry risk; only use funds you can afford to lose. Not financial
-        advice.
-      </p>
-      <a className="small" href={APP_HREF}>
-        Launch App →
-      </a>
     </footer>
   )
 }
