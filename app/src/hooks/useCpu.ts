@@ -5,9 +5,8 @@ import type { Address, PublicClient } from 'viem'
 import { listCircuits, readCpu, readFees, transistorBalances, type CpuInfo } from '@cerebr/sdk/tapeout'
 import type { TapeoutFees } from '@cerebr/sdk/tapeout'
 import { cpuFor } from '../config/env.ts'
-import { FORK_CHAIN_ID } from '../config/chains.ts'
-import { identifyCircuits, indexByNetlist, fallbackLabel, type ChainCircuit, type CircuitLabel } from '../lib/cerebr.ts'
-import { loadLabels } from '../lib/labels.ts'
+import { TAPEOUT, identifyCircuits, indexByNetlist, resolveLabel, type ChainCircuit, type CircuitLabel } from '../lib/cerebr.ts'
+import { hasLabel, readLabels, type OnchainLabel } from '../lib/scope.ts'
 
 /** Current chain, its Cerebr CPU config, a public client and explorer links. */
 export function useNet() {
@@ -24,7 +23,6 @@ export function useNet() {
     cfg,
     pc,
     blockNumber,
-    isFork: chainId === FORK_CHAIN_ID,
     explorerAddr: (a: string) => (explorer ? `${explorer}/address/${a}` : undefined),
     explorerTx: (h: string) => (explorer ? `${explorer}/tx/${h}` : undefined),
   }
@@ -32,7 +30,7 @@ export function useNet() {
 
 export type CpuState = CpuInfo & { fees: TapeoutFees }
 
-/** The Cerebr CPU as TapeOut reports it (name, story, cap, minted, price, fees, circuit count). */
+/** The Cerebr CPU as TapeOut reports it (name, story, cap, minted, price, fees, circuit count). Live reads only. */
 export function useCpu() {
   const { chainId, cfg, pc } = useNet()
   const q = useQuery({
@@ -40,29 +38,50 @@ export function useCpu() {
     enabled: !!pc && !!cfg,
     refetchInterval: 15_000,
     queryFn: async (): Promise<CpuState> => {
-      const cpu = await readCpu(pc!, cfg!.circuits)
-      const fees = await readFees(pc!, cpu)
+      // Both reads are independent: one round trip each, sent together.
+      const [cpu, fees] = await Promise.all([readCpu(pc!, cfg!.circuits, undefined, { transistors: cfg!.transistors }), readFees(pc!, { circuits: cfg!.circuits })])
       return { ...cpu, fees }
     },
   })
   return { cfg, cpu: q.data, error: q.error, isLoading: q.isLoading }
 }
 
-export type CircuitRow = ChainCircuit & { label: CircuitLabel; known: boolean }
+export type CircuitRow = ChainCircuit & {
+  /** What the app shows: onchain label, else catalog identification, else 'Circuit #N'. */
+  label: CircuitLabel
+  /** Recognised as a catalog circuit from its netlist bytes. */
+  known: boolean
+  /** The circuit's CerebrScope label, when its owner has set one. */
+  onchain?: OnchainLabel
+  /** The catalog label matched from the bytes, if any (what "Name onchain" proposes). */
+  catalog?: CircuitLabel
+}
 
-/** Every circuit on the Cerebr CPU, with its netlist and what the app recognises it as. */
+/**
+ * Every circuit on the Cerebr CPU, with its netlist and its name: CerebrScope's onchain label, the
+ * catalog entry matched by netlist bytes, or 'Circuit #N'. Circuits and labels are read in parallel,
+ * one multicall each.
+ */
 export function useCircuits() {
   const { chainId, cfg, pc } = useNet()
   const { cpu } = useCpu()
   const count = cpu?.circuitCount
   const q = useQuery({
-    queryKey: ['cerebr', 'circuits', chainId, cfg?.circuits, count?.toString()],
+    queryKey: ['cerebr', 'circuits', chainId, cfg?.circuits, cfg?.scope, count?.toString()],
     enabled: !!pc && !!cfg && count !== undefined,
     staleTime: 30_000,
     queryFn: async () => {
-      const list = (await listCircuits(pc!, cfg!.circuits, { withNetlist: true })) as ChainCircuit[]
-      const labels = identifyCircuits(cfg!.circuits, list, cfg!.catalog, loadLabels(chainId, cfg!.circuits))
-      const rows: CircuitRow[] = list.map((c) => ({ ...c, label: labels.get(c.id) ?? fallbackLabel(c), known: labels.has(c.id) }))
+      const ids = Array.from({ length: Number(count) }, (_, i) => BigInt(i + 1))
+      const [list, onchain] = await Promise.all([
+        listCircuits(pc!, cfg!.circuits, { withNetlist: true }) as Promise<ChainCircuit[]>,
+        cfg!.scope ? readLabels(pc!, cfg!.scope, cfg!.circuits, ids, TAPEOUT.multicall3) : Promise.resolve(new Map<bigint, OnchainLabel>()),
+      ])
+      const catalog = identifyCircuits(cfg!.circuits, list, cfg!.catalog)
+      const rows: CircuitRow[] = list.map((c) => {
+        const own = onchain.get(c.id)
+        const cat = catalog.get(c.id)
+        return { ...c, label: resolveLabel(c, own, cat), known: !!cat, onchain: hasLabel(own) ? own : undefined, catalog: cat }
+      })
       return { rows, index: indexByNetlist(list) }
     },
   })
