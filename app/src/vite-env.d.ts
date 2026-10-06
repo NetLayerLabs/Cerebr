@@ -10,6 +10,7 @@ interface ImportMetaEnv {
   readonly VITE_DROPS_196?: string
   readonly VITE_MARKET_196?: string
   readonly VITE_ARENA_196?: string
+  readonly VITE_AGENT_196?: string
 }
 
 interface ImportMeta {

@@ -18,11 +18,11 @@ export function cpuFor(chainId: number): CpuConfig | undefined {
 }
 
 /**
- * Drops, marketplace and NeuralArena on `chainId` (config/contracts.ts), overridden at build time by
- * VITE_DROPS_196 / VITE_MARKET_196 / VITE_ARENA_196. Views read it through useNet().contracts.
+ * Drops, marketplace, NeuralArena and CerebrAgent on `chainId` (config/contracts.ts), overridden at build time by
+ * VITE_DROPS_196 / VITE_MARKET_196 / VITE_ARENA_196 / VITE_AGENT_196. Views read it through useNet().contracts.
  */
 export function contractsFor(chainId: number): ContractsConfig | undefined {
-  return contractsConfigFor(chainId, { drops: addr(env.VITE_DROPS_196), market: addr(env.VITE_MARKET_196), arena: addr(env.VITE_ARENA_196) })
+  return contractsConfigFor(chainId, { drops: addr(env.VITE_DROPS_196), market: addr(env.VITE_MARKET_196), arena: addr(env.VITE_ARENA_196), agent: addr(env.VITE_AGENT_196) })
 }
 
 export const appChains = [xLayer] as [Chain, ...Chain[]]

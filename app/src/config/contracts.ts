@@ -22,6 +22,14 @@ export type ContractsConfig = {
   arenaFrom: bigint
   /** The arena bot's circuit id on the Cerebr CPU. */
   arenaBot: bigint
+  /** CerebrAgent: an autonomous agent whose policy is a taped-out neuron (AGENT.md). Read-only in the app. */
+  agent: Address
+  /** The agent's policy circuit id on the Cerebr CPU (#8, the Go/No-Go Neuron). */
+  agentPolicy: bigint
+  /** The policy circuit's TapeOut ERC-6551 account ("brain wallet"), fixed at deployment. */
+  agentBrain: Address
+  /** The keeper daemon's hot wallet (calls act() every 10 minutes; act() is permissionless). */
+  agentKeeper: Address
 }
 
 export const XLAYER_CONTRACTS: ContractsConfig = {
@@ -33,6 +41,10 @@ export const XLAYER_CONTRACTS: ContractsConfig = {
   arena: '0xD984b3D13603AB51af02ddFFaa1FD86bE8c162BD',
   arenaFrom: 72515972n,
   arenaBot: 16n,
+  agent: '0x3d736c6419dCa667a351907578b68717Cd6e3340',
+  agentPolicy: 8n,
+  agentBrain: '0x550500EF28b4Ebe39a7431E2A86A45f97F6db141',
+  agentKeeper: '0x09a00521Ff00407f81963FcE5D4D20917289902A',
 }
 
 /** Satellite contracts on `chainId` (X Layer mainnet only), with optional overrides. */

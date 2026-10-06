@@ -22,6 +22,7 @@ const PRODUCT: FooterLink[] = [
   { label: 'nav.playground', href: '/app#playground' },
   { label: 'nav.arena', href: '/app#arena' },
   { label: 'nav.gallery', href: '/app#gallery' },
+  { label: 'nav.agent', href: '/app#agent' },
 ]
 
 const onchain = (label: Key, address: string | undefined): FooterLink[] =>
@@ -33,6 +34,7 @@ const ONCHAIN: FooterLink[] = [
   ...onchain('sf.scope', ISSUANCE.scope),
   ...onchain('sf.factory', XLAYER.factory),
   ...onchain('sf.arena', XLAYER_CONTRACTS.arena),
+  ...onchain('sf.agent', XLAYER_CONTRACTS.agent),
   ...onchain('sf.drops', XLAYER_CONTRACTS.drops),
 ]
 

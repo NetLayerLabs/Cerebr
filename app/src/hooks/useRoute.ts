@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-/** Tab order = §01..§06 numbering (a CSS counter). Labels are i18n keys `nav.<id>` (core namespace). */
+/** Tab order = §01..§07 numbering (a CSS counter). Labels are i18n keys `nav.<id>` (core namespace). */
 export const VIEWS = [
   ['processor', 'Processor'],
   ['studio', 'Circuit Studio'],
@@ -8,6 +8,7 @@ export const VIEWS = [
   ['playground', 'Inference'],
   ['arena', 'Arena'],
   ['gallery', 'Gallery'],
+  ['agent', 'Agent'],
 ] as const
 export type View = (typeof VIEWS)[number][0]
 
@@ -19,7 +20,7 @@ function parse(): Route {
   return { view, arg: arg || undefined }
 }
 
-/** Hash routes inside /app: #processor, #studio[/<catalogId>], #train[/<arg>], #playground/<circuitId>, #arena[/<gameId>], #gallery. */
+/** Hash routes inside /app: #processor, #studio[/<catalogId>], #train[/<arg>], #playground/<circuitId>, #arena[/<gameId>], #gallery, #agent. */
 export function useRoute(): Route {
   const [r, setR] = useState(parse)
   useEffect(() => {

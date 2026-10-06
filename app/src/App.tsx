@@ -10,6 +10,7 @@ import { PlaygroundView } from './views/PlaygroundView.tsx'
 import { GalleryView } from './views/GalleryView.tsx'
 import { TrainView } from './views/TrainView.tsx'
 import { ArenaView } from './views/ArenaView.tsx'
+import { AgentView } from './views/AgentView.tsx'
 import { useT } from './i18n/index.tsx'
 
 export function App() {
@@ -57,6 +58,8 @@ export function App() {
           <TrainView key={route.arg} arg={route.arg} />
         ) : route.view === 'arena' ? (
           <ArenaView key={route.arg} arg={route.arg} />
+        ) : route.view === 'agent' ? (
+          <AgentView />
         ) : route.view === 'gallery' ? (
           <GalleryView />
         ) : (
