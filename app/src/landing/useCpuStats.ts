@@ -22,6 +22,9 @@ import {
 } from '@cerebr/sdk/tapeout'
 import { decode, fromHex, OP, prepare, run, type Element, type Program } from '@cerebr/sdk/neuro'
 import { ISSUANCE, RPC_196 } from './issuance.ts'
+import { XLAYER_CONTRACTS } from '../config/contracts.ts'
+import { arenaAbi } from '../lib/arena.ts'
+import { cerebrAgentAbi } from '../../../sdk/src/neuro/agent.ts'
 
 const pc = createPublicClient({ chain: xLayer, transport: http(RPC_196, { batch: { batchSize: 10, wait: 10 } }) }) as PublicClient
 const mc = { allowFailure: false, multicallAddress: XLAYER.multicall3 } as const
@@ -253,6 +256,30 @@ export function useCreatorHoldings(cpu: CpuInfo | undefined): { nand: bigint; la
     enabled: !!cpu,
     ...LIVE,
     queryFn: () => transistorBalances(pc, cpu!.transistors, cpu!.creator),
+  })
+  return data
+}
+
+/** The hero's live proof points: CerebrAgent's latest decision and NeuralArena's record. */
+export type HeroPulse = {
+  agent?: { verdict: number; timestamp: number }
+  arena?: { games: bigint; humanWins: bigint }
+}
+
+export function useHeroPulse(): HeroPulse | undefined {
+  const { data } = useQuery({
+    queryKey: ['landing-pulse', XLAYER_CONTRACTS.agent, XLAYER_CONTRACTS.arena],
+    ...LIVE,
+    queryFn: async (): Promise<HeroPulse> => {
+      const [rec, stats] = await Promise.all([
+        pc.readContract({ address: XLAYER_CONTRACTS.agent, abi: cerebrAgentAbi, functionName: 'latestDecision' }).catch(() => undefined) as Promise<{ seq: number; verdict: number; timestamp: number } | undefined>,
+        pc.readContract({ address: XLAYER_CONTRACTS.arena, abi: arenaAbi, functionName: 'stats' }).catch(() => undefined) as Promise<{ games: bigint; humanWins: bigint } | undefined>,
+      ])
+      return {
+        agent: rec && Number(rec.seq) > 0 ? { verdict: Number(rec.verdict), timestamp: Number(rec.timestamp) } : undefined,
+        arena: stats ? { games: stats.games, humanWins: stats.humanWins } : undefined,
+      }
+    },
   })
   return data
 }

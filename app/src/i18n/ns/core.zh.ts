@@ -31,8 +31,16 @@ export const zh: CoreDict = {
   'l.hero.lede':
     'Cerebr 将神经元编译为真实的 NAND 网表，并在自己的 TapeOut 处理器上流片。每个晶体管都是一个突触，每个电路都是一个归你所有的神经元，任何人都可以通过 <code>eval()</code> 在链上运行推理。',
   'l.hero.cta2': '看一个神经元如何解决 XOR',
-  'l.hero.gates': '逻辑门',
-  'l.hero.inference': '推理',
+  'l.hero.circuits': '电路',
+  'l.hero.tapedOut': '已流片 {n} 个',
+  'l.hero.agent': '智能体',
+  'l.hero.go': 'Go',
+  'l.hero.noGo': 'No-Go',
+  'l.hero.abstain': '弃权',
+  'l.hero.agentNow': '{v} · 刚刚',
+  'l.hero.agentAgo': '{v} · {m} 分钟前',
+  'l.hero.arena': '竞技场',
+  'l.hero.humanWins': '人类 {n} 胜',
   'l.hero.network': '网络',
   'l.hero.fig':
     '图 1 - 实时处理器原理图（俯视）。引脚即其 TapeOut 函数（本页在链上读取成功后点亮）；每个已流片电路对应一个晶粒单元。',

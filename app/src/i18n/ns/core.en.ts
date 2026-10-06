@@ -32,8 +32,16 @@ export const en = {
   'l.hero.lede':
     'Cerebr compiles neurons into real NAND netlists and tapes them out on its own TapeOut processor. Every transistor is a synapse, every circuit is a neuron you own, and anyone can run inference onchain with <code>eval()</code>.',
   'l.hero.cta2': 'See a neuron solve XOR',
-  'l.hero.gates': 'Gates',
-  'l.hero.inference': 'Inference',
+  'l.hero.circuits': 'Circuits',
+  'l.hero.tapedOut': '{n} taped out',
+  'l.hero.agent': 'Agent',
+  'l.hero.go': 'Go',
+  'l.hero.noGo': 'No-Go',
+  'l.hero.abstain': 'Abstain',
+  'l.hero.agentNow': '{v} · just now',
+  'l.hero.agentAgo': '{v} · {m} min ago',
+  'l.hero.arena': 'Arena',
+  'l.hero.humanWins': '{n} human wins',
   'l.hero.network': 'Network',
   'l.hero.fig':
     'Fig. 1 - Schematic of the live processor, top view. Pins are its TapeOut functions (lit when this page has read them onchain); one die cell per taped-out circuit.',

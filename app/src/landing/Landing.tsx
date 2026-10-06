@@ -8,6 +8,7 @@ import { EXPLORER, ISSUANCE, okb, short } from './issuance.ts'
 import {
   useCircuits,
   useCpuStats,
+  useHeroPulse,
   useCreatorHoldings,
   useFees,
   useMisc,
@@ -183,25 +184,7 @@ function Hero({ live }: { live: Live }) {
           </a>
         </div>
         <GenesisDropCta />
-        <dl className="ds-hero-spec">
-          <div>
-            <dt>{t('l.hero.gates')}</dt>
-            <dd>NAND · LATCH · REF</dd>
-          </div>
-          <div>
-            <dt>{t('l.hero.inference')}</dt>
-            <dd>eval() · step()</dd>
-          </div>
-          <div>
-            <dt>{t('l.hero.network')}</dt>
-            <dd className="ds-hero-net">
-              <span aria-hidden>
-                <XLayerMark size={11} />
-              </span>
-              X Layer
-            </dd>
-          </div>
-        </dl>
+        <HeroPulseSpec cpu={cpu} />
       </div>
       <figure className="ds-hero-fig">
         <Pinout
@@ -241,6 +224,53 @@ function GenesisDropCta() {
   )
 }
 /* /GENESIS DROP */
+
+/**
+ * The hero's spec row: live proof points read from X Layer (circuits taped out, CerebrAgent's latest
+ * decision, NeuralArena's record) plus the network. '…' until a read lands; nothing is hardcoded.
+ */
+function HeroPulseSpec({ cpu }: { cpu?: CpuInfo }) {
+  const { t } = useI18n()
+  const p = useHeroPulse()
+  const now = Math.floor(Date.now() / 1000)
+  const a = p?.agent
+  const verdict = a ? (a.verdict === 1 ? t('l.hero.go') : a.verdict === 0 ? t('l.hero.noGo') : t('l.hero.abstain')) : undefined
+  const mins = a ? Math.max(0, Math.round((now - a.timestamp) / 60)) : undefined
+  return (
+    <dl className="ds-hero-spec ds-hero-spec4">
+      <div>
+        <dt>{t('l.hero.circuits')}</dt>
+        <dd>{cpu ? t('l.hero.tapedOut', { n: Number(cpu.circuitCount) }) : '…'}</dd>
+      </div>
+      <div>
+        <dt>{t('l.hero.agent')}</dt>
+        <dd>
+          <a className="ds-hero-link" href={`${APP_HREF}#agent`}>
+            <span className={`ds-pulse ${a?.verdict === 1 ? 'go' : ''}`} aria-hidden />
+            {verdict ? (mins! < 1 ? t('l.hero.agentNow', { v: verdict }) : t('l.hero.agentAgo', { v: verdict, m: mins! })) : '…'}
+          </a>
+        </dd>
+      </div>
+      <div>
+        <dt>{t('l.hero.arena')}</dt>
+        <dd>
+          <a className="ds-hero-link" href={`${APP_HREF}#arena`}>
+            {p?.arena ? t('l.hero.humanWins', { n: Number(p.arena.humanWins) }) : '…'}
+          </a>
+        </dd>
+      </div>
+      <div>
+        <dt>{t('l.hero.network')}</dt>
+        <dd className="ds-hero-net">
+          <span aria-hidden>
+            <XLayerMark size={11} />
+          </span>
+          X Layer
+        </dd>
+      </div>
+    </dl>
+  )
+}
 
 /** Live CPU state as a datasheet "electrical characteristics" table; config values until the read lands. */
 function Characteristics() {
