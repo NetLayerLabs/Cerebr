@@ -4,6 +4,7 @@ import { decode, type Element } from '@cerebr/sdk'
 import { dieShotSvg, svgDataUri } from '../lib/dieShot.ts'
 import { scopeImage } from '../lib/scope.ts'
 import { useNet } from '../hooks/useCpu.ts'
+import { useT } from '../i18n/index.tsx'
 
 type Props = {
   nIn: number
@@ -20,6 +21,7 @@ type Props = {
 export function DieShot(p: Props) {
   const { cfg, pc, chainId } = useNet()
   const scope = cfg?.scope
+  const t = useT()
   const onchain = useQuery({
     queryKey: ['cerebr', 'scope', chainId, scope, cfg?.circuits, p.circuitId?.toString()],
     enabled: !!scope && !!pc && !!cfg && p.circuitId !== undefined,
@@ -45,7 +47,7 @@ export function DieShot(p: Props) {
   return (
     <div className="art">
       {src ? (
-        <img src={src} alt={p.title ?? 'circuit die shot'} loading="lazy" onError={showOnchain ? () => setBadOnchain(onchain.data!) : undefined} />
+        <img src={src} alt={p.title ?? t('die.alt')} loading="lazy" onError={showOnchain ? () => setBadOnchain(onchain.data!) : undefined} />
       ) : (
         <div className="art-ph" />
       )}
@@ -54,7 +56,8 @@ export function DieShot(p: Props) {
           type="button"
           className={`art-tag${showOnchain ? ' on' : ''}`}
           onClick={() => setPreferChain((v) => !v)}
-          title={showOnchain ? 'Showing the SVG rendered onchain by CerebrScope' : 'Show the SVG rendered onchain by CerebrScope'}
+          title={showOnchain ? t('die.showing') : t('die.show')}
+          aria-pressed={showOnchain}
         >
           {showOnchain ? '● Scope SVG' : '○ Scope SVG'}
         </button>

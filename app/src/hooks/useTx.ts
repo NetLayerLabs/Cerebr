@@ -7,6 +7,7 @@ import { errorMessage } from '../lib/errors.ts'
 import type { TxParams } from '../lib/cerebr.ts'
 import { useToasts } from './useToasts.tsx'
 import { useNet } from './useCpu.ts'
+import { translate as t } from '../i18n/index.tsx'
 
 export type { TxParams }
 type SimulateParams = Parameters<typeof simulateContract>[1]
@@ -26,22 +27,22 @@ export function useTx() {
   const send = useCallback(
     async (label: string, params: TxParams, opts: { refresh?: boolean } = {}): Promise<TransactionReceipt | undefined> => {
       if (!address) {
-        push({ kind: 'error', title: 'Connect a wallet first' })
+        push({ kind: 'error', title: t('tx.connectFirst') })
         return undefined
       }
       if (walletChain !== chainId) {
-        push({ kind: 'error', title: 'Wrong network', body: 'Switch your wallet to the selected network.' })
+        push({ kind: 'error', title: t('tx.wrongNetwork'), body: t('tx.wrongNetworkBody') })
         return undefined
       }
       setBusy(label)
-      const id = push({ kind: 'pending', title: label, body: 'Confirm in your wallet…' })
+      const id = push({ kind: 'pending', title: label, body: t('tx.confirm') })
       try {
         const { request } = await simulateContract(config, { ...params, account: address, chainId } as unknown as SimulateParams)
         const hash = await writeContract(config, request as Parameters<typeof writeContract>[1])
-        update(id, { body: 'Waiting for confirmation…', href: explorerTx(hash) })
+        update(id, { body: t('tx.waiting'), href: explorerTx(hash) })
         const receipt = await waitForTransactionReceipt(config, { hash, chainId })
-        if (receipt.status !== 'success') throw new Error('Transaction reverted')
-        update(id, { kind: 'success', body: `Confirmed in block ${receipt.blockNumber}` })
+        if (receipt.status !== 'success') throw new Error(t('tx.reverted'))
+        update(id, { kind: 'success', body: t('tx.confirmed', { n: receipt.blockNumber }) })
         if (opts.refresh !== false) await qc.invalidateQueries()
         return receipt
       } catch (e) {

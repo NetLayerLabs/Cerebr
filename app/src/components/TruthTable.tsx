@@ -1,9 +1,11 @@
 import { useMemo } from 'react'
 import { bitsOf, runSequence, truthTable, type Program } from '@cerebr/sdk'
+import { useT } from '../i18n/index.tsx'
 
 /** Exhaustive truth table from the local simulator, checked row by row against the reference model. */
 export function TruthTable(props: { program: Program; inputs: string[]; outputs: string[]; reference?: (x: number[]) => number[] }) {
   const { program, inputs, outputs, reference } = props
+  const t = useT()
   const rows = useMemo(() => {
     const t = truthTable(program)
     return t.map((out, k) => {
@@ -18,10 +20,10 @@ export function TruthTable(props: { program: Program; inputs: string[]; outputs:
     <div className="tt-wrap">
       <div className="tt-sum small">
         <span className="muted">
-          {rows.length} input patterns · output active on {fires}
+          {t('tt.patterns', { n: rows.length, k: fires })}
         </span>
         {reference && (
-          <span className={bad ? 'error' : 'ok'}>{bad ? `${bad} rows differ from the neural model` : '✓ matches the neural model on every row'}</span>
+          <span className={bad ? 'error' : 'ok'}>{bad ? t('tt.differ', { n: bad }) : t('tt.matches')}</span>
         )}
       </div>
       <div className="tt-scroll">
@@ -65,6 +67,7 @@ export function TruthTable(props: { program: Program; inputs: string[]; outputs:
 /** Step trace of a sequential circuit (state carried between steps, starting from zero). */
 export function SequenceTrace(props: { program: Program; inputs: string[]; outputs: string[]; state?: string[]; sequence: number[][]; referenceStep?: (s: number[], x: number[]) => { state: number[]; outputs: number[] } }) {
   const { program, sequence, referenceStep } = props
+  const t = useT()
   const rows = useMemo(() => {
     let state = Array(program.nState).fill(0) as number[]
     let refState = state
@@ -81,8 +84,8 @@ export function SequenceTrace(props: { program: Program; inputs: string[]; outpu
   return (
     <div className="tt-wrap">
       <div className="tt-sum small">
-        <span className="muted">{rows.length} clock steps from zero state</span>
-        {referenceStep && <span className={rows.every((r) => r.ok) ? 'ok' : 'error'}>{rows.every((r) => r.ok) ? '✓ matches the neuron model' : 'differs from the model'}</span>}
+        <span className="muted">{t('tt.steps', { n: rows.length })}</span>
+        {referenceStep && <span className={rows.every((r) => r.ok) ? 'ok' : 'error'}>{rows.every((r) => r.ok) ? t('tt.seqMatch') : t('tt.seqDiffer')}</span>}
       </div>
       <div className="tt-scroll">
         <table className="tt mono">

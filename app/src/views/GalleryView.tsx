@@ -11,6 +11,8 @@ import { fmt, shortAddr } from '../lib/format.ts'
 import { MAX_LABEL_NAME, byteLength, fitLabel, setLabelTx } from '../lib/scope.ts'
 import { DieShot } from '../components/DieShot.tsx'
 import { Addr, Seg } from '../components/ui.tsx'
+import { useI18n } from '../i18n/index.tsx'
+import { useCircuitText } from '../i18n/circuits.ts'
 
 const multicall3Abi = parseAbi(['function getEthBalance(address addr) view returns (uint256 balance)'])
 
@@ -51,6 +53,7 @@ export function GalleryView() {
   const { address } = useConnection()
   const [filter, setFilter] = useState<'all' | 'mine'>('all')
   const wallets = useBrainWallets(circuits)
+  const { t, rich } = useI18n()
   const shown = useMemo(() => {
     const list = [...(circuits ?? [])].reverse()
     return filter === 'mine' && address ? list.filter((c) => c.owner.toLowerCase() === address.toLowerCase()) : list
@@ -59,18 +62,21 @@ export function GalleryView() {
   return (
     <section className="gallery-wrap">
       <section className="hero">
-        <h1>
-          Every circuit, <span className="grad">drawn from its gates.</span>
-        </h1>
-        <p className="muted">
-          Each card is a circuit taped out on the processor, with its die shot rendered from the real netlist, its owner and
-          its native TapeOut brain wallet.
-        </p>
+        <h1>{rich('gal.title', { em: (c) => <span className="grad">{c}</span> })}</h1>
+        <p className="muted">{t('gal.lede')}</p>
       </section>
       <div className="section-head">
-        <h2>Circuits</h2>
-        <span className="small muted">{circuits ? `${circuits.length} on the processor` : ''}</span>
-        <Seg value={filter} onChange={setFilter} options={[['all', 'All'], ['mine', 'Mine']]} small />
+        <h2>{t('gal.circuits')}</h2>
+        <span className="small muted">{circuits ? t('gal.count', { n: circuits.length }) : ''}</span>
+        <Seg
+          value={filter}
+          onChange={setFilter}
+          options={[
+            ['all', t('gal.all')],
+            ['mine', t('gal.mine')],
+          ]}
+          small
+        />
       </div>
       {isLoading && (
         <div className="gallery">
@@ -81,8 +87,7 @@ export function GalleryView() {
       )}
       {!isLoading && shown.length === 0 && (
         <div className="empty">
-          {filter === 'mine' ? (address ? 'You own no circuits on this processor yet.' : 'Connect a wallet to see your circuits.') : 'No circuits yet.'}{' '}
-          <a href={href('studio')}>Tape one out →</a>
+          {filter === 'mine' ? (address ? t('gal.noneMine') : t('gal.connect')) : t('gal.none')} <a href={href('studio')}>{t('gal.tapeOne')}</a>
         </div>
       )}
       <div className="gallery">
@@ -99,6 +104,8 @@ function CircuitCard({ c, wallet }: { c: CircuitRow; wallet?: Wallet }) {
   const { explorerAddr, cfg } = useNet()
   const { cpu } = useCpu()
   const { send, busy } = useTx()
+  const { t } = useI18n()
+  const ct = useCircuitText()
   const mine = !!address && c.owner.toLowerCase() === address.toLowerCase()
   const counts = useMemo(() => {
     let nand = 0
@@ -120,42 +127,42 @@ function CircuitCard({ c, wallet }: { c: CircuitRow; wallet?: Wallet }) {
 
   return (
     <article className="circuit">
-      <DieShot netlist={c.netlist} nIn={c.nIn} nOut={c.nOut} title={c.label.name} subtitle={`CEREBR · #${c.id}`} circuitId={c.id} />
+      <DieShot netlist={c.netlist} nIn={c.nIn} nOut={c.nOut} title={ct.name(c.label.name)} subtitle={`CEREBR · #${c.id}`} circuitId={c.id} />
       <div className="circuit-body">
         <div className="circuit-title">
           <span className="mono">#{c.id.toString()}</span>
-          <span>{c.label.name}</span>
-          {c.nState > 0 && <span className="badge latch-badge">stateful</span>}
+          <span>{ct.name(c.label.name)}</span>
+          {c.nState > 0 && <span className="badge latch-badge">{t('gal.stateful')}</span>}
           {counts.ref > 0 && <span className="badge ref-badge">REF ×{counts.ref}</span>}
         </div>
         <div className="traits small">
           <span className="mono">
             {c.nIn}→{c.nOut}
           </span>
-          <span className="mono">{c.gateCount} gates</span>
-          {counts.ref > 0 && <span className="mono">{counts.nand} own NAND</span>}
+          <span className="mono">{t('gal.gates', { n: c.gateCount })}</span>
+          {counts.ref > 0 && <span className="mono">{t('gal.ownNand', { n: counts.nand })}</span>}
           <span>
-            owner {mine ? <b className="you">you</b> : <span className="mono">{shortAddr(c.owner)}</span>}
+            {t('gal.owner')} {mine ? <b className="you">{t('gal.you')}</b> : <span className="mono">{shortAddr(c.owner)}</span>}
           </span>
         </div>
         <div className="tba">
           <div className="tba-head small">
-            <span className="muted">Brain wallet</span>
+            <span className="muted">{t('gal.brainWallet')}</span>
             {wallet ? <Addr a={wallet.account} href={explorerAddr(wallet.account)} /> : <span className="muted">…</span>}
           </div>
           <div className="tba-row small">
             <span className="mono">
               {wallet ? `${fmt(wallet.balance, 4)} OKB` : ''}{' '}
-              <span className={`pill ${wallet?.opened ? 'on' : ''}`}>{wallet ? (wallet.opened ? 'open' : 'not opened') : '…'}</span>
+              <span className={`pill ${wallet?.opened ? 'on' : ''}`}>{wallet ? (wallet.opened ? t('gal.open') : t('gal.notOpened')) : '…'}</span>
             </span>
             {wallet && !wallet.opened && cpu && mine && (
               <button
                 className="btn small"
                 disabled={!!busy}
-                title="Deploys this circuit's native TapeOut account (ERC-6551). You control it while you own the circuit."
-                onClick={() => send(`Open brain wallet #${c.id}`, openTx(cpu.circuits, c.id, cpu.fees.openFee))}
+                title={t('gal.openTitle')}
+                onClick={() => send(t('gal.openTx', { id: c.id }), openTx(cpu.circuits, c.id, cpu.fees.openFee))}
               >
-                Open · {fmt(cpu.fees.openFee, 3)} OKB
+                {t('gal.openBtn', { fee: fmt(cpu.fees.openFee, 3) })}
               </button>
             )}
           </div>
@@ -163,7 +170,7 @@ function CircuitCard({ c, wallet }: { c: CircuitRow; wallet?: Wallet }) {
         {mine && !c.onchain && cfg?.scope && cpu && <NameOnchain c={c} />}
         <div className="card-actions">
           <a className="btn small" href={href('playground', c.id)}>
-            Run onchain →
+            {t('gal.run')}
           </a>
         </div>
       </div>
@@ -183,8 +190,10 @@ function NameOnchain({ c }: { c: CircuitRow }) {
   const [name, setName] = useState('')
   const bytes = byteLength(name.trim())
   const tooLong = bytes > MAX_LABEL_NAME
+  const { t } = useI18n()
+  const ct = useCircuitText()
   const write = (label: Parameters<typeof fitLabel>[0]) =>
-    send(`Name #${c.id} onchain`, setLabelTx(cfg!.scope!, cfg!.circuits, c.id, fitLabel(label, c.nIn, c.nOut)))
+    send(t('gal.nameTx', { id: c.id }), setLabelTx(cfg!.scope!, cfg!.circuits, c.id, fitLabel(label, c.nIn, c.nOut)))
 
   if (c.catalog) {
     return (
@@ -192,10 +201,10 @@ function NameOnchain({ c }: { c: CircuitRow }) {
         <button
           className="btn small"
           disabled={!!busy}
-          title={`Stores "${c.catalog.name}", its description and pin names in CerebrScope, readable by any app.`}
+          title={t('gal.nameCatalogTitle', { name: c.catalog.name })}
           onClick={() => write(c.catalog!)}
         >
-          Name onchain: {c.catalog.name}
+          {t('gal.nameCatalog', { name: ct.name(c.catalog.name) })}
         </button>
       </div>
     )
@@ -203,8 +212,8 @@ function NameOnchain({ c }: { c: CircuitRow }) {
   if (!editing) {
     return (
       <div className="name-onchain">
-        <button className="btn small" disabled={!!busy} onClick={() => setEditing(true)} title="Store a name for this circuit in CerebrScope, readable by any app.">
-          Name onchain
+        <button className="btn small" disabled={!!busy} onClick={() => setEditing(true)} title={t('gal.nameTitle')}>
+          {t('gal.name')}
         </button>
       </div>
     )
@@ -219,16 +228,16 @@ function NameOnchain({ c }: { c: CircuitRow }) {
       }}
     >
       <div className="name-onchain-row">
-        <input className="input" autoFocus value={name} onChange={(e) => setName(e.target.value)} placeholder={`Name for #${c.id}`} spellCheck={false} />
+        <input className="input" autoFocus value={name} onChange={(e) => setName(e.target.value)} placeholder={t('gal.namePh', { id: c.id })} spellCheck={false} />
         <button className="btn small primary" type="submit" disabled={!!busy || !name.trim() || tooLong}>
-          Save
+          {t('gal.save')}
         </button>
         <button className="btn small ghost" type="button" disabled={!!busy} onClick={() => setEditing(false)}>
-          Cancel
+          {t('gal.cancel')}
         </button>
       </div>
       <span className={`tiny mono ${tooLong ? 'error' : 'muted'}`}>
-        {tooLong ? `${bytes} bytes, the onchain limit is ${MAX_LABEL_NAME}` : `${bytes}/${MAX_LABEL_NAME} bytes`}
+        {tooLong ? t('gal.tooLong', { n: bytes, max: MAX_LABEL_NAME }) : t('gal.bytes', { n: bytes, max: MAX_LABEL_NAME })}
       </span>
     </form>
   )

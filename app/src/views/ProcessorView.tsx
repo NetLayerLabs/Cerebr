@@ -9,34 +9,31 @@ import { href } from '../hooks/useRoute.ts'
 import { mintTx, withdrawTx } from '../lib/cerebr.ts'
 import { compact, fmt } from '../lib/format.ts'
 import { Addr, Row, Seg, Stat } from '../components/ui.tsx'
+import { useI18n } from '../i18n/index.tsx'
+import { useCircuitText } from '../i18n/circuits.ts'
 
 export function ProcessorView() {
   const { cpu } = useCpu()
+  const { t, rich } = useI18n()
   if (!cpu) return <section className="stats skeleton-row" />
   const pct = cpu.supplyCap > 0n ? Number((cpu.minted * 10_000n) / cpu.supplyCap) / 100 : 0
   return (
     <>
       <section className="hero">
-        <h1>
-          {cpu.name} <span className="grad">neural processor</span>
-        </h1>
-        <p className="muted">
-          A processor created through the TapeOut factory on X Layer. Its transistors (NAND and LATCH) are the asset: mint
-          them, then burn them into neural circuits (threshold neurons, majority votes, the XOR network, a 3×3 line
-          detector) that anyone can run onchain with <code>eval()</code>.
-        </p>
+        <h1>{rich('proc.title', { name: cpu.name, em: (c) => <span className="grad">{c}</span> })}</h1>
+        <p className="muted">{rich('proc.lede')}</p>
       </section>
       <section className="stats">
-        <Stat label="Transistors minted" value={compact(cpu.minted, 0)} unit={`of ${compact(cpu.supplyCap, 0)} supply cap`}>
+        <Stat label={t('proc.minted')} value={compact(cpu.minted, 0)} unit={t('proc.ofCap', { cap: compact(cpu.supplyCap, 0) })}>
           <div className="bar">
             <div style={{ width: `${Math.min(100, Math.max(pct, cpu.minted > 0n ? 0.6 : 0))}%` }} />
           </div>
         </Stat>
-        <Stat label="Remaining" value={compact(cpu.remaining, 0)} unit="NAND + LATCH share the cap" />
-        <Stat label="Unit price" value={fmt(cpu.mintPrice, 4)} unit="OKB per transistor" accent />
-        <Stat label="Protocol fee" value={fmt(cpu.protocolFee, 4)} unit="OKB per mint call" />
-        <Stat label="Tape-out fee" value={fmt(cpu.tapeoutFee, 4)} unit="OKB per circuit" />
-        <Stat label="Circuits" value={cpu.circuitCount.toString()} unit="taped out on this CPU" accent />
+        <Stat label={t('proc.remaining')} value={compact(cpu.remaining, 0)} unit={t('proc.shareCap')} />
+        <Stat label={t('proc.unitPrice')} value={fmt(cpu.mintPrice, 4)} unit={t('proc.perTransistor')} accent />
+        <Stat label={t('proc.protocolFee')} value={fmt(cpu.protocolFee, 4)} unit={t('proc.perMintCall')} />
+        <Stat label={t('proc.tapeFee')} value={fmt(cpu.tapeoutFee, 4)} unit={t('proc.perCircuit')} />
+        <Stat label={t('proc.circuits')} value={cpu.circuitCount.toString()} unit={t('proc.onThisCpu')} accent />
       </section>
       <section className="grid-2">
         <Disclosure cpu={cpu} />
@@ -52,34 +49,31 @@ export function ProcessorView() {
 
 function Disclosure({ cpu }: { cpu: CpuState }) {
   const { explorerAddr } = useNet()
+  const { t } = useI18n()
+  const ct = useCircuitText()
   return (
     <div className="card">
       <div className="card-head">
-        <h2>Issuance terms</h2>
-        <span className={`pill ${cpu.registered ? 'on' : ''}`}>{cpu.registered ? 'registered in TapeOut factory' : 'not registered'}</span>
+        <h2>{t('proc.terms')}</h2>
+        <span className={`pill ${cpu.registered ? 'on' : ''}`}>{cpu.registered ? t('proc.registered') : t('proc.notRegistered')}</span>
       </div>
-      {cpu.story && <blockquote className="story">{cpu.story}</blockquote>}
+      {cpu.story && <blockquote className="story">{ct.story(cpu.story)}</blockquote>}
       <dl className="quote">
-        <Row k="Processor" v={`${cpu.name} (${cpu.symbol})`} />
-        <Row k="Transistor supply cap" v={`${cpu.supplyCap.toLocaleString('en-US')} (NAND + LATCH)`} />
-        <Row k="Unit price" v={`${fmt(cpu.mintPrice, 6)} OKB`} />
-        <Row k="Protocol fee" v={`${fmt(cpu.protocolFee, 6)} OKB per mint call`} />
-        <Row k="Minted so far" v={cpu.minted.toLocaleString('en-US')} />
-        <Row k="Tape-out" v={`1 transistor per gate, REF free · ${fmt(cpu.tapeoutFee, 6)} OKB`} />
-        <Row k="Brain wallet" v={`${fmt(cpu.fees.openFee, 4)} OKB to open`} />
+        <Row k={t('proc.processor')} v={`${cpu.name} (${cpu.symbol})`} />
+        <Row k={t('proc.cap')} v={`${cpu.supplyCap.toLocaleString('en-US')} (NAND + LATCH)`} />
+        <Row k={t('proc.unitPrice')} v={`${fmt(cpu.mintPrice, 6)} OKB`} />
+        <Row k={t('proc.protocolFee')} v={t('proc.protocolFeeV', { fee: fmt(cpu.protocolFee, 6) })} />
+        <Row k={t('proc.mintedSoFar')} v={cpu.minted.toLocaleString('en-US')} />
+        <Row k={t('proc.tapeout')} v={t('proc.tapeoutV', { fee: fmt(cpu.tapeoutFee, 6) })} />
+        <Row k={t('proc.brainWallet')} v={t('proc.brainWalletV', { fee: fmt(cpu.fees.openFee, 4) })} />
       </dl>
-      <p className="small muted terms">
-        Mint revenue (amount × unit price) is owed to the creator and withdrawn by pull payment; the protocol fee goes to
-        TapeOut. Burning transistors does not free supply: the cap counts every transistor ever minted. The supply cap and
-        unit price are fixed at creation by the factory; TapeOut's own fees can change (its contracts are upgradeable), so the
-        app reads them live.
-      </p>
+      <p className="small muted terms">{t('proc.termsBody')}</p>
       <div className="kv small">
-        <span className="muted">Creator</span>
+        <span className="muted">{t('proc.creator')}</span>
         <Addr a={cpu.creator} href={explorerAddr(cpu.creator)} />
-        <span className="muted">Transistors</span>
+        <span className="muted">{t('proc.transistors')}</span>
         <Addr a={cpu.transistors} href={explorerAddr(cpu.transistors)} />
-        <span className="muted">Circuits</span>
+        <span className="muted">{t('proc.circuits')}</span>
         <Addr a={cpu.circuits} href={explorerAddr(cpu.circuits)} />
       </div>
     </div>
@@ -96,6 +90,7 @@ function MintPanel({ cpu }: { cpu: CpuState }) {
   const { balances } = useBalances()
   const { chainId } = useNet()
   const { data: gasPrice } = useGasPrice({ chainId })
+  const { t } = useI18n()
   const amount = /^\d{1,9}$/.test(raw.trim()) ? BigInt(raw.trim()) : undefined
   const tx = useMemo(
     () => (amount && amount > 0n ? mintTx(cpu.transistors, kind === 'nand' ? NAND_ID : LATCH_ID, amount, cpu.mintPrice, cpu.protocolFee) : undefined),
@@ -108,16 +103,14 @@ function MintPanel({ cpu }: { cpu: CpuState }) {
   return (
     <div className="card">
       <div className="card-head">
-        <h2>Mint transistors</h2>
+        <h2>{t('proc.mintTitle')}</h2>
         <Seg value={kind} onChange={setKind} options={[['nand', 'NAND'], ['latch', 'LATCH']]} small />
       </div>
       <p className="small muted mint-help">
-        {kind === 'nand'
-          ? 'NAND is the universal gate: every neuron in the catalog is built from NANDs.'
-          : 'LATCH holds one bit of state between steps (used by the integrate-and-fire neuron).'}
+        {kind === 'nand' ? t('proc.nandHelp') : t('proc.latchHelp')}
       </p>
       <label className="field">
-        <input inputMode="numeric" value={raw} onChange={(e) => setRaw(e.target.value.replace(/[^\d]/g, ''))} aria-label={`${label} amount`} />
+        <input inputMode="numeric" value={raw} onChange={(e) => setRaw(e.target.value.replace(/[^\d]/g, ''))} aria-label={t('proc.amountAria', { label })} />
         <span className="unit">{label}</span>
       </label>
       <div className="chips">
@@ -128,19 +121,19 @@ function MintPanel({ cpu }: { cpu: CpuState }) {
         ))}
       </div>
       <dl className="quote">
-        <Row k={`${amount?.toString() ?? '-'} × unit price`} v={`${fmt(amount ? amount * cpu.mintPrice : undefined, 6)} OKB`} />
-        <Row k="Protocol fee (per call)" v={`${fmt(cpu.protocolFee, 6)} OKB`} />
-        <Row k="You pay (msg.value)" v={`${fmt(tx?.value, 6)} OKB`} strong />
-        <Row k="Network gas (est.)" v={gasPrice ? `~${fmt(gas, 3)} OKB` : '-'} />
-        <Row k="Your balance" v={balances ? `${balances.nand} NAND · ${balances.latch} LATCH` : isConnected ? '…' : 'connect a wallet'} />
+        <Row k={t('proc.timesPrice', { n: amount?.toString() ?? '-' })} v={`${fmt(amount ? amount * cpu.mintPrice : undefined, 6)} OKB`} />
+        <Row k={t('proc.feePerCall')} v={`${fmt(cpu.protocolFee, 6)} OKB`} />
+        <Row k={t('proc.youPay')} v={`${fmt(tx?.value, 6)} OKB`} strong />
+        <Row k={t('proc.gas')} v={gasPrice ? `~${fmt(gas, 3)} OKB` : '-'} />
+        <Row k={t('proc.balance')} v={balances ? `${balances.nand} NAND · ${balances.latch} LATCH` : isConnected ? '…' : t('common.connectWallet')} />
       </dl>
-      {over && <div className="error small">Only {cpu.remaining.toString()} transistors remain under the cap.</div>}
+      {over && <div className="error small">{t('proc.onlyRemain', { n: cpu.remaining.toString() })}</div>}
       <button
         className="btn primary big"
         disabled={!tx || over || !!busy}
-        onClick={() => tx && send(`Mint ${amount} ${label}`, tx)}
+        onClick={() => tx && amount && send(t('proc.mintTx', { n: amount, label }), tx)}
       >
-        {busy?.startsWith('Mint') ? 'Minting…' : `Mint ${amount ?? ''} ${label}`}
+        {busy ? t('proc.minting') : amount !== undefined ? t('proc.mintTx', { n: amount, label }) : t('proc.mintLabel', { label })}
       </button>
     </div>
   )
@@ -150,6 +143,7 @@ function CreatorPanel({ cpu }: { cpu: CpuState }) {
   const { address } = useConnection()
   const { pc, chainId } = useNet()
   const { send, busy } = useTx()
+  const { t } = useI18n()
   const isCreator = !!address && address.toLowerCase() === cpu.creator.toLowerCase()
   const owed = useQuery({
     queryKey: ['cerebr', 'owed', chainId, cpu.transistors, address],
@@ -160,14 +154,14 @@ function CreatorPanel({ cpu }: { cpu: CpuState }) {
   return (
     <div className="card">
       <div className="card-head">
-        <h2>Creator revenue</h2>
-        <span className="pill on">you created this CPU</span>
+        <h2>{t('proc.revenue')}</h2>
+        <span className="pill on">{t('proc.youCreated')}</span>
       </div>
       <dl className="quote">
-        <Row k="Owed to you" v={`${fmt(owed.data, 6)} OKB`} strong />
+        <Row k={t('proc.owed')} v={`${fmt(owed.data, 6)} OKB`} strong />
       </dl>
-      <button className="btn big" disabled={!owed.data || !!busy} onClick={() => send('Withdraw mint revenue', withdrawTx(cpu.transistors))}>
-        Withdraw
+      <button className="btn big" disabled={!owed.data || !!busy} onClick={() => send(t('proc.withdrawTx'), withdrawTx(cpu.transistors))}>
+        {t('proc.withdraw')}
       </button>
     </div>
   )
@@ -175,6 +169,8 @@ function CreatorPanel({ cpu }: { cpu: CpuState }) {
 
 function OurCircuits() {
   const { circuits, isLoading } = useCircuits()
+  const { t } = useI18n()
+  const ct = useCircuitText()
   const onChain = useMemo(() => {
     const m = new Map<string, bigint[]>()
     for (const c of circuits ?? []) if (c.label.catalogId) m.set(c.label.catalogId, [...(m.get(c.label.catalogId) ?? []), c.id])
@@ -184,9 +180,9 @@ function OurCircuits() {
   return (
     <section className="card">
       <div className="card-head">
-        <h2>Neural circuit library</h2>
+        <h2>{t('proc.library')}</h2>
         <span className="small muted">
-          {isLoading ? 'reading the CPU…' : `${onChain.size} of ${CATALOG.length} catalog circuits onchain · ${others.length} other`}
+          {isLoading ? t('proc.readingCpu') : t('proc.libCount', { on: onChain.size, all: CATALOG.length, other: others.length })}
         </span>
       </div>
       <div className="lib">
@@ -196,8 +192,8 @@ function OurCircuits() {
           return (
             <div key={c.id} className={`lib-row ${ids ? 'live' : ''}`}>
               <div className="lib-name">
-                <b>{c.name}</b>
-                <span className="small muted">{c.description}</span>
+                <b>{ct.name(c.name)}</b>
+                <span className="small muted">{ct.description(c.description)}</span>
               </div>
               <span className="mono small lib-spec">
                 {c.inputs.length}→{c.outputs.length} · {nl.counts.ref ? `${nl.counts.ref} REF` : `${nl.counts.nand} NAND`}
@@ -205,11 +201,11 @@ function OurCircuits() {
               </span>
               {ids ? (
                 <a className="btn small" href={href('playground', ids[0])}>
-                  Run #{ids[0].toString()}
+                  {t('proc.run', { id: ids[0].toString() })}
                 </a>
               ) : (
                 <a className="btn small ghost" href={href('studio', c.id)}>
-                  Tape out
+                  {t('proc.tapeOut')}
                 </a>
               )}
             </div>

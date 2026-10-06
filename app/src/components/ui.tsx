@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from 'react'
 import { shortAddr } from '../lib/format.ts'
+import { useT } from '../i18n/index.tsx'
 
 export function Stat(props: { label: string; value: ReactNode; unit?: ReactNode; accent?: boolean; hint?: string; children?: ReactNode }) {
   return (
@@ -15,6 +16,7 @@ export function Stat(props: { label: string; value: ReactNode; unit?: ReactNode;
 /** An address with an explorer link (when the chain has one) and a copy button. */
 export function Addr({ a, href, label }: { a: string; href?: string; label?: string }) {
   const [copied, setCopied] = useState(false)
+  const t = useT()
   return (
     <span className="addr">
       {href ? (
@@ -26,7 +28,8 @@ export function Addr({ a, href, label }: { a: string; href?: string; label?: str
       )}
       <button
         className="icon-btn tiny"
-        title="Copy address"
+        title={t('ui.copy')}
+        aria-label={t('ui.copy')}
         onClick={() =>
           navigator.clipboard?.writeText(a).then(() => {
             setCopied(true)

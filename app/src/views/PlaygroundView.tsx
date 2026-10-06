@@ -10,6 +10,8 @@ import { loadProgram, TAPEOUT } from '../lib/cerebr.ts'
 import { errorMessage } from '../lib/errors.ts'
 import { DieShot } from '../components/DieShot.tsx'
 import { Pins } from '../components/ui.tsx'
+import { useI18n, type Key } from '../i18n/index.tsx'
+import { useCircuitText } from '../i18n/circuits.ts'
 
 const programCaches = new Map<string, Map<string, Promise<Program>>>()
 const cacheFor = (chainId: number) => {
@@ -23,6 +25,7 @@ const isPixelGrid = (labels: string[]) => labels.length === 9 && labels.every((l
 
 export function PlaygroundView({ circuitId }: { circuitId?: string }) {
   const { circuits, isLoading } = useCircuits()
+  const { t, rich } = useI18n()
   const selected = useMemo(() => {
     if (!circuits?.length) return undefined
     return (
@@ -36,23 +39,15 @@ export function PlaygroundView({ circuitId }: { circuitId?: string }) {
   return (
     <>
       <section className="hero">
-        <h1>
-          Inference, <span className="grad">onchain.</span>
-        </h1>
-        <p className="muted">
-          Pick any circuit on the processor, set its inputs and run it with TapeOut's <code>eval()</code> as an{' '}
-          <code>eth_call</code>. The answer comes from the chain; the local simulator runs the same netlist next to it, and
-          the two must agree.
-        </p>
+        <h1>{rich('pg.title', { em: (c) => <span className="grad">{c}</span> })}</h1>
+        <p className="muted">{rich('pg.lede')}</p>
       </section>
       {isLoading ? (
         <div className="skeleton" style={{ height: 360 }} />
       ) : !selected ? (
         <div className="card notice">
-          <h2>No circuits on this processor yet</h2>
-          <p className="muted">
-            Tape one out in the <a href={href('studio')}>Circuit Studio</a>.
-          </p>
+          <h2>{t('pg.none')}</h2>
+          <p className="muted">{rich('pg.noneBody', { a: (x) => <a href={href('studio')}>{x}</a> })}</p>
         </div>
       ) : (
         <Bench key={selected.id.toString()} c={selected} all={circuits!} />
@@ -71,6 +66,8 @@ function Bench({ c, all }: { c: CircuitRow; all: CircuitRow[] }) {
   })
   const [bits, setBits] = useState<number[]>(() => defaultInputs(c))
   const sequential = c.nState > 0
+  const { t } = useI18n()
+  const ct = useCircuitText()
   const toggle = (i: number) => setBits((b) => b.map((v, j) => (j === i ? (v ? 0 : 1) : v)))
 
   return (
@@ -78,29 +75,30 @@ function Bench({ c, all }: { c: CircuitRow; all: CircuitRow[] }) {
       <section className="grid-2 bench">
         <div className="card">
           <div className="card-head">
-            <h2>Circuit</h2>
+            <h2>{t('pg.circuit')}</h2>
             <select className="select" value={c.id.toString()} onChange={(e) => (window.location.hash = href('playground', e.target.value))}>
               {all.map((x) => (
                 <option key={x.id.toString()} value={x.id.toString()}>
-                  #{x.id.toString()} · {x.label.name}
+                  #{x.id.toString()} · {ct.name(x.label.name)}
                 </option>
               ))}
             </select>
           </div>
           <div className="bench-top">
             <div className="bench-art">
-              <DieShot netlist={c.netlist} nIn={c.nIn} nOut={c.nOut} title={c.label.name} subtitle={`CEREBR · #${c.id}`} circuitId={c.id} />
+              <DieShot netlist={c.netlist} nIn={c.nIn} nOut={c.nOut} title={ct.name(c.label.name)} subtitle={`CEREBR · #${c.id}`} circuitId={c.id} />
             </div>
             <div className="bench-info small">
-              <b>{c.label.name}</b>
-              {c.label.description && <p className="muted">{c.label.description}</p>}
+              <b>{ct.name(c.label.name)}</b>
+              {c.label.description && <p className="muted">{ct.description(c.label.description)}</p>}
               <p className="mono muted">
-                {c.nIn} in → {c.nOut} out · {c.gateCount} gates{c.nState ? ` · ${c.nState} state bits` : ''}
+                {t('pg.specs', { i: c.nIn, o: c.nOut, g: c.gateCount })}
+                {c.nState ? t('pg.stateBits', { n: c.nState }) : ''}
               </p>
             </div>
           </div>
-          <div className="tiny muted pins-head">Inputs {sequential ? '(applied on the next clock step)' : '(click to toggle)'}</div>
-          {isPixelGrid(c.label.inputs) ? <PixelGrid bits={bits} onChange={setBits} /> : <Pins labels={c.label.inputs} bits={bits} onToggle={toggle} />}
+          <div className="tiny muted pins-head">{sequential ? t('pg.inputsSeq') : t('pg.inputsComb')}</div>
+          {isPixelGrid(c.label.inputs) ? <PixelGrid bits={bits} onChange={setBits} /> : <Pins labels={ct.pins(c.label.inputs)} bits={bits} onToggle={toggle} />}
         </div>
         {sequential ? <Clocked c={c} prog={prog.data} inputs={bits} /> : <Evaluated c={c} prog={prog.data} inputs={bits} />}
       </section>
@@ -114,25 +112,26 @@ function defaultInputs(c: CircuitRow): number[] {
   return Array(c.nIn).fill(0).map((_, i) => (i === 0 ? 1 : 0))
 }
 
-const GRID_PRESETS: [string, number[]][] = [
-  ['Row', [0, 0, 0, 1, 1, 1, 0, 0, 0]],
-  ['Column', [0, 1, 0, 0, 1, 0, 0, 1, 0]],
-  ['Diagonal', [1, 0, 0, 0, 1, 0, 0, 0, 1]],
-  ['Cross', [0, 1, 0, 1, 1, 1, 0, 1, 0]],
-  ['L', [1, 0, 0, 1, 0, 0, 1, 1, 0]],
-  ['Clear', [0, 0, 0, 0, 0, 0, 0, 0, 0]],
+const GRID_PRESETS: [Key, number[]][] = [
+  ['pg.grid.row', [0, 0, 0, 1, 1, 1, 0, 0, 0]],
+  ['pg.grid.column', [0, 1, 0, 0, 1, 0, 0, 1, 0]],
+  ['pg.grid.diagonal', [1, 0, 0, 0, 1, 0, 0, 0, 1]],
+  ['pg.grid.cross', [0, 1, 0, 1, 1, 1, 0, 1, 0]],
+  ['pg.grid.l', [1, 0, 0, 1, 0, 0, 1, 1, 0]],
+  ['pg.grid.clear', [0, 0, 0, 0, 0, 0, 0, 0, 0]],
 ]
 
 function PixelGrid({ bits, onChange }: { bits: number[]; onChange: (b: number[]) => void }) {
+  const { t } = useI18n()
   return (
     <div className="pixels-wrap">
-      <div className="pixels" role="grid" aria-label="3 by 3 image">
+      <div className="pixels" role="grid" aria-label={t('pg.gridAria')}>
         {bits.map((b, i) => (
           <button
             key={i}
             className={`px ${b ? 'on' : ''}`}
             aria-pressed={!!b}
-            aria-label={`row ${Math.floor(i / 3)} column ${i % 3}`}
+            aria-label={t('pg.pxAria', { r: Math.floor(i / 3), c: i % 3 })}
             onClick={() => onChange(bits.map((v, j) => (j === i ? (v ? 0 : 1) : v)))}
           />
         ))}
@@ -140,11 +139,11 @@ function PixelGrid({ bits, onChange }: { bits: number[]; onChange: (b: number[])
       <div className="chips">
         {GRID_PRESETS.map(([l, p]) => (
           <button key={l} className="chip" onClick={() => onChange(p)}>
-            {l}
+            {t(l)}
           </button>
         ))}
         <button className="chip" onClick={() => onChange(Array.from({ length: 9 }, () => (Math.random() < 0.45 ? 1 : 0)))}>
-          Random
+          {t('pg.grid.random')}
         </button>
       </div>
     </div>
@@ -177,55 +176,58 @@ function Evaluated({ c, prog, inputs }: { c: CircuitRow; prog?: Program; inputs:
   const local = useMemo(() => (prog ? Array.from(run(prog, [], inputs).outputs) : undefined), [prog, inputs])
   const stale = key !== inputs.join('')
   const match = q.data && local && !stale ? q.data.outputs.every((v, i) => v === local[i]) : undefined
+  const { t } = useI18n()
+  const ct = useCircuitText()
   return (
     <div className="card result">
       <div className="card-head">
-        <h2>Result</h2>
-        {match !== undefined && <span className={`pill ${match ? 'on' : 'bad'}`}>{match ? '✓ chain = simulator' : '✕ mismatch'}</span>}
+        <h2>{t('pg.result')}</h2>
+        {match !== undefined && <span className={`pill ${match ? 'on' : 'bad'}`}>{match ? t('pg.match') : t('pg.mismatch')}</span>}
       </div>
       <Outputs c={c} bits={q.data?.outputs} />
       <div className="compare">
         <div>
-          <div className="tiny muted">Onchain eval() · eth_call</div>
+          <div className="tiny muted">{t('pg.onchainEval')}</div>
           {q.error ? (
             <div className="error small">{errorMessage(q.error)}</div>
           ) : (
-            <Pins labels={c.label.outputs} bits={q.data?.outputs ?? []} kind="out" compare={local} />
+            <Pins labels={ct.pins(c.label.outputs)} bits={q.data?.outputs ?? []} kind="out" compare={local} />
           )}
         </div>
         <div>
-          <div className="tiny muted">Local simulator</div>
-          <Pins labels={c.label.outputs} bits={local ?? []} kind="out" />
+          <div className="tiny muted">{t('pg.localSim')}</div>
+          <Pins labels={ct.pins(c.label.outputs)} bits={local ?? []} kind="out" />
         </div>
       </div>
       <dl className="quote">
         <div className="row">
-          <dt>Gas used by eval</dt>
+          <dt>{t('pg.gasUsed')}</dt>
           <dd className="mono">{q.data?.gas !== undefined ? q.data.gas.toLocaleString('en-US') : q.isFetching ? '…' : '-'}</dd>
         </div>
         <div className="row">
-          <dt>Round trip</dt>
+          <dt>{t('pg.roundTrip')}</dt>
           <dd className="mono">{q.data ? `${q.data.ms.toFixed(0)} ms` : '…'}</dd>
         </div>
         <div className="row">
-          <dt>Calldata → return</dt>
+          <dt>{t('pg.calldata')}</dt>
           <dd className="mono">
             eval({c.id.toString()}, {packBits(inputs)}) → {q.data?.ret ?? '…'}
           </dd>
         </div>
       </dl>
-      <p className="tiny muted">A view call: free for the caller, and anyone can run it, including other contracts.</p>
+      <p className="tiny muted">{t('pg.viewNote')}</p>
     </div>
   )
 }
 
 /** Named outputs, big: lit when 1 (e.g. horizontal / vertical / diagonal for the line detector). */
 function Outputs({ c, bits }: { c: CircuitRow; bits?: number[] }) {
+  const ct = useCircuitText()
   return (
     <div className="outputs">
       {c.label.outputs.map((l, i) => (
         <span key={i} className={`out-chip ${bits?.[i] ? 'on' : ''}`}>
-          {l}
+          {ct.pin(l)}
         </span>
       ))}
     </div>
@@ -241,6 +243,7 @@ function Clocked({ c, prog, inputs }: { c: CircuitRow; prog?: Program; inputs: n
   const [err, setErr] = useState<string>()
   const [busy, setBusy] = useState(false)
   const [gas, setGas] = useState<bigint>()
+  const { t } = useI18n()
   const last = ticks[0]
 
   async function clock() {
@@ -253,7 +256,7 @@ function Clocked({ c, prog, inputs }: { c: CircuitRow; prog?: Program; inputs: n
       viewGas(pc, cfg.circuits, encodeFunctionData({ abi: circuitsAbi, functionName: 'step', args })).then(setGas)
       const local = run(prog, state, inputs)
       const next = unpackBits(ns, c.nState)
-      setTicks((t) => [{ t: t.length, inputs, state, outputs: unpackBits(out, c.nOut), local: Array.from(local.outputs), next }, ...t].slice(0, 12))
+      setTicks((ts) => [{ t: ts.length, inputs, state, outputs: unpackBits(out, c.nOut), local: Array.from(local.outputs), next }, ...ts].slice(0, 12))
       setState(next)
     } catch (e) {
       setErr(errorMessage(e))
@@ -271,15 +274,15 @@ function Clocked({ c, prog, inputs }: { c: CircuitRow; prog?: Program; inputs: n
   return (
     <div className="card result">
       <div className="card-head">
-        <h2>Clocked run</h2>
-        {ticks.length > 0 && <span className={`pill ${allMatch ? 'on' : 'bad'}`}>{allMatch ? '✓ chain = simulator' : '✕ mismatch'}</span>}
+        <h2>{t('pg.clocked')}</h2>
+        {ticks.length > 0 && <span className={`pill ${allMatch ? 'on' : 'bad'}`}>{allMatch ? t('pg.match') : t('pg.mismatch')}</span>}
       </div>
       <Outputs c={c} bits={last?.outputs} />
-      <div className="tiny muted pins-head">State carried between calls (latches)</div>
+      <div className="tiny muted pins-head">{t('pg.stateCarried')}</div>
       <Pins labels={stateLabels} bits={state} kind="out" />
       <div className="btn-row">
         <button className="btn primary" disabled={busy || !prog} onClick={clock}>
-          {busy ? 'Stepping…' : 'Clock step() onchain'}
+          {busy ? t('pg.stepping') : t('pg.clock')}
         </button>
         <button
           className="btn ghost"
@@ -288,7 +291,7 @@ function Clocked({ c, prog, inputs }: { c: CircuitRow; prog?: Program; inputs: n
             setTicks([])
           }}
         >
-          Reset state
+          {t('pg.reset')}
         </button>
       </div>
       {err && <div className="error small">{err}</div>}
@@ -297,28 +300,28 @@ function Clocked({ c, prog, inputs }: { c: CircuitRow; prog?: Program; inputs: n
           <thead>
             <tr>
               <th>t</th>
-              <th>inputs</th>
-              <th>state</th>
-              <th>chain</th>
-              <th>local</th>
+              <th>{t('pg.th.inputs')}</th>
+              <th>{t('pg.th.state')}</th>
+              <th>{t('pg.th.chain')}</th>
+              <th>{t('pg.th.local')}</th>
             </tr>
           </thead>
           <tbody>
-            {ticks.map((t) => (
-              <tr key={t.t}>
-                <td className="muted">{t.t}</td>
-                <td>{t.inputs.join('')}</td>
-                <td>{t.state.join('')}</td>
-                <td className={`out ${t.outputs.some(Boolean) ? 'one' : ''}`}>{t.outputs.join('')}</td>
-                <td>{t.local.join('')}</td>
+            {ticks.map((k) => (
+              <tr key={k.t}>
+                <td className="muted">{k.t}</td>
+                <td>{k.inputs.join('')}</td>
+                <td>{k.state.join('')}</td>
+                <td className={`out ${k.outputs.some(Boolean) ? 'one' : ''}`}>{k.outputs.join('')}</td>
+                <td>{k.local.join('')}</td>
               </tr>
             ))}
           </tbody>
         </table>
       )}
       <p className="tiny muted">
-        step(id, state, inputs) is a view call: outputs come from the current state, then each latch stores its input.
-        {gas !== undefined ? ` Last step: ${gas.toLocaleString('en-US')} gas.` : ''}
+        {t('pg.stepNote')}
+        {gas !== undefined ? t('pg.lastStep', { gas: gas.toLocaleString('en-US') }) : ''}
       </p>
     </div>
   )
@@ -329,6 +332,7 @@ function Exhaustive({ c, prog }: { c: CircuitRow; prog?: Program }) {
   const [res, setRes] = useState<{ rows: number; ok: number; ms: number } | { error: string }>()
   const [busy, setBusy] = useState(false)
   const rows = 1 << c.nIn
+  const { t } = useI18n()
 
   async function verify() {
     if (!pc || !cfg || !prog) return
@@ -362,19 +366,16 @@ function Exhaustive({ c, prog }: { c: CircuitRow; prog?: Program }) {
   return (
     <section className="card exhaustive">
       <div className="card-head">
-        <h2>Verify every input onchain</h2>
+        <h2>{t('pg.verify')}</h2>
         <button className="btn small" disabled={busy || !prog} onClick={verify}>
-          {busy ? 'Evaluating…' : `Run all ${rows} inputs`}
+          {busy ? t('pg.evaluating') : t('pg.runAll', { n: rows })}
         </button>
       </div>
-      <p className="small muted">
-        Evaluates all {rows} input patterns with eval() (batched through multicall3) and compares each answer with the local
-        simulator.
-      </p>
+      <p className="small muted">{t('pg.verifyBody', { n: rows })}</p>
       {res && 'error' in res && <div className="error small">{res.error}</div>}
       {res && 'ok' in res && (
         <div className={res.ok === res.rows ? 'ok' : 'error'}>
-          {res.ok === res.rows ? '✓' : '✕'} {res.ok}/{res.rows} onchain answers match the simulator ({(res.ms / 1000).toFixed(1)} s)
+          {res.ok === res.rows ? '✓' : '✕'} {t('pg.verifyRes', { ok: res.ok, rows: res.rows, s: (res.ms / 1000).toFixed(1) })}
         </div>
       )}
     </section>

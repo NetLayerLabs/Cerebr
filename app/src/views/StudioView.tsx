@@ -26,11 +26,13 @@ import { fmt } from '../lib/format.ts'
 import { DieShot } from '../components/DieShot.tsx'
 import { SequenceTrace, TruthTable } from '../components/TruthTable.tsx'
 import { Row, Seg } from '../components/ui.tsx'
+import { useI18n, type Key } from '../i18n/index.tsx'
+import { useCircuitText } from '../i18n/circuits.ts'
 
 type Tab = 'catalog' | 'neuron' | 'network'
 type NetState = { nIn: number; hidden: NeuronSpec[]; out: NeuronSpec; compose: 'ref' | 'inline' }
 
-const NET_PRESETS: Record<string, { label: string; net: Omit<NetState, 'compose'> }> = {
+const NET_PRESETS: Record<string, { label: string; labelKey?: Key; net: Omit<NetState, 'compose'> }> = {
   xor: {
     label: 'XOR',
     net: { nIn: 2, hidden: [{ weights: [1, 1], theta: 1 }, { weights: [-1, -1], theta: -1 }], out: { weights: [1, 1], theta: 2 } },
@@ -41,6 +43,7 @@ const NET_PRESETS: Record<string, { label: string; net: Omit<NetState, 'compose'
   },
   exactlyOne: {
     label: 'Exactly one of 3',
+    labelKey: 'st.exactlyOne',
     net: { nIn: 3, hidden: [{ weights: [1, 1, 1], theta: 1 }, { weights: [-1, -1, -1], theta: -1 }], out: { weights: [1, 1], theta: 2 } },
   },
 }
@@ -58,6 +61,8 @@ export function StudioView({ initial }: { initial?: string }) {
   const [neuron, setNeuron] = useState<NeuronSpec>({ weights: [1, 1, 1, -1], theta: 2 })
   const [net, setNet] = useState<NetState>({ ...NET_PRESETS.xor.net, compose: 'ref' })
   const [mode, setMode] = useState<OutputMode>('direct')
+  const { t, rich } = useI18n()
+  const ct = useCircuitText()
 
   const design: Design = useMemo(
     () =>
@@ -85,20 +90,23 @@ export function StudioView({ initial }: { initial?: string }) {
   return (
     <>
       <section className="hero">
-        <h1>
-          Circuit Studio: <span className="grad">neurons to NAND.</span>
-        </h1>
-        <p className="muted">
-          Pick a neural circuit or design a threshold neuron. Cerebr compiles it to a TapeOut netlist, simulates every input
-          pattern locally, and tapes it out on the processor: one NAND transistor burned per gate, and nothing for circuits
-          reused by REF.
-        </p>
+        <h1>{rich('st.title', { em: (c) => <span className="grad">{c}</span> })}</h1>
+        <p className="muted">{rich('st.lede')}</p>
       </section>
       <section className="grid-2 studio">
         <div className="card">
           <div className="card-head">
-            <h2>Design</h2>
-            <Seg value={tab} onChange={setTab} options={[['catalog', 'Catalog'], ['neuron', 'Neuron'], ['network', 'Network']]} small />
+            <h2>{t('st.design')}</h2>
+            <Seg
+              value={tab}
+              onChange={setTab}
+              options={[
+                ['catalog', t('st.tab.catalog')],
+                ['neuron', t('st.tab.neuron')],
+                ['network', t('st.tab.network')],
+              ]}
+              small
+            />
           </div>
           {tab === 'catalog' && <CatalogPicker value={catalogId} onChange={setCatalogId} onChain={onChainIds} />}
           {tab === 'neuron' && <NeuronEditor spec={neuron} onChange={setNeuron} />}
@@ -106,14 +114,14 @@ export function StudioView({ initial }: { initial?: string }) {
         </div>
         <div className="card">
           <div className="card-head">
-            <h2>Compiled netlist</h2>
+            <h2>{t('st.compiled')}</h2>
             <Seg
               value={mode}
               onChange={setMode}
               small
               options={[
-                ['direct', 'Direct'],
-                ['buffered', 'Buffered'],
+                ['direct', t('st.direct')],
+                ['buffered', t('st.buffered')],
               ]}
             />
           </div>
@@ -129,20 +137,20 @@ export function StudioView({ initial }: { initial?: string }) {
       {'c' in compiled && compiled.c && (
         <section className="card">
           <div className="card-head">
-            <h2>{compiled.c.kind === 'sequential' ? 'Clock trace (local simulator)' : 'Truth table (local simulator)'}</h2>
-            <span className="small muted">the same simulator as TapeOut's client, run on the exact bytes that get taped out</span>
+            <h2>{compiled.c.kind === 'sequential' ? t('st.clockTrace') : t('st.truthTable')}</h2>
+            <span className="small muted">{t('st.sameSim')}</span>
           </div>
           {compiled.c.kind === 'sequential' ? (
             <SequenceTrace
               program={compiled.c.program}
-              inputs={compiled.c.label.inputs}
-              outputs={compiled.c.label.outputs}
+              inputs={ct.pins(compiled.c.label.inputs)}
+              outputs={ct.pins(compiled.c.label.outputs)}
               state={design.kind === 'catalog' ? getCircuit(design.id).state : undefined}
               sequence={SPIKES}
               referenceStep={design.kind === 'catalog' ? getCircuit(design.id).referenceStep : undefined}
             />
           ) : (
-            <TruthTable program={compiled.c.program} inputs={compiled.c.label.inputs} outputs={compiled.c.label.outputs} reference={compiled.c.reference} />
+            <TruthTable program={compiled.c.program} inputs={ct.pins(compiled.c.label.inputs)} outputs={ct.pins(compiled.c.label.outputs)} reference={compiled.c.reference} />
           )}
         </section>
       )}
@@ -152,6 +160,8 @@ export function StudioView({ initial }: { initial?: string }) {
 
 function CatalogPicker({ value, onChange, onChain }: { value: string; onChange: (id: string) => void; onChain: Map<string, bigint> }) {
   const c = getCircuit(value)
+  const { t } = useI18n()
+  const ct = useCircuitText()
   return (
     <>
       <div className="catalog">
@@ -160,22 +170,22 @@ function CatalogPicker({ value, onChange, onChain }: { value: string; onChange: 
           const id = onChain.get(x.id)
           return (
             <button key={x.id} className={`cat ${x.id === value ? 'on' : ''}`} onClick={() => onChange(x.id)}>
-              <span className="cat-name">{x.name}</span>
+              <span className="cat-name">{ct.name(x.name)}</span>
               <span className="tiny muted mono">
                 {x.inputs.length}→{x.outputs.length} · {nl.counts.ref ? `${nl.counts.ref} REF` : `${nl.counts.nand} NAND`}
                 {nl.counts.latch ? ` +${nl.counts.latch} LATCH` : ''}
               </span>
-              {id !== undefined && <span className="cat-live tiny">onchain #{id.toString()}</span>}
+              {id !== undefined && <span className="cat-live tiny">{t('st.onchainN', { id: id.toString() })}</span>}
             </button>
           )
         })}
       </div>
       <div className="cat-detail">
-        <p className="small">{c.description}</p>
-        <p className="small muted story-line">{c.story}</p>
+        <p className="small">{ct.description(c.description)}</p>
+        <p className="small muted story-line">{ct.story(c.story)}</p>
         {c.deps.length > 0 && (
           <p className="tiny muted">
-            Reuses by REF: {c.deps.map((d) => getCircuit(d).name).join(', ')}. Missing ones are taped out first.
+            {t('st.reuses', { names: c.deps.map((d) => ct.name(getCircuit(d).name)).join(t('st.listSep')) })}
           </p>
         )}
       </div>
@@ -210,14 +220,20 @@ function Equation({ spec, inputs }: { spec: NeuronSpec; inputs?: string[] }) {
     .filter(Boolean)
     .join(' ')
   const canon = canonicalNeuron(spec)
-  const t = canon.trivial
+  const tr = canon.trivial
+  const { t } = useI18n()
   return (
     <div className="equation mono">
       y = [ {terms.replace(/^\+ /, '') || '0'} ≥ {spec.theta} ]
-      {t && (
+      {tr && (
         <span className="tiny muted">
           {' '}
-          → {t.kind === 'const' ? `always ${t.value}` : t.kind === 'wire' ? `just ${inputs?.[t.input] ?? `x${t.input}`}` : `NOT ${inputs?.[t.input] ?? `x${t.input}`}`}
+          →{' '}
+          {tr.kind === 'const'
+            ? t('st.always', { v: tr.value })
+            : tr.kind === 'wire'
+              ? t('st.just', { x: inputs?.[tr.input] ?? `x${tr.input}` })
+              : `NOT ${inputs?.[tr.input] ?? `x${tr.input}`}`}
         </span>
       )}
     </div>
@@ -227,18 +243,16 @@ function Equation({ spec, inputs }: { spec: NeuronSpec; inputs?: string[] }) {
 function NeuronEditor({ spec, onChange }: { spec: NeuronSpec; onChange: (s: NeuronSpec) => void }) {
   const n = spec.weights.length
   const { lo, hi } = thetaRange(spec.weights)
+  const { t } = useI18n()
   const set = (weights: number[], theta = spec.theta) => {
     const r = thetaRange(weights)
     onChange({ weights, theta: Math.min(r.hi, Math.max(r.lo, theta)) })
   }
   return (
     <div className="editor">
-      <p className="small muted">
-        A binarized threshold neuron: each synapse is excitatory (+1), inhibitory (−1) or absent (0). It fires when the
-        weighted sum of its inputs reaches θ.
-      </p>
+      <p className="small muted">{t('st.neuronHelp')}</p>
       <div className="editor-row">
-        <span className="small muted">Inputs</span>
+        <span className="small muted">{t('st.inputs')}</span>
         <div className="chips">
           {[2, 3, 4, 5, 6].map((k) => (
             <button key={k} className={`chip ${k === n ? 'on' : ''}`} onClick={() => set(Array.from({ length: k }, (_, i) => spec.weights[i] ?? 1))}>
@@ -253,7 +267,7 @@ function NeuronEditor({ spec, onChange }: { spec: NeuronSpec; onChange: (s: Neur
         ))}
       </div>
       <label className="theta">
-        <span className="small muted">Threshold θ</span>
+        <span className="small muted">{t('st.threshold')}</span>
         <input type="range" min={lo} max={hi} step={1} value={spec.theta} onChange={(e) => set(spec.weights, Number(e.target.value))} />
         <span className="mono">{spec.theta}</span>
       </label>
@@ -264,6 +278,7 @@ function NeuronEditor({ spec, onChange }: { spec: NeuronSpec; onChange: (s: Neur
 
 function NetworkEditor({ net, onChange }: { net: NetState; onChange: (n: NetState) => void }) {
   const hiddenLabels = net.hidden.map((_, i) => `h${i}`)
+  const { t } = useI18n()
   const setHidden = (hidden: NeuronSpec[]) => {
     const weights = hidden.map((_, i) => net.out.weights[i] ?? 1)
     const r = thetaRange(weights)
@@ -275,17 +290,17 @@ function NetworkEditor({ net, onChange }: { net: NetState; onChange: (n: NetStat
   return (
     <div className="editor">
       <div className="editor-row">
-        <span className="small muted">Preset</span>
+        <span className="small muted">{t('st.preset')}</span>
         <div className="chips">
           {Object.entries(NET_PRESETS).map(([k, p]) => (
             <button key={k} className="chip" onClick={() => onChange({ ...p.net, compose: net.compose })}>
-              {p.label}
+              {p.labelKey ? t(p.labelKey) : p.label}
             </button>
           ))}
         </div>
       </div>
       <div className="editor-row">
-        <span className="small muted">Inputs</span>
+        <span className="small muted">{t('st.inputs')}</span>
         <div className="chips">
           {[2, 3, 4].map((k) => (
             <button key={k} className={`chip ${k === net.nIn ? 'on' : ''}`} onClick={() => setIn(k)}>
@@ -293,7 +308,7 @@ function NetworkEditor({ net, onChange }: { net: NetState; onChange: (n: NetStat
             </button>
           ))}
         </div>
-        <span className="small muted">Hidden</span>
+        <span className="small muted">{t('st.hidden')}</span>
         <div className="chips">
           {[1, 2, 3, 4].map((k) => (
             <button
@@ -315,21 +330,18 @@ function NetworkEditor({ net, onChange }: { net: NetState; onChange: (n: NetStat
         <MiniNeuron name="y" spec={net.out} inputs={hiddenLabels} onChange={(out) => onChange({ ...net, out })} />
       </div>
       <div className="editor-row">
-        <span className="small muted">Wiring</span>
+        <span className="small muted">{t('st.wiring')}</span>
         <Seg
           value={net.compose}
           onChange={(compose) => onChange({ ...net, compose })}
           small
           options={[
-            ['ref', 'REF taped-out neurons'],
-            ['inline', 'Flatten to NAND'],
+            ['ref', t('st.wireRef')],
+            ['inline', t('st.wireFlat')],
           ]}
         />
       </div>
-      <p className="tiny muted">
-        REF wiring reuses neuron circuits already on the processor (0 transistors each) and tapes out the missing ones first.
-        Identical neurons share one circuit.
-      </p>
+      <p className="tiny muted">{t('st.refHelp')}</p>
     </div>
   )
 }
@@ -372,20 +384,22 @@ function CompiledPanel({ c, cpu, design, mode }: { c: Compiled; cpu: CpuState; d
   const { push } = useToasts()
   const qc = useQueryClient()
   const { data: gasPrice } = useGasPrice({ chainId })
+  const { t, rich } = useI18n()
+  const ct = useCircuitText()
   const [progress, setProgress] = useState<{ step: number; of: number; done?: bigint } | undefined>()
   // The name written onchain (CerebrScope.setLabel) right after the tape-out. Editable before it.
   const [name, setName] = useState(c.label.name)
   const [naming, setNaming] = useState<{ state: Naming; label: OnchainLabel } | undefined>()
   const scope = cfg?.scope
   const nameBytes = byteLength(name.trim())
-  const nameError = nameBytes > MAX_LABEL_NAME ? `Name is ${nameBytes} bytes, the onchain limit is ${MAX_LABEL_NAME}.` : undefined
+  const nameError = nameBytes > MAX_LABEL_NAME ? t('st.nameTooLong', { n: nameBytes, max: MAX_LABEL_NAME }) : undefined
   const have = balances ?? { nand: 0n, latch: 0n }
   const plan = planDesign(c, have, cpu)
   const flat = flatGates(c.program)
   const steps = [
-    ...plan.mints.map((m) => `Mint ${m.amount} ${m.label}`),
-    ...plan.tapeouts.map((t) => `Tape out ${t.label}${t.dep ? ' (dependency)' : ''}`),
-    ...(scope ? ['Name it onchain'] : []),
+    ...plan.mints.map((m) => t('st.stepMint', { n: m.amount, label: m.label })),
+    ...plan.tapeouts.map((x) => t(x.dep ? 'st.stepTapeDep' : 'st.stepTape', { name: ct.name(x.label) })),
+    ...(scope ? [t('st.stepName')] : []),
   ]
   const nameOf = (id: bigint) => circuits?.find((x) => x.id === id)?.label.name
 
@@ -400,7 +414,7 @@ function CompiledPanel({ c, cpu, design, mode }: { c: Compiled; cpu: CpuState; d
   async function nameIt(id: bigint, label: OnchainLabel) {
     if (!scope) return
     setNaming({ state: 'pending', label })
-    const r = await send(`Name #${id} onchain`, setLabelTx(scope, cpu.circuits, id, label))
+    const r = await send(t('st.nameTx', { id }), setLabelTx(scope, cpu.circuits, id, label))
     setNaming({ state: r ? 'done' : 'failed', label })
     if (r) setProgress((p) => (p ? { ...p, step: p.of } : p))
   }
@@ -411,23 +425,23 @@ function CompiledPanel({ c, cpu, design, mode }: { c: Compiled; cpu: CpuState; d
     let step = 0
     setProgress({ step, of: steps.length })
     for (const m of plan.mints) {
-      const r = await send(`Mint ${m.amount} ${m.label}`, mintTx(cpu.transistors, m.id === NAND_ID ? NAND_ID : LATCH_ID, m.amount, cpu.mintPrice, cpu.protocolFee), { refresh: false })
+      const r = await send(t('st.stepMint', { n: m.amount, label: m.label }), mintTx(cpu.transistors, m.id === NAND_ID ? NAND_ID : LATCH_ID, m.amount, cpu.mintPrice, cpu.protocolFee), { refresh: false })
       if (!r) return stop()
       setProgress({ step: ++step, of: steps.length })
     }
     // Dependencies first; each one's id goes into the index so the next compile REFs it.
     for (const d of c.deps.filter((x) => x.circuitId === undefined)) {
-      const r = await send(`Tape out ${d.label.name}`, tapeoutTx(cpu.circuits, d.hex, d.netlist.nIn, d.netlist.nOut, cpu.tapeoutFee), { refresh: false })
+      const r = await send(t('st.stepTape', { name: ct.name(d.label.name) }), tapeoutTx(cpu.circuits, d.hex, d.netlist.nIn, d.netlist.nOut, cpu.tapeoutFee), { refresh: false })
       if (!r) return stop()
       addToIndex(idx, d.netlist, d.hex, tapedOutId(r, cpu.circuits))
       setProgress({ step: ++step, of: steps.length })
     }
     const final = compileDesign(design, { mode, cpu: cpu.circuits, index: idx })
     if (!final.hex) {
-      push({ kind: 'error', title: 'A dependency is still missing onchain' })
+      push({ kind: 'error', title: t('st.depMissing') })
       return stop()
     }
-    const r = await send(`Tape out ${final.label.name}`, tapeoutTx(cpu.circuits, final.hex, final.netlist.nIn, final.netlist.nOut, cpu.tapeoutFee), { refresh: false })
+    const r = await send(t('st.stepTape', { name: ct.name(final.label.name) }), tapeoutTx(cpu.circuits, final.hex, final.netlist.nIn, final.netlist.nOut, cpu.tapeoutFee), { refresh: false })
     if (!r) return stop()
     const id = tapedOutId(r, cpu.circuits)
     setProgress({ step: ++step, of: steps.length, done: id })
@@ -439,7 +453,7 @@ function CompiledPanel({ c, cpu, design, mode }: { c: Compiled; cpu: CpuState; d
   return (
     <div className="compiled">
       <div className="compiled-top">
-        <DieShot elements={c.netlist.elements} nIn={c.netlist.nIn} nOut={c.netlist.nOut} title={c.label.name} subtitle={mode === 'direct' ? 'direct outputs' : 'buffered outputs'} />
+        <DieShot elements={c.netlist.elements} nIn={c.netlist.nIn} nOut={c.netlist.nOut} title={ct.name(c.label.name)} subtitle={mode === 'direct' ? t('st.directOut') : t('st.bufferedOut')} />
         <div className="compiled-stats">
           <div className="counts">
             <span className="count nand">
@@ -457,20 +471,20 @@ function CompiledPanel({ c, cpu, design, mode }: { c: Compiled; cpu: CpuState; d
             )}
           </div>
           <dl className="quote">
-            <Row k="Pins" v={`${c.netlist.nIn} in → ${c.netlist.nOut} out`} />
-            <Row k="Flattened gates" v={flat} />
-            <Row k="Netlist size" v={c.hex ? `${(c.hex.length - 2) / 2} bytes` : 'after deps'} />
+            <Row k={t('st.pins')} v={t('st.pinsV', { i: c.netlist.nIn, o: c.netlist.nOut })} />
+            <Row k={t('st.flatGates')} v={flat} />
+            <Row k={t('st.size')} v={c.hex ? t('st.sizeV', { n: (c.hex.length - 2) / 2 }) : t('st.afterDeps')} />
           </dl>
           {c.deps.length > 0 && (
             <div className="deps">
-              <div className="tiny muted">REF dependencies</div>
+              <div className="tiny muted">{t('st.refDeps')}</div>
               {c.deps.map((d) => (
                 <div key={d.placeholder} className="dep small">
-                  <span>{(d.circuitId !== undefined && nameOf(d.circuitId)) || d.label.name}</span>
+                  <span>{ct.name((d.circuitId !== undefined && nameOf(d.circuitId)) || d.label.name)}</span>
                   {d.circuitId !== undefined ? (
-                    <span className="pill on">#{d.circuitId.toString()} onchain</span>
+                    <span className="pill on">{t('st.depOnchain', { id: d.circuitId.toString() })}</span>
                   ) : (
-                    <span className="pill">tape out first · {d.netlist.counts.nand} NAND</span>
+                    <span className="pill">{t('st.depFirst', { n: d.netlist.counts.nand })}</span>
                   )}
                 </div>
               ))}
@@ -479,28 +493,30 @@ function CompiledPanel({ c, cpu, design, mode }: { c: Compiled; cpu: CpuState; d
         </div>
       </div>
       <dl className="quote">
-        <Row k="Transistors burned" v={`${plan.burn.nand} NAND${plan.burn.latch ? ` + ${plan.burn.latch} LATCH` : ''}`} />
-        <Row k="You hold" v={isConnected ? `${have.nand} NAND · ${have.latch} LATCH` : 'connect a wallet'} />
+        <Row k={t('st.burned')} v={`${plan.burn.nand} NAND${plan.burn.latch ? ` + ${plan.burn.latch} LATCH` : ''}`} />
+        <Row k={t('st.youHold')} v={isConnected ? `${have.nand} NAND · ${have.latch} LATCH` : t('common.connectWallet')} />
         {plan.mints.map((m) => (
-          <Row key={m.label} k={`Mint ${m.amount} ${m.label}`} v={`${fmt(m.value, 6)} OKB`} />
+          <Row key={m.label} k={t('st.stepMint', { n: m.amount, label: m.label })} v={`${fmt(m.value, 6)} OKB`} />
         ))}
-        <Row k={`Tape-out fee × ${plan.tapeouts.length}`} v={`${fmt(plan.tapeoutValue, 6)} OKB`} />
-        <Row k="Total (msg.value)" v={`${fmt(plan.total, 6)} OKB`} strong />
-        <Row k="Network gas (est.)" v={gasPrice ? `~${fmt(plan.gas * gasPrice, 3)} OKB · ${(Number(plan.gas) / 1000).toFixed(0)}k gas` : `${(Number(plan.gas) / 1000).toFixed(0)}k gas`} />
+        <Row k={t('st.feeTimes', { n: plan.tapeouts.length })} v={`${fmt(plan.tapeoutValue, 6)} OKB`} />
+        <Row k={t('st.total')} v={`${fmt(plan.total, 6)} OKB`} strong />
+        <Row
+          k={t('st.gas')}
+          v={gasPrice ? `~${fmt(plan.gas * gasPrice, 3)} OKB · ${t('st.gasK', { k: (Number(plan.gas) / 1000).toFixed(0) })}` : t('st.gasK', { k: (Number(plan.gas) / 1000).toFixed(0) })}
+        />
       </dl>
       {c.existing !== undefined && (
         <div className="banner info small">
-          This exact netlist is already taped out as <a href={href('playground', c.existing)}>#{c.existing.toString()}</a>. You can still tape out
-          your own copy.
+          {rich('st.existing', { id: c.existing.toString(), a: (x) => <a href={href('playground', c.existing!)}>{x}</a> })}
         </div>
       )}
-      {plan.blocked && <div className="error small">{plan.blocked}</div>}
+      {plan.blocked && <div className="error small">{plan.blockedBy ? t('st.blocked', { need: plan.blockedBy.need, remaining: plan.blockedBy.remaining }) : plan.blocked}</div>}
       {scope && progress?.done === undefined && (
         <label className="name-field">
-          <span className="small muted">Name, written onchain after the tape-out</span>
+          <span className="small muted">{t('st.nameLabel')}</span>
           <input className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder={c.label.name} disabled={!!progress} spellCheck={false} />
           <span className={`tiny mono ${nameError ? 'error' : 'muted'}`}>
-            {nameError ?? `${nameBytes}/${MAX_LABEL_NAME} bytes · stored in CerebrScope with the pin names`}
+            {nameError ?? t('st.nameHint', { n: nameBytes, max: MAX_LABEL_NAME })}
           </span>
         </label>
       )}
@@ -513,7 +529,7 @@ function CompiledPanel({ c, cpu, design, mode }: { c: Compiled; cpu: CpuState; d
             return (
               <li key={s} className={i < progress.step ? 'done' : skipped ? 'skipped' : active ? 'active' : ''}>
                 {s}
-                {skipped ? ' (skipped)' : ''}
+                {skipped ? t('st.skipped') : ''}
               </li>
             )
           })}
@@ -522,16 +538,16 @@ function CompiledPanel({ c, cpu, design, mode }: { c: Compiled; cpu: CpuState; d
       {progress?.done !== undefined ? (
         <>
           <div className="done-row">
-            <span className="ok">✓ Taped out as circuit #{progress.done.toString()}</span>
+            <span className="ok">{t('st.done', { id: progress.done.toString() })}</span>
             <a className="btn primary small" href={href('playground', progress.done)}>
-              Run it onchain →
+              {t('st.runIt')}
             </a>
           </div>
           {naming && <NamingStatus id={progress.done} naming={naming} busy={!!busy} onRetry={() => nameIt(progress.done!, naming.label)} onSkip={() => setNaming({ ...naming, state: 'skipped' })} />}
         </>
       ) : (
         <button className="btn primary big" disabled={!!busy || !!plan.blocked || !!nameError || !index || !balances || (!!progress && !progress.done)} onClick={run}>
-          {busy ? busy + '…' : steps.length > 1 ? `Tape out (${steps.length} transactions)` : 'Tape out'}
+          {busy ? busy + '…' : steps.length > 1 ? t('st.tapeN', { n: steps.length }) : t('st.tape1')}
         </button>
       )}
     </div>
@@ -539,23 +555,20 @@ function CompiledPanel({ c, cpu, design, mode }: { c: Compiled; cpu: CpuState; d
 }
 
 function NamingStatus({ id, naming, busy, onRetry, onSkip }: { id: bigint; naming: { state: Naming; label: OnchainLabel }; busy: boolean; onRetry: () => void; onSkip: () => void }) {
-  if (naming.state === 'pending') return <div className="banner info small">Naming #{id.toString()} "{naming.label.name}" onchain: confirm in your wallet…</div>
-  if (naming.state === 'done') return <div className="banner info small ok">✓ Named onchain: "{naming.label.name}". Every view of the app now reads this name from CerebrScope.</div>
+  const { t, rich } = useI18n()
+  if (naming.state === 'pending') return <div className="banner info small">{t('st.namingPending', { id: id.toString(), name: naming.label.name })}</div>
+  if (naming.state === 'done') return <div className="banner info small ok">{t('st.namingDone', { name: naming.label.name })}</div>
   if (naming.state === 'skipped')
-    return (
-      <div className="banner info small muted">
-        Not named. The circuit is yours either way; you can name it later from the <a href={href('gallery')}>Gallery</a>.
-      </div>
-    )
+    return <div className="banner info small muted">{rich('st.namingSkipped', { a: (x) => <a href={href('gallery')}>{x}</a> })}</div>
   return (
     <div className="banner info small naming-retry">
-      <span>Circuit #{id.toString()} is taped out but not named onchain yet. The circuit is yours either way.</span>
+      <span>{t('st.namingFailed', { id: id.toString() })}</span>
       <span className="naming-actions">
         <button className="btn small primary" disabled={busy} onClick={onRetry}>
-          Name it onchain
+          {t('st.nameIt')}
         </button>
         <button className="btn small ghost" disabled={busy} onClick={onSkip}>
-          Skip
+          {t('st.skip')}
         </button>
       </span>
     </div>

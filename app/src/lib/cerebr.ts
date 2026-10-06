@@ -95,6 +95,8 @@ export type TapeoutPlan = {
   gas: bigint
   /** Set when the CPU cannot mint enough transistors. */
   blocked?: string
+  /** The numbers behind `blocked` (for translated messages). */
+  blockedBy?: { need: bigint; remaining: bigint }
 }
 
 export function planTapeout(stats: Pick<NetlistStats, 'nand' | 'latch' | 'refs'>, have: Burn, p: Prices): TapeoutPlan {
@@ -107,7 +109,8 @@ export function planTapeout(stats: Pick<NetlistStats, 'nand' | 'latch' | 'refs'>
   if (l > 0n) mints.push({ id: LATCH_ID, label: 'LATCH', amount: l, value: l * p.mintPrice + p.protocolFee })
   const mintValue = mints.reduce((s, m) => s + m.value, 0n)
   const blocked = n + l > p.remaining ? `Needs ${n + l} more transistors but only ${p.remaining} remain under the supply cap.` : undefined
-  return { burn, have, mints, mintValue, tapeoutValue: p.tapeoutFee, total: mintValue + p.tapeoutFee, gas: tapeoutGas(stats), blocked }
+  const blockedBy = blocked ? { need: n + l, remaining: p.remaining } : undefined
+  return { burn, have, mints, mintValue, tapeoutValue: p.tapeoutFee, total: mintValue + p.tapeoutFee, gas: tapeoutGas(stats), blocked, blockedBy }
 }
 
 // ------------------------------------------------------------------ onchain circuits
