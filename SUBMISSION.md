@@ -19,7 +19,7 @@ IGNIX X Layer "TapeOut Genesis Transistor" hackathon. Deadline: **2026-10-09 06:
 | Demo video | **TODO_USER** (2 minutes; script below) |
 | dApp / landing page | https://cerebr.xyz (landing) and https://cerebr.xyz/app (dApp), self-hosted on our VPS over HTTPS |
 | Repository | https://github.com/NetLayerLabs/Cerebr (**currently private: make it public before submitting**) |
-| Contact | **TODO_USER** |
+| Contact | NetLayer Labs: [netlayerlabs@gmail.com](mailto:netlayerlabs@gmail.com), X [@NetLayerLabs](https://x.com/NetLayerLabs). Builder: Telegram [@mr_network001](https://t.me/mr_network001), X [@encrypt_wizard](https://x.com/encrypt_wizard), [mrnetwork0001@gmail.com](mailto:mrnetwork0001@gmail.com) |
 
 ### Circuits taped out (X Layer mainnet)
 
@@ -137,5 +137,5 @@ Each write flow was tested end to end through the real UI on a local fork of X L
 - [x] The deadline is confirmed: 2026-10-09 06:00 UTC+2.
 - [ ] Make the repo public.
 - [x] dApp hosting URL filled in above: https://cerebr.xyz, live over HTTPS (Let's Encrypt), every view checked in a browser on 2026-10-06 with 0 errors.
-- [ ] Contact filled in above (TODO_USER).
+- [x] Contact filled in above.
 - [ ] Demo transactions disclosed in ISSUANCE.md §6.
