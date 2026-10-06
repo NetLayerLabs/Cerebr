@@ -1,0 +1,86 @@
+/* market feature styles, owned by the market engineer. Imported by components/MarketPanel.tsx, components/GateAnimation.tsx and the marked MARKET / ANIMATION blocks.
+   Use the shared tokens from styles.css (--mint, --acc-fill, --line, --line-2, --panel, --muted, --faint,
+   --good / --bad / --warn and their -dim variants, --mono / --serif / --sans) so both themes work,
+   and prefix every class (.market-* for the market, .anim-* for GateAnimation) so nothing leaks into other views. */
+
+/* ---------- market panel (inside a Gallery card) ---------- */
+.market-panel { border-top: 1px solid var(--line); padding-top: 12px; display: grid; gap: 8px; min-width: 0; }
+.market-panel.is-sale { border-top-color: color-mix(in srgb, var(--good) 45%, transparent); }
+.market-panel.is-stale { border-top-color: color-mix(in srgb, var(--warn) 45%, transparent); }
+.market-head { display: flex; align-items: center; gap: 8px; }
+.market-title { font: 500 10.5px/1 var(--mono); text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); }
+.market-badge { margin-left: auto; font: 500 10px/1 var(--mono); text-transform: uppercase; letter-spacing: 0.08em; border: 1px solid; border-radius: 2px; padding: 4px 6px; }
+.market-badge.sale { color: var(--good); background: var(--good-dim); border-color: color-mix(in srgb, var(--good) 45%, transparent); }
+.market-badge.stale { color: var(--warn); background: var(--warn-dim); border-color: color-mix(in srgb, var(--warn) 45%, transparent); }
+.market-sub { font-family: var(--mono); }
+.market-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+.market-terms { margin: 0; display: grid; border-top: 1px solid var(--line); }
+.market-terms > div { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--line); font-size: 12.5px; min-width: 0; }
+.market-terms dt { color: var(--muted); flex: none; }
+.market-terms dd { margin: 0; text-align: right; overflow-wrap: anywhere; min-width: 0; }
+.market-terms .market-price { font-size: 15px; font-weight: 500; color: var(--mint); }
+
+.market-note { margin: 0; font-size: 12px; line-height: 1.5; color: var(--muted); overflow-wrap: anywhere; }
+.market-note.warn { color: var(--text); padding: 7px 9px; border-left: 2px solid var(--warn); background: var(--warn-dim); }
+.market-note.block { color: var(--warn); }
+.market-note.policy { font: 400 11px/1.45 var(--mono); color: var(--faint); }
+.market-note .addr { display: inline-flex; vertical-align: baseline; }
+
+.market-buy { width: 100%; }
+.market-actions { display: flex; justify-content: flex-end; gap: 6px; flex-wrap: wrap; }
+.market-form { display: grid; gap: 8px; }
+.market-price-input { display: grid; gap: 4px; }
+.market-label { display: grid; gap: 4px; font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.08em; }
+.market-label .input { text-transform: none; letter-spacing: 0; }
+
+/* ---------- gate animation (Inference result card) ---------- */
+.anim-toggle { margin-left: 0; }
+.anim-stage { border: 1px solid var(--line-2); background: var(--bg); margin: 0 0 16px; padding: 10px 12px 10px; display: grid; gap: 8px; min-width: 0; }
+.anim-skeleton { min-height: 180px; background: linear-gradient(90deg, var(--bg) 0%, var(--hover) 50%, var(--bg) 100%) 0 0 / 200% 100%; animation: anim-shimmer 1.4s linear infinite; }
+.anim-empty { padding: 16px; }
+@keyframes anim-shimmer { to { background-position: -200% 0; } }
+.anim-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.anim-title { font: 500 10.5px/1 var(--mono); text-transform: uppercase; letter-spacing: 0.12em; color: var(--text); }
+.anim-title::before { content: '■'; color: var(--mint); margin-right: 8px; font-size: 7px; vertical-align: 2px; }
+.anim-meta { font-size: 11px; color: var(--muted); }
+.anim-step { color: var(--mint); min-width: 7ch; }
+.anim-replay { margin-left: auto; }
+.anim-replay:disabled { opacity: 0.4; cursor: not-allowed; }
+.anim-svg { display: block; width: 100%; height: auto; max-height: 440px; }
+
+.anim-svg path { fill: none; stroke-linejoin: round; transition: fill 0.16s ease, stroke 0.16s ease, opacity 0.16s ease; }
+.anim-w0, .anim-w1 { stroke: var(--line); stroke-width: 0.8; }
+.anim-c0, .anim-c1 { fill: var(--bg-2); stroke: var(--line-2); stroke-width: 0.8; }
+.anim-ref { fill: none; stroke: color-mix(in srgb, var(--cyan) 45%, transparent); stroke-width: 1; stroke-dasharray: 3 2; }
+.anim-latch { stroke: color-mix(in srgb, var(--violet) 55%, transparent); }
+
+.anim-layer.lit .anim-w1 { stroke: var(--mint); opacity: 0.75; }
+.anim-layer.lit .anim-w0 { stroke: var(--line-2); }
+.anim-layer.lit .anim-c1 { fill: var(--acc-fill); stroke: var(--acc-edge); }
+.anim-layer.lit .anim-c0 { fill: var(--bg); stroke: var(--faint); }
+.anim-layer.lit .anim-latch.anim-c1 { fill: var(--violet); stroke: var(--violet); }
+.anim-layer.lit .anim-ref { stroke: var(--cyan); }
+.anim-layer.front .anim-w1 { opacity: 1; stroke-width: 1.4; }
+
+.anim-pin rect { fill: var(--bg-2); stroke: var(--line-2); stroke-width: 1; transition: fill 0.16s ease, stroke 0.16s ease; }
+.anim-pin text { font: 600 8px var(--mono); text-anchor: middle; fill: var(--faint); }
+.anim-layer.lit .anim-pin.v1 rect { fill: var(--amber); stroke: var(--amber); }
+.anim-layer.lit .anim-pin.v1 text { fill: var(--on-acc); }
+.anim-layer.lit .anim-pin.out.v1 rect { fill: var(--acc-fill); stroke: var(--acc-edge); }
+.anim-layer.lit .anim-pin.v0 rect { stroke: var(--faint); }
+.anim-layer.lit .anim-pin.v0 text { fill: var(--muted); }
+
+.anim-foot { display: flex; justify-content: space-between; gap: 6px 14px; flex-wrap: wrap; align-items: center; }
+.anim-status { font-family: var(--mono); }
+.anim-status.ok { color: var(--good); }
+.anim-status.bad { color: var(--bad); }
+.anim-status.wait { color: var(--muted); }
+.anim-legend { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; font-family: var(--mono); }
+.anim-key { display: inline-block; width: 9px; height: 9px; border: 1px solid var(--faint); background: var(--bg); }
+.anim-key.v1 { background: var(--acc-fill); border-color: var(--acc-edge); }
+
+@media (prefers-reduced-motion: reduce) {
+  .anim-svg path, .anim-pin rect { transition: none; }
+  .anim-skeleton { animation: none; }
+}

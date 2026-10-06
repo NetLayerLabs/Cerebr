@@ -11,6 +11,7 @@ import { fmt, shortAddr } from '../lib/format.ts'
 import { MAX_LABEL_NAME, byteLength, fitLabel, setLabelTx } from '../lib/scope.ts'
 import { DieShot } from '../components/DieShot.tsx'
 import { Addr, Seg } from '../components/ui.tsx'
+import { MarketPanel, useForSale } from '../components/MarketPanel.tsx'
 import { useI18n } from '../i18n/index.tsx'
 import { useCircuitText } from '../i18n/circuits.ts'
 
@@ -51,13 +52,20 @@ function useBrainWallets(rows: CircuitRow[] | undefined) {
 export function GalleryView() {
   const { circuits, isLoading } = useCircuits()
   const { address } = useConnection()
-  const [filter, setFilter] = useState<'all' | 'mine'>('all')
+  const [filter, setFilter] = useState<'all' | 'mine' | 'sale'>('all')
   const wallets = useBrainWallets(circuits)
   const { t, rich } = useI18n()
+  // ---- MARKET (owned by the Market engineer): ids of listed circuits, from components/MarketPanel.tsx.
+  const forSale = useForSale()
+  // ---- /MARKET
   const shown = useMemo(() => {
     const list = [...(circuits ?? [])].reverse()
-    return filter === 'mine' && address ? list.filter((c) => c.owner.toLowerCase() === address.toLowerCase()) : list
-  }, [circuits, filter, address])
+    if (filter === 'mine') return address ? list.filter((c) => c.owner.toLowerCase() === address.toLowerCase()) : list
+    // ---- MARKET: the "For sale" filter.
+    if (filter === 'sale') return forSale ? list.filter((c) => forSale.has(c.id.toString())) : []
+    // ---- /MARKET
+    return list
+  }, [circuits, filter, address, forSale])
 
   return (
     <section className="gallery-wrap">
@@ -74,6 +82,7 @@ export function GalleryView() {
           options={[
             ['all', t('gal.all')],
             ['mine', t('gal.mine')],
+            ['sale', t('market.forSale')], // MARKET
           ]}
           small
         />
@@ -85,9 +94,10 @@ export function GalleryView() {
           <div className="circuit skeleton" />
         </div>
       )}
-      {!isLoading && shown.length === 0 && (
+      {!isLoading && shown.length === 0 && !(filter === 'sale' && !forSale) && (
         <div className="empty">
-          {filter === 'mine' ? (address ? t('gal.noneMine') : t('gal.connect')) : t('gal.none')} <a href={href('studio')}>{t('gal.tapeOne')}</a>
+          {filter === 'mine' ? (address ? t('gal.noneMine') : t('gal.connect')) : filter === 'sale' ? t('market.noneForSale') : t('gal.none')}{' '}
+          <a href={href('studio')}>{t('gal.tapeOne')}</a>
         </div>
       )}
       <div className="gallery">
@@ -168,6 +178,9 @@ function CircuitCard({ c, wallet }: { c: CircuitRow; wallet?: Wallet }) {
           </div>
         </div>
         {mine && !c.onchain && cfg?.scope && cpu && <NameOnchain c={c} />}
+        {/* ---- MARKET (owned by the Market engineer): listing / buying, components/MarketPanel.tsx. */}
+        <MarketPanel c={c} mine={mine} brain={wallet} />
+        {/* ---- /MARKET */}
         <div className="card-actions">
           <a className="btn small" href={href('playground', c.id)}>
             {t('gal.run')}
