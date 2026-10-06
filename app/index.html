@@ -4,7 +4,23 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#070a10" />
+    <!-- Theme + language before first paint (no flash): dark by default, light only when chosen. -->
+    <script>
+      (function () {
+        var d = document.documentElement, t = null, l = null
+        try { t = localStorage.getItem('cerebr.theme') } catch (e) {}
+        try { l = new URLSearchParams(location.search).get('lang') || localStorage.getItem('cerebr.lang') } catch (e) {}
+        d.setAttribute('data-theme', t === 'light' ? 'light' : 'dark')
+        d.lang = l === 'zh' || l === 'zh-CN' ? 'zh-CN' : 'en'
+        if (t === 'light') document.querySelector('meta[name="theme-color"]').setAttribute('content', '#f5f4ef')
+        // Landing scroll motion: opt in only when it can run and the user has not asked for less motion.
+        try {
+          if ('IntersectionObserver' in window && !matchMedia('(prefers-reduced-motion: reduce)').matches) d.classList.add('js-motion')
+        } catch (e) {}
+      })()
+    </script>
     <title>Cerebr · Neural Processor on X Layer</title>
+    <meta name="description" content="Cerebr compiles neurons into NAND netlists, tapes them out on its own TapeOut processor on X Layer and runs inference onchain." />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
