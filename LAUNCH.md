@@ -34,10 +34,10 @@ The run is **idempotent and resumable**. `launch/state.196.json` is rewritten af
 | Mint NAND | [0x8cd6…62e1](https://www.oklink.com/xlayer/tx/0x8cd6b747194cba30aafce82b85546b013daa9f314a878e9a04d5ae47b84f62e1): 1,139 (139 burned + 1,000 kept) |
 | Mint LATCH | [0xeaf3…563c](https://www.oklink.com/xlayer/tx/0xeaf30d1f02cf16dec19c77c229a1e62f38e259a7d9da1285cbeb4c3edd6e563c): 102 (2 burned + 100 kept) |
 | `withdraw()` | [0xcbda…f1f5](https://www.oklink.com/xlayer/tx/0xcbda8ac5f69e2c62077a10b4a3094f318682ae114d6c0d659e241c873052f1f5): 0.01241 OKB creator revenue returned |
-| Minted / listed | 1,241 minted; `listedInTapeoutApp: true` |
-| Net cost | **0.02621748 OKB** (0.03853 sent + 0.0000975 gas − 0.01241 withdrawn) |
+| Minted / listed | 1,241 minted at launch (1,251 to date, see below); `listedInTapeoutApp: true` |
+| Net cost | **0.02621748 OKB** for the 18-transaction run (0.03853 sent + 0.00009748 gas − 0.01241 withdrawn); the brain-wallet open below is 1 more transaction |
 
-All 14 circuits were taped out once each and every one passed the on-chain checks (1,164 cases; `eval`/`step` equal to the simulator on every input):
+All 14 circuits were taped out once each and every one passed the onchain checks (1,164 cases; `eval`/`step` equal to the simulator on every input):
 
 | Id | Circuit | Elements | Flat gates | Checked | Tapeout tx |
 |---|---|---|---|---|---|
@@ -60,6 +60,11 @@ All 14 circuits were taped out once each and every one passed the on-chain check
 - Flagship brain wallet opened: Open: `xor-net-ref` (#5) native account [`0x9E1d3eC3B3D0fe84997df0E065a96a7c93c13166`](https://www.oklink.com/xlayer/address/0x9E1d3eC3B3D0fe84997df0E065a96a7c93c13166) (open tx [0x8781…dad3](https://www.oklink.com/xlayer/tx/0x8781ed8467f4cef1d10dce3ec48cf1da99cfea615b250da8a352eda7a538dad3), 0.08 OKB).
 - CerebrScope deployed: [`0x2640F8E89b2B107919568FFd42dFb46A1866e528`](https://www.oklink.com/xlayer/address/0x2640F8E89b2B107919568FFd42dFb46A1866e528) (deploy tx [0x17d0…9cfd](https://www.oklink.com/xlayer/tx/0x17d01f5dbdc49a9dc88d6fc2f7b347dd55bc903e17fa70cfd2d34ea036359cfd); source verified on [Sourcify](https://repo.sourcify.dev/contracts/full_match/196/0x2640F8E89b2B107919568FFd42dFb46A1866e528/), exact match).
 
+**After launch (2026-10-06):**
+- Catalog circuits #1-#14 named onchain in CerebrScope by `sdk/scripts/label-catalog.ts` (14 `setLabel` transactions).
+- Real-wallet test of the live app's Circuit Studio by the deployment wallet: mint 10 NAND ([0x1fb9…3f2a](https://www.oklink.com/xlayer/tx/0x1fb9dc0eb048bd2d88f985694dc7d7005235dfd7ff27790d44fd4d474af53f2a)), tape out a new design as **#15** "Studio test neuron", y = [x0 + x1 + x2 - x3 ≥ 2], 4 → 1, 16 NAND ([0x4133…1c15](https://www.oklink.com/xlayer/tx/0x413387037233847f2d2dd24c2bfa0733a5300d93e4e4f195d3ac9bd4ca1f1c15)), and name it onchain ([0xc5ff…95fb](https://www.oklink.com/xlayer/tx/0xc5ffa319abb3f5dd0202c4b194efaab71ab6f22d677074050d1403d0f33f95fb)).
+- State after that: `minted()` 1,251, 157 burned (141 into #1-#14, 16 into #15), creator holds 994 NAND + 100 LATCH, `owed()` 0.0001 OKB (not withdrawn), circuits #1-#15 all owned by the creator and all labelled. These transactions are not in `launch/out/196.json`, which records the launch run only. Disclosed in [ISSUANCE.md](ISSUANCE.md) §6.
+
 ## Issuance terms (disclosed on chain at `createCPU`)
 
 | Term | Value | Notes |
@@ -72,7 +77,7 @@ All 14 circuits were taped out once each and every one passed the on-chain check
 | TapeOut protocol fee | 0.00066 OKB per `mint()` call | set by TapeOut, read live |
 | Tapeout fee | 0.0013 OKB per circuit (exact amount) | goes to TapeOut's treasury |
 | Account open fee | 0.08 OKB | for TapeOut's native circuit accounts |
-| App listing rule | supply cap ≥ 10,000 and minted ≥ 1 | 1,241 minted at launch, so it is listed |
+| App listing rule | supply cap ≥ 10,000 and minted ≥ 1 | 1,241 minted at launch (1,251 to date), so it meets the rule |
 
 Confirmed by the user on 2026-10-04. The 14 circuits burn 139 NAND and 2 LATCH, which is 0.0141% of the cap. [ISSUANCE.md](ISSUANCE.md) explains the choice.
 
@@ -136,11 +141,11 @@ Check the plan, the issuance terms (they must show `confirmed by user yes`), the
 node --env-file=.env scripts/launch.ts --network xlayer --yes
 ```
 
-Mainnet needs all three of `--network xlayer`, `PRIVATE_KEY` and `--yes`, and the RPC must not be local. The run takes about a minute on X Layer (19 transactions). If it stops for any reason, run **the same command** again.
+Mainnet needs all three of `--network xlayer`, `PRIVATE_KEY` and `--yes`, and the RPC must not be local. The run takes about a minute on X Layer (18 transactions, plus 1 for the brain-wallet open). If it stops for any reason, run **the same command** again.
 
 ### 6b. Deploy CerebrScope (done: [`0x2640…e528`](https://www.oklink.com/xlayer/address/0x2640F8E89b2B107919568FFd42dFb46A1866e528), Sourcify-verified)
 
-CerebrScope is a separate, no-admin lens contract (4.60M gas on mainnet, about 0.00009 OKB). It is not part of the hackathon's required deployment, but the demo shows its on-chain images. From the repo root, rehearse on a fork first, then sign on mainnet yourself:
+CerebrScope is a separate, no-admin lens contract (4.60M gas on mainnet, about 0.00009 OKB). It is not part of the hackathon's required deployment, but the demo shows its onchain images. From the repo root, rehearse on a fork first, then sign on mainnet yourself:
 
 ```sh
 # fork rehearsal (nothing leaves the machine)
@@ -149,13 +154,13 @@ CEREBR_CIRCUITS=<processor.circuits> forge script script/DeployScope.s.sol --rpc
 CEREBR_CIRCUITS=<processor.circuits> forge script script/DeployScope.s.sol --rpc-url xlayer --broadcast --account <name>
 ```
 
-Then put the printed address in `launch/config.json` as `"scope": "0x..."` and run `node scripts/launch.ts --network xlayer --verify-only --as 0xYOUR_WALLET`. The launcher checks that the address is a CerebrScope bound to the TapeOut factory and writes `scope` into `out/196.json`; `cd app && npm run sync` then turns on the Scope images. (Alternatively set `VITE_SCOPE_196` at build time.) Without it, the dApp draws the same die shots client-side from the netlists; reword the demo line about on-chain rendering in that case.
+Then put the printed address in `launch/config.json` as `"scope": "0x..."` and run `node scripts/launch.ts --network xlayer --verify-only --as 0xYOUR_WALLET`. The launcher checks that the address is a CerebrScope bound to the TapeOut factory and writes `scope` into `out/196.json`; `cd app && npm run sync` then turns on the Scope images. (Alternatively set `VITE_SCOPE_196` at build time.) Without it, the dApp draws the same die shots client-side from the netlists; reword the demo line about onchain rendering in that case.
 
-### 7. Verify on OKLink and re-check (done: all 14 circuits verified, listed in the TapeOut app)
+### 7. Verify on OKLink and re-check (done: all 14 launch circuits verified; meets the TapeOut app listing rule)
 
 - The processor is at `https://www.oklink.com/xlayer/address/<processor.circuits>`. All links are in `launch/out/196.json`.
 - Find the `CPUCreated` event in the `createCPU` transaction (`processor.links.createTx`), and one `TapedOut` event per circuit transaction.
-- Run `node scripts/launch.ts --network xlayer --verify-only --as 0xYOUR_WALLET` to re-run every on-chain check without a key and refresh `out/196.json`.
+- Run `node scripts/launch.ts --network xlayer --verify-only --as 0xYOUR_WALLET` to re-run every onchain check without a key and refresh `out/196.json`.
 - `listedInTapeoutApp: true` means the processor meets the TapeOut app's listing rule (supply cap ≥ 10,000 and minted ≥ 1). Check that it shows up at tapeout.net.
 
 Commit `launch/out/196.json` and `launch/state.196.json`. Neither contains a secret, and the dApp reads the out file (`cd app && npm run sync && npm run build`).
@@ -167,11 +172,11 @@ Commit `launch/out/196.json` and `launch/state.196.json`. Neither contains a sec
 | Processor address | `processor.circuits` in `launch/out/196.json` (the address the factory registers with `isCPU`). Also give `processor.transistors` as the transistor token. |
 | Deployment wallet | `deployer` (equal to `processor.creator`) |
 | Creation tx | `processor.links.createTx` |
-| Circuits taped out | 14; ids and transactions are in `circuits[]`. The flagship circuits are `xor-net-ref` (the XOR problem built by REF from three taped-out neurons) and `line-detector-ref` (a 3×3 vision network with 11 REFs) |
+| Circuits taped out | 15: the 14 catalog circuits taped out at launch (ids and transactions in `circuits[]`) and #15, taped out through the app on 2026-10-06 (above). The flagship circuits are `xor-net-ref` (the XOR problem built by REF from three taped-out neurons) and `line-detector-ref` (a 3×3 vision network with 11 REFs) |
 | Issuance terms | 1,000,000 transistors at 0.00001 OKB (table above) |
 | Demo video / description | the dApp flow: mint transistors → build a neural circuit → tape it out → run `eval` live → browse the gallery |
 
-**Rules to respect:** wash trading and self-trading disqualify an entry. The launch minted what its own circuits burn plus the disclosed 1,000 NAND + 100 LATCH kept by the creator, all through the public `mint()` at the public price, and did no trading. Don't generate artificial transfers or volume afterwards.
+**Rules to respect:** wash trading and self-trading disqualify an entry. The launch minted what its own circuits burn plus the disclosed 1,000 NAND + 100 LATCH kept by the creator, all through the public `mint()` at the public price, and did no trading. The 2026-10-06 app test (10 NAND, circuit #15) is disclosed the same way. Don't generate artificial transfers or volume afterwards.
 
 ## Command reference
 
@@ -188,7 +193,7 @@ node scripts/launch.ts [--network fork|xlayer] [--rpc URL] [--config PATH]
 | `--rpc` | fork default: `$FORK_RPC` or `http://127.0.0.1:8545`; mainnet default: `$XLAYER_RPC` or `https://rpc.xlayer.tech` |
 | `--dry-run` | prints the plan, issuance terms, fees and cost; sends nothing |
 | `--yes` | executes; without it, the script prints the plan and exits with code 2 |
-| `--verify-only` | re-runs every on-chain check and rewrites the out file |
+| `--verify-only` | re-runs every onchain check and rewrites the out file |
 | `--as` | fork: impersonate this wallet. Mainnet: the address for a dry run or verify run without a key |
 | `--fund` | fork only: set the deployer's balance (OKB) |
 | `--fresh` | fork only: archive the state file and start a new processor |
@@ -249,7 +254,7 @@ interface LaunchOut {
     nIn: number; nOut: number; nState: number;
     gateCount: number;            // flattened NAND+LATCH through REFs (as circuitInfo reports it)
     elements: { nand: number; latch: number; ref: number };  // this netlist's own elements (= transistors burned)
-    netlist: Hex;                 // exact on-chain bytes
+    netlist: Hex;                 // exact onchain bytes
     tx?: Hash; block?: string;    // absent only for circuits adopted on a resumed run
     account: { address: Address; opened: boolean; tx?: Hash };  // native TapeOut account (deterministic even before open)
     verified: { ok: boolean; cases: number; checks: string[]; at: string } | null;

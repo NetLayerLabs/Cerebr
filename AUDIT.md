@@ -1,6 +1,14 @@
 # Cerebr Security Review
 
-This is an **internal review** for the IGNIX X Layer TapeOut hackathon, done by AI review agents, an integrator who checked every finding against the code, and automated tests on local forks of X Layer mainnet. **It is not a professional third-party audit.** Nothing in this review was broadcast to a public chain, and no real keys were used. The mainnet launch came afterwards (2026-10-05): the launch script's on-chain checks passed for all 14 circuits on X Layer mainnet ([LAUNCH.md](LAUNCH.md#mainnet-launch-record-2026-10-05)).
+This is an **internal review** for the IGNIX X Layer TapeOut hackathon, done by AI review agents, an integrator who checked every finding against the code, automated tests on local forks of X Layer mainnet and read-only checks against mainnet. **It is not a professional third-party audit.** No reviewer broadcast a transaction or used a real key.
+
+It records three rounds:
+
+1. **2026-10-04, integration review** before launch (sections 1-5).
+2. **2026-10-05/06, full audit** by three independent agents after launch (section 6).
+3. **2026-10-06, pre-submission audit** of the live deployment and the docs (section 7).
+
+The mainnet launch came on 2026-10-05: the launch script's onchain checks passed for all 14 catalog circuits ([LAUNCH.md](LAUNCH.md#mainnet-launch-record-2026-10-05)).
 
 The earlier $CBR design (bonding curve, Circuit ERC-721, our own ERC-6551 accounts, lens, indexer) has been removed from the repository; its review no longer applies and is not repeated here.
 
@@ -24,7 +32,7 @@ Cerebr deploys **no contract that holds funds** and has **no admin keys**. The p
 
 1. **Fork verification of every TapeOut fact** (`sdk/scripts/fork-smoke.ts`, 18 checks): factory, fees, mint/burn accounting, tapeout rules, REF semantics, eval/step encoding, native accounts. Several facts in TapeOut's client bundle turned out wrong and were corrected (TAPEOUT.md, "corrections").
 2. **Compiler cross-checks** (`sdk/test/neuro-*.test.ts`): our encoder, decoder and simulator are compared byte for byte with TapeOut's own shipped client code on hundreds of random chain-valid netlists, including LATCH feedback and REF (on invalid netlists our decoder is deliberately stricter, matching `tapeout()`). Every catalog circuit is exhaustively checked against its neural reference model in both output modes.
-3. **Independent on-chain check**: a reviewer taped out the whole catalog on two fresh processors (direct and buffered modes) and compared every `eval`/`step` with hand-written references, not the SDK's model.
+3. **Independent onchain check**: a reviewer taped out the whole catalog on two fresh processors (direct and buffered modes) and compared every `eval`/`step` with hand-written references, not the SDK's model.
 4. **CerebrScope tests**: 15 fork tests against the real TapeOut contracts and 6 non-fork tests, including a 1,000-run fuzz test that `scan()` never reverts on arbitrary bytes. All circuits of TapeOut's own CPU #0 (102–103 depending on the block) were rendered and parsed.
 5. **End-to-end rehearsals**: the launch script and the dApp's smoke test run against a fresh fork (section 5).
 6. **Multi-agent code review** of all components, followed by integrator verification (section 4).
@@ -57,28 +65,28 @@ Cerebr deploys **no contract that holds funds** and has **no admin keys**. The p
 
 ### dApp
 
-- Every write is simulated first (decoded reverts), sent only when the wallet is on the app's chain, and awaited for a successful receipt. Fees and prices are read live from TapeOut and sent exactly (as above).
-- The local fork uses chain id 31337 so wallets never confuse it with X Layer (196); it is hidden in production builds unless `VITE_ENABLE_ANVIL=true`. The dev connector drives an unlocked anvil account; the app never holds a key.
+- Every write is simulated first (decoded reverts), sent only when the wallet is on X Layer mainnet, and awaited for a successful receipt. Fees and prices are read live from TapeOut and sent exactly (as above).
+- The app runs on X Layer mainnet only, with real injected wallets. The browser bundle has no test account, no mock connector and no fork chain; fork testing runs only through the Node smoke script (`app/scripts/fork-chain.ts`). The app never holds a key. (Updated 2026-10-06; the 2026-10-04 build still had a dev fork connector.)
 - The app offers **no NFT transfers** and no brain-wallet `execute`. TapeOut allows sending a circuit NFT into its own account, which locks that account forever; users are warned in app/README.md and on the landing page.
 
-## 4. Review findings and resolutions
+## 4. Round 1 findings and resolutions (2026-10-04)
 
 | # | Severity | Finding | Resolution |
 |---|---|---|---|
 | 1 | High | `app/scripts/sync-cpu.mjs` crashed on the launch script's `cerebr.launch/1` records (`processor.*`, `circuits[]`), so the dApp and the landing page could never find the mainnet processor. | **Fixed.** Reads `processor`, `createBlock`, `network: 'fork'` and `circuits[].key/circuitId`; regression-run on the fresh fork record (14 catalog ids + scope). |
 | 2 | Medium | `launch.ts` resume cleared a pending tx even without a receipt, so the next run could pay for `createCPU` or a mint twice. | **Fixed.** Stops unless the tx is confirmed or provably dropped; plus an in-flight nonce guard before any send. Both paths tested on the fork. |
-| 3 | Medium | CerebrScope was never deployed or wired into the app by the runbook; the app's fallback called `svg()`, but the contract has `svgOf()`. | **Fixed.** LAUNCH.md step 6b (fork rehearsal, then user-signed deploy); optional `scope` in `launch/config.json` is validated and written to `launch/out`, and `npm run sync` picks it up; ABI renamed to `svgOf`. Verified on the fork: the app's `scopeImage()` returns on-chain SVGs. SUBMISSION has a checklist item and a fallback voice-over line. |
-| 4 | Medium | README/SUBMISSION pointed to an AUDIT.md about the removed $CBR contracts; DEPLOY.md and AGENTS.md still described the curve. | **Fixed** (this document; DEPLOY.md deleted). **AGENTS.md is left for the human** to update: it is the agents' instruction file. |
+| 3 | Medium | CerebrScope was never deployed or wired into the app by the runbook; the app's fallback called `svg()`, but the contract has `svgOf()`. | **Fixed.** LAUNCH.md step 6b (fork rehearsal, then user-signed deploy); optional `scope` in `launch/config.json` is validated and written to `launch/out`, and `npm run sync` picks it up; ABI renamed to `svgOf`. Verified on the fork: the app's `scopeImage()` returns onchain SVGs. SUBMISSION has a checklist item and a fallback voice-over line. |
+| 4 | Medium | README/SUBMISSION pointed to an AUDIT.md about the removed $CBR contracts; DEPLOY.md and AGENTS.md still described the curve. | **Fixed** (this document; DEPLOY.md deleted). AGENTS.md was left for the human at the time; it was rewritten in round 3 (section 7). |
 | 5 | Low | Landing page claimed the dApp blocks sending a circuit into its own wallet; README called Scope "read-only". | **Fixed** wording on both (the app has no transfer feature; Scope is "no admin, no funds", with an owner-written label registry). |
 | 6 | Low | "Fixed cap and price" claims ignored TapeOut's upgradeable beacons. | **Fixed.** README, SUBMISSION, ISSUANCE and the landing page now say the terms are fixed by Cerebr at `createCPU` and enforced by TapeOut's upgradeable contracts. |
 | 7 | Low | SDK root lacked the `tapeout` export used by the landing snippet; `npm test` failed on Node 26. | **Fixed.** `export * as tapeout`; the snippet typechecks; `npm test` runs `'test/*.test.ts'`; a test covers the root exports. |
 | 8 | Low | `sdk/node_modules` not ignored; stray fork receipts in the root. | **Fixed**, plus a bug found while fixing it: the root `out/` ignore rule also matched `launch/out/`, so the mainnet launch record could never have been committed. Rules are now anchored (`/out/`, `/cache/`); fork records are ignored, mainnet records are committable. Stray files deleted. |
-| 9 | — | Integrator: `launch.ts` and `fork-smoke.ts` only accepted chain id 196, while the dApp's fork (and the in-app instructions) use 31337. | **Fixed.** Fork mode accepts 196 or 31337 and signs with the node's real id; one fork now serves the launch, sync, smoke test and dApp. |
-| 10 | Info | Independent on-chain check of all 14 catalog circuits, both output modes; launch.ts safety rails; CerebrScope authorization, escaping and REF parsing. | No issues found. |
+| 9 | - | Integrator: `launch.ts` and `fork-smoke.ts` only accepted chain id 196, while the dApp's fork (and the in-app instructions) use 31337. | **Fixed.** Fork mode accepts 196 or 31337 and signs with the node's real id; one fork now serves the launch, sync, smoke test and dApp. |
+| 10 | Info | Independent onchain check of all 14 catalog circuits, both output modes; launch.ts safety rails; CerebrScope authorization, escaping and REF parsing. | No issues found. |
 
 No finding was rejected.
 
-## 5. Test results (2026-10-04)
+## 5. Round 1 test results (2026-10-04)
 
 | Suite | Result |
 |---|---|
@@ -86,17 +94,70 @@ No finding was rejected.
 | `SCOPE_FORK_RPC=… forge test` (X Layer fork, block ≈72.38M) | 21 passed (15 fork + 6 unit) |
 | `sdk`: `npm test`, `tsc --noEmit` | 35 passed, clean |
 | `sdk/scripts/fork-smoke.ts` | 18 / 18 checks |
-| `sdk/scripts/launch.ts --yes --fresh` (fresh fork, chain 31337) | 19 transactions, 5.03M gas, 14 circuits, 1,164 on-chain cases, **ALL CIRCUITS VERIFIED** |
+| `sdk/scripts/launch.ts --yes --fresh` (fresh fork, chain 31337) | 19 transactions (18 launch + 1 brain-wallet open), 5.03M gas, 14 circuits, 1,164 onchain cases, **ALL CIRCUITS VERIFIED** |
 | `app`: `tsc --noEmit`, `npm run build` | clean |
 | `app`: `npm run smoke` | 43 / 43 checks |
 
 CI (`.github/workflows/test.yml`) runs forge fmt/build/test (non-fork), the SDK typecheck and tests, and the app build. Fork suites need a local anvil fork and are run by hand before release (README "Quickstart").
 
-## 6. Known limitations
+## 6. Round 2: full audit (2026-10-05/06)
+
+Three independent agents audited the live deployment after launch, each from a different angle. Every finding was fixed.
+
+**Agent A: dApp transaction paths, end to end on a mainnet fork as a fresh user.**
+
+| # | Severity | Finding | Resolution |
+|---|---|---|---|
+| A1 | High | A `?cpu=` URL override worked in production, so a crafted link could redirect payments to another processor. | **Fixed.** |
+| A2 | Medium | Studio retry issue after a failed step. | **Fixed.** |
+| A3 | Medium | Studio stale-state issue. | **Fixed.** |
+| A4-A5 | Low | Two low findings. | **Fixed.** |
+
+**Agent B: contracts, SDK and launch, adversarial.** 0 critical, 0 high, 0 medium.
+
+- CerebrScope's deployed runtime bytecode matches the repo build byte for byte; Sourcify reports an exact match.
+- 5 low/info findings, all fixed: the app's SVG fallback on invalid UTF-8 labels; launch re-run and duplicate-processor guards; redaction of any echoed key material in errors; the SDK decoder and scanner now enforce the chain's LATCH and self-reference rules; neuron weights bounded to safe integers with `|w| <= 64`.
+- The native-account beacon implementation is now pinned in the launch preflight (`pins.accountBeaconImpl`).
+- Fuzz evidence: 331,370 exhaustive neuron-compiler cases against the reference model, 0 mismatches; 160 random netlists taped out on a fork with 1,920 `eval`/`step` comparisons against the simulator, 0 mismatches.
+
+**Agent C: live mainnet and docs.** 62 onchain checks against X Layer mainnet (addresses, terms, fees, circuits, netlists, owners, labels, Scope) all pass.
+
+## 7. Round 3: pre-submission audit (2026-10-06)
+
+Read-only checks of the live deployment against every figure in the docs.
+
+| Check | Result |
+|---|---|
+| `minted()` | 1,251: 1,139 NAND + 102 LATCH at launch, plus 10 NAND on 2026-10-06 (0.1251% of the cap) |
+| Burned | 157: 141 into the 14 catalog circuits, 16 NAND into #15 |
+| Creator balance | 994 NAND + 100 LATCH; `owed()` 0.0001 OKB (the 10-NAND revenue, not withdrawn) |
+| Circuits | `nextId` = 15; #1-#15 all owned by the creator and all labelled in CerebrScope |
+| Brain wallets | only #5's is opened |
+| Wash-trading scan | every transistor and circuit transfer event since launch is a mint or burn by the creator; no transfers between wallets; no other wallet has minted or taped out yet |
+| Deployment wallet | also used by other NetLayer Labs projects; none of those transactions touch Cerebr's contracts |
+
+| # | Severity | Finding | Resolution |
+|---|---|---|---|
+| 1 | Low | SUBMISSION, ISSUANCE and LAUNCH still described the launch-day state (1,241 minted, 14 circuits) and omitted the 10-NAND test and circuit #15. | **Fixed.** Counts, the #15 row and the creator disclosure updated. |
+| 2 | Low | Launch cost arithmetic and transaction counts were inconsistent across docs (gross vs net, 18 vs 19 transactions). | **Fixed.** Gross 0.03862748 OKB, net 0.02621748 OKB for the 18-transaction launch run; the brain-wallet open (1 transaction, 0.08 OKB) is listed separately. |
+| 3 | Low | AGENTS.md still described the removed bonding-curve design. | **Fixed.** Rewritten. |
+| 4 | Info | README cited "three internal review rounds" and fuzz figures that this document did not yet record; "listed in TapeOut's own app" was not directly verifiable. | **Fixed.** Rounds 2 and 3 recorded here; README cites this document and states the listing rule instead. |
+| 5 | Info | The demo script re-taped a duplicate of catalog #8 and described the old landing page. | **Fixed.** The demo tapes out a new design and follows the current UI; demo transactions are to be disclosed in ISSUANCE §6. |
+
+## 8. Test results (2026-10-06)
+
+| Suite | Result |
+|---|---|
+| `forge test` (no fork) | 6 passed |
+| `SCOPE_FORK_RPC=… forge test` | 21 / 21 |
+| `sdk`: `npm test` | 44 / 44 |
+| `app`: `npm run build` | passes |
+
+## 9. Known limitations
 
 - **TapeOut is the trust root.** Upgradeable, unaudited, unsealed; its owner can change fees, burns, `eval` semantics or the cap/price enforcement. The launch script's implementation pins detect changes before launch only.
 - **Fees are protocol-set.** Quotes are read live; the 0.08 OKB account-open fee dominates launch cost.
 - **Circuits are small by design.** `eval` is a view call; networks of tens to hundreds of gates are practical. Very large circuits may exceed RPC `eth_call` gas caps for `eval` or Scope rendering.
 - **Self-locking accounts.** TapeOut allows sending a circuit NFT into its own account. The dApp offers no transfers, but other tools can do it.
-- **Names of custom designs** live only in the browser that taped them out, unless the owner writes a CerebrScope label.
+- **Names of custom designs.** A circuit without a CerebrScope label shows its catalog name or "Circuit #N"; the Studio offers onchain naming right after tape-out. All 15 current circuits are labelled.
 - **This review is internal.** It is not a substitute for a professional audit of either Cerebr or TapeOut.

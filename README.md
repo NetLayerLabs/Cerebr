@@ -67,7 +67,7 @@ Everything below is live on X Layer mainnet (chain 196) and was verified by dire
 | Onchain names for circuits #1-#14 | 14 `setLabel` transactions on CerebrScope (2026-10-06), written by [`sdk/scripts/label-catalog.ts`](sdk/scripts/label-catalog.ts) |
 | Real-wallet test through the live app UI | Mint 10 NAND [0x1fb9…3f2a](https://www.oklink.com/xlayer/tx/0x1fb9dc0eb048bd2d88f985694dc7d7005235dfd7ff27790d44fd4d474af53f2a), tape out circuit #15 [0x4133…1c15](https://www.oklink.com/xlayer/tx/0x413387037233847f2d2dd24c2bfa0733a5300d93e4e4f195d3ac9bd4ca1f1c15), name it onchain [0xc5ff…95fb](https://www.oklink.com/xlayer/tx/0xc5ffa319abb3f5dd0202c4b194efaab71ab6f22d677074050d1403d0f33f95fb) |
 
-State at time of writing: **15 circuits** taped out, **1,251** transistors minted of 1,000,000, the processor registered in the TapeOut factory (`isCPU = true`) and listed in TapeOut's own app. The full launch record, with every transaction, is in [LAUNCH.md](LAUNCH.md#mainnet-launch-record-2026-10-05) and [`launch/out/196.json`](launch/out/196.json).
+State at time of writing: **15 circuits** taped out, **1,251** transistors minted of 1,000,000, the processor registered in the TapeOut factory (`isCPU = true`) and meets TapeOut's app listing rule (supply cap ≥ 10,000, minted ≥ 1). The full launch record, with every transaction, is in [LAUNCH.md](LAUNCH.md#mainnet-launch-record-2026-10-05) and [`launch/out/196.json`](launch/out/196.json).
 
 ## Hackathon requirements and judging criteria
 
@@ -87,7 +87,7 @@ State at time of writing: **15 circuits** taped out, **1,251** transistors minte
 | **Asset issuance design** | One asset, the transistor: fixed supply and price, burned by use, reuse through `REF` is free. No curve, no presale, no reserved allocation; the creator's own mints are disclosed. See [Asset issuance](#asset-issuance). |
 | **Quality of X Layer integration** | Native OKB fees, OKX Wallet first, OKLink links throughout, batched reads against the public X Layer RPC, and ~1-second blocks that make a live tape-out-and-test loop practical. |
 | **User growth potential** | Anyone can tape out a neuron in the browser in two transactions and name it onchain; every taped-out neuron is a public building block that any team on any TapeOut processor can `REF` for free. |
-| **Contract security and economic model** | No custody. CerebrScope has no admin and no payable functions, and its source is verified. The dApp sends exact live fees. Three internal review rounds, fuzzing against the chain, and TapeOut's own risks disclosed ([AUDIT.md](AUDIT.md)). |
+| **Contract security and economic model** | No custody. CerebrScope has no admin and no payable functions, and its source is verified. The dApp sends exact live fees. Three internal review rounds, fuzzing against the chain, and TapeOut's own risks disclosed ([AUDIT.md](AUDIT.md), an internal review, not a third-party audit). |
 
 ## How it works
 
@@ -245,15 +245,15 @@ Full design, alternatives and the cost of every circuit: [ISSUANCE.md](ISSUANCE.
 
 | Check | Result |
 |---|---|
-| SDK tests (compiler, simulator, TapeOut client, launch guards) | 44 / 44 pass (`cd sdk && npm test`) |
+| SDK tests (compiler, simulator, TapeOut client, launch guards) | all pass (`cd sdk && npm test`) |
 | CerebrScope Foundry tests | 6 unit and fuzz tests, plus 15 fork tests against the real TapeOut contracts (21 / 21) |
-| Simulator vs TapeOut | byte-identical to TapeOut's own client on random netlists with LATCH and REF; 160 random netlists taped out on a fork, 1,920 `eval`/`step` comparisons, 0 mismatches |
-| Neuron compiler | 331,370 exhaustive cases against the reference model, 0 mismatches |
+| Simulator vs TapeOut | byte-identical to TapeOut's own client on random netlists with LATCH and REF; 160 random netlists taped out on a fork, 1,920 `eval`/`step` comparisons, 0 mismatches ([AUDIT.md](AUDIT.md#6-round-2-full-audit-2026-10-0506)) |
+| Neuron compiler | 331,370 exhaustive cases against the reference model, 0 mismatches ([AUDIT.md](AUDIT.md#6-round-2-full-audit-2026-10-0506)) |
 | Mainnet | every catalog circuit's netlist byte-identical to a fresh compile; 1,164 onchain input cases match the simulator; #14 checked with `step()` |
 | CerebrScope source | verified on Sourcify, exact match of deployed bytecode |
 | dApp | end to end on a mainnet fork as a fresh user, then a real-wallet test on mainnet (mint, inference, tape-out and onchain naming) |
 
-Three internal review rounds (multi-agent, adversarial) covered the contract, the SDK, the launch scripts and the dApp; every finding and its resolution is in [AUDIT.md](AUDIT.md). This is an internal review, not a professional third-party audit.
+Three internal review rounds are recorded in [AUDIT.md](AUDIT.md) with every finding and its resolution: a 2026-10-04 integration review, a 2026-10-05/06 full audit by three independent agents (dApp transaction paths on a mainnet fork; contracts, SDK and launch; live mainnet and docs), and a 2026-10-06 pre-submission audit. Together they covered CerebrScope, the SDK, the launch scripts, the dApp and the docs. This is an internal review, not a professional third-party audit.
 
 ## Quickstart
 

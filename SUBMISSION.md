@@ -7,22 +7,22 @@ IGNIX X Layer "TapeOut Genesis Transistor" hackathon. Deadline: **2026-10-09 06:
 | Field | Value |
 |---|---|
 | Project name | Cerebr |
-| One-liner | A neural processor, taped out on X Layer: neurons compiled to NAND netlists, composed with REF and run on-chain with `eval()`. |
+| One-liner | A neural processor, taped out on X Layer: neurons compiled to NAND netlists, composed with REF and run onchain with `eval()`. |
 | Processor contract address (circuits) | [`0xB04EB79D1A5EECaabAAfF7B77d7c27578EE693FF`](https://www.oklink.com/xlayer/address/0xB04EB79D1A5EECaabAAfF7B77d7c27578EE693FF) (created 2026-10-05, [tx](https://www.oklink.com/xlayer/tx/0x3295efc1ceec4aba0f918f89e5316fd62f1f705abdc52d483715e4fcada86815)) |
 | Transistors contract address | [`0x84b5a5c6fE305319458113b87c09a2A241427D2D`](https://www.oklink.com/xlayer/address/0x84b5a5c6fE305319458113b87c09a2A241427D2D) |
 | Deployment wallet | [`0xc742AdA2872a042dD36D2E706907b4036968960C`](https://www.oklink.com/xlayer/address/0xc742AdA2872a042dD36D2E706907b4036968960C) (= `creator`) |
-| Transistor supply cap / unit price | 1,000,000 at 0.00001 OKB per transistor; 1,241 minted at launch ([ISSUANCE.md](ISSUANCE.md)) |
-| Circuits taped out | 14, ids #1–#14, all verified on mainnet (table below) |
+| Transistor supply cap / unit price | 1,000,000 at 0.00001 OKB per transistor; 1,251 minted to date (1,241 at launch + 10 on 2026-10-06), all by the deployment wallet ([ISSUANCE.md](ISSUANCE.md)) |
+| Circuits taped out | 15: #1-#14 catalog (2026-10-05) and #15 "Studio test neuron" via the live app (2026-10-06), all verified onchain and named in CerebrScope (table below) |
 | Flagship brain wallet | Open: `xor-net-ref` (#5) native account [`0x9E1d3eC3B3D0fe84997df0E065a96a7c93c13166`](https://www.oklink.com/xlayer/address/0x9E1d3eC3B3D0fe84997df0E065a96a7c93c13166) (open tx [0x8781…dad3](https://www.oklink.com/xlayer/tx/0x8781ed8467f4cef1d10dce3ec48cf1da99cfea615b250da8a352eda7a538dad3), 0.08 OKB) |
 | CerebrScope | [`0x2640F8E89b2B107919568FFd42dFb46A1866e528`](https://www.oklink.com/xlayer/address/0x2640F8E89b2B107919568FFd42dFb46A1866e528) (deploy tx [0x17d0…9cfd](https://www.oklink.com/xlayer/tx/0x17d01f5dbdc49a9dc88d6fc2f7b347dd55bc903e17fa70cfd2d34ea036359cfd); source verified on [Sourcify](https://repo.sourcify.dev/contracts/full_match/196/0x2640F8E89b2B107919568FFd42dFb46A1866e528/), exact match) |
-| Demo video | **TODO (pending)** (2 minutes; script below) |
-| dApp / landing page | **TODO (pending)** (hosting URL) |
+| Demo video | **TODO_USER** (2 minutes; script below) |
+| dApp / landing page | https://usecerebr.vercel.app (landing) and https://usecerebr.vercel.app/app (dApp); verify in a browser before submitting |
 | Repository | https://github.com/NetLayerLabs/Cerebr (**currently private: make it public before submitting**) |
-| Contact | **TODO_USER (pending)** |
+| Contact | **TODO_USER** |
 
-### Circuits taped out (X Layer mainnet, 2026-10-05)
+### Circuits taped out (X Layer mainnet)
 
-Processor [`0xB04E…93FF`](https://www.oklink.com/xlayer/address/0xB04EB79D1A5EECaabAAfF7B77d7c27578EE693FF). Every circuit's `eval` (or `step`) matched the simulator on every input. Flagships in bold.
+Processor [`0xB04E…93FF`](https://www.oklink.com/xlayer/address/0xB04EB79D1A5EECaabAAfF7B77d7c27578EE693FF). #1-#14 were taped out by the launch script on 2026-10-05, which checked every circuit's `eval` (or `step`) against the simulator on every input. #15 was taped out through the live app's Circuit Studio during a real-wallet test on 2026-10-06. Flagships in bold.
 
 | Id | Circuit | Elements | Tapeout tx |
 |---|---|---|---|
@@ -40,6 +40,7 @@ Processor [`0xB04E…93FF`](https://www.oklink.com/xlayer/address/0xB04EB79D1A5E
 | #12 | **Line Detector (REF-composed)** | 11 REF | [0x65fa…48ea](https://www.oklink.com/xlayer/tx/0x65fa37ad39f3d62ff4088ef352904ec9ee8520ec7ada0326652f13cccc2648ea) |
 | #13 | 2-bit Adder | 14 NAND | [0xdbbe…f3f3](https://www.oklink.com/xlayer/tx/0xdbbec9cd6b0909f3e505e3927f6f9e8e3f60e63039fd2aaae9ac01a141dbf3f3) |
 | #14 | Integrate-and-Fire Neuron | 17 NAND + 2 LATCH | [0x91e5…7016](https://www.oklink.com/xlayer/tx/0x91e5a6585576e608318a33d7d616b0e6fe769bce3aa3510b9e08782ca11d7016) |
+| #15 | Studio test neuron, y = [x0 + x1 + x2 - x3 ≥ 2] | 16 NAND | [0x4133…1c15](https://www.oklink.com/xlayer/tx/0x413387037233847f2d2dd24c2bfa0733a5300d93e4e4f195d3ac9bd4ca1f1c15) |
 
 ## Project description (about 330 words)
 
@@ -52,19 +53,19 @@ Neurons then become networks. The XOR problem, which no single neuron can solve,
 The product around it:
 - **A dApp** to mint transistors, build a neuron, tape it out, test it live and browse the gallery.
 - **Brain wallets.** Each circuit can open TapeOut's native ERC-6551 account.
-- **CerebrScope.** An on-chain renderer that draws every circuit as an SVG die shot from its real gates. TapeOut's own `tokenURI` is empty.
+- **CerebrScope.** An onchain renderer that draws every circuit as an SVG die shot from its real gates. TapeOut's own `tokenURI` is empty.
 - **An SDK** that other teams can build with.
 
-**Issuance is simple.** There is one asset, the transistor: 1,000,000 at 0.00001 OKB, a cap and price fixed by Cerebr at `createCPU` (enforced by TapeOut's upgradeable contracts), no reserved allocation (the creator's 1,100 kept transistors (of 1,241 publicly minted, 141 burned into the catalog) are disclosed) and no curve. Burns never refill the cap. REF makes reuse free, so every network built on our neurons grows the graph instead of copying it.
+**Issuance is simple.** There is one asset, the transistor: 1,000,000 at 0.00001 OKB, a cap and price fixed by Cerebr at `createCPU` (enforced by TapeOut's upgradeable contracts), no reserved allocation (1,251 minted via the public `mint()` at the public price, 157 burned into 15 circuits, 994 NAND + 100 LATCH held by the creator, all disclosed) and no curve. Burns never refill the cap. REF makes reuse free, so every network built on our neurons grows the graph instead of copying it.
 
 **Use cases:**
-- On-chain game AI that anyone can audit.
+- Onchain game AI that anyone can audit.
 - Small, verifiable decision primitives for DeAI agents.
 - Public neurons that any TapeOut team can REF into their own circuits.
 
 ## Use case
 
-Small, verifiable intelligence that lives entirely on-chain. A game, a DAO or an agent can call a Cerebr circuit to decide something: whether a pattern contains a line, whether a majority voted yes, whether enough excitatory signals beat the inhibitory ones. Anyone can recompute the same decision with a free `eval()` call. There is no oracle, model server or trust assumption beyond the X Layer chain and TapeOut's contracts. Because circuits are public and REF-able, every Cerebr neuron is a building block other teams can wire into their own TapeOut processors.
+Small, verifiable intelligence that lives entirely onchain. A game, a DAO or an agent can call a Cerebr circuit to decide something: whether a pattern contains a line, whether a majority voted yes, whether enough excitatory signals beat the inhibitory ones. Anyone can recompute the same decision with a free `eval()` call. There is no oracle, model server or trust assumption beyond the X Layer chain and TapeOut's contracts. Because circuits are public and REF-able, every Cerebr neuron is a building block other teams can wire into their own TapeOut processors.
 
 ## Judging criteria
 
@@ -84,19 +85,26 @@ Record at 1440p in the dApp on X Layer mainnet, after launch, with OKX Wallet. K
 
 | Time | Shot | Voice-over |
 |---|---|---|
-| 0:00–0:10 | Landing hero with the chip animation, then a slow scroll to the live stats strip (minted / cap, circuits taped out). | "This is Cerebr, a neural processor taped out on X Layer through TapeOut. These numbers are read live from our processor." |
-| 0:10–0:25 | XOR section: the network diagram, the input-plane plot and the truth table. | "A single neuron can't compute XOR, because no straight line separates the cases. Two layers can. Cerebr compiles each neuron to NAND gates and tapes it out." |
-| 0:25–0:40 | dApp, Processor view: the supply cap, unit price and fees. Mint 10 NAND and confirm in OKX Wallet. OKLink tx link appears. | "Transistors are the asset. The cap and price were fixed at deployment. I mint ten NAND, paying the unit price plus TapeOut's per-call fee, sent exactly." |
-| 0:40–1:05 | Studio: choose "Threshold neuron", set weights +1 +1 +1 −1 −1 and threshold 2. The compiler shows 19 NAND and the truth table. Tap "Tape out" and confirm. The new circuit id appears. | "In the Studio I build a Go/No-Go neuron: three excitatory inputs, two inhibitory, threshold two. The compiler picks the smallest of four constructions, 19 gates, and checks every input before tape-out." |
-| 1:05–1:25 | Playground: open the XOR (REF) circuit. Toggle x0 and x1 and the output lights up live through `eval`. Show "0 NAND + 3 REF". | "This XOR network is built from three neurons that were already taped out, linked with REF. It burned no new transistors. Every result here is a free eval call on-chain." |
-| 1:25–1:40 | Playground: the integrate-and-fire neuron. Send spikes 1, 1, 1 and it fires on the third. Then send inhibit and the state resets. | "Neurons can have memory. This spiking neuron uses two latches and fires on every third spike, using TapeOut's step function." |
-| 1:40–1:52 | Gallery: grid of CerebrScope die shots. Open one to show its brain-wallet address and the "Open wallet" button. | "Each circuit is drawn on-chain from its real gates by CerebrScope, and each can open TapeOut's native wallet, so a neuron can hold assets and act." |
-| 1:52–2:00 | Back to the landing CTA, with the processor address and the GitHub URL overlaid. | "Cerebr: neurons you can own, run and reuse on X Layer. Processor address and code are below." |
+| 0:00-0:10 | Landing hero with the live processor pinout, then a slow scroll to the Electrical characteristics table (minted / cap, circuits taped out, fees). | "This is Cerebr, a neural processor taped out on X Layer through TapeOut. These numbers are read live from our processor." |
+| 0:10-0:25 | XOR section: the network diagram, the input-plane plot and the truth table. | "A single neuron can't compute XOR, because no straight line separates the cases. Two layers can. Cerebr compiles each neuron to NAND gates and tapes it out." |
+| 0:25-0:40 | dApp, Processor view: the supply cap, unit price and fees. Mint 10 NAND and confirm in OKX Wallet. OKLink tx link appears. | "Transistors are the asset. The cap and price were fixed at deployment. I mint ten NAND, paying the unit price plus TapeOut's per-call fee, sent exactly." |
+| 0:40-1:05 | Studio: choose "Threshold neuron" and set a **new** design that is not already on chain (for example weights +1 +1 +1 +1 -1, threshold 3; check it against #1-#15 first). The compiler shows the gate count and the truth table. Tap "Tape out", confirm, and name it onchain. The new circuit id appears. | "In the Studio I build a new neuron: four excitatory inputs, one inhibitory, threshold three. The compiler picks the smallest of four constructions and checks every input before tape-out." |
+| 1:05-1:25 | Playground: open the XOR (REF) circuit. Toggle x0 and x1 and the output lights up live through `eval`. Show "0 NAND + 3 REF". | "This XOR network is built from three neurons that were already taped out, linked with REF. It burned no new transistors. Every result here is a free eval call onchain." |
+| 1:25-1:40 | Playground: the integrate-and-fire neuron. Send spikes 1, 1, 1 and it fires on the third. Then send inhibit and the state resets. | "Neurons can have memory. This spiking neuron uses two latches and fires on every third spike, using TapeOut's step function." |
+| 1:40-1:52 | Gallery: grid of die shots drawn from each circuit's netlist. Flip the switch to CerebrScope's onchain SVG, then open one to show its brain-wallet address and the "Open wallet" button. | "Each die shot is drawn from the circuit's real gates, and CerebrScope draws the same image onchain. Each circuit can open TapeOut's native wallet, so a neuron can hold assets and act." |
+| 1:52-2:00 | Back to the landing CTA, with the processor address and the GitHub URL overlaid. | "Cerebr: neurons you can own, run and reuse on X Layer. Processor address and code are below." |
 
 Before recording, check that:
-- every on-screen transaction is a real, single-purpose action, with no self-trading;
-- the circuit ids shown match `launch/out/196.json`;
+- every onscreen transaction is a real, single-purpose action, with no self-trading;
+- the taped-out design is new, not a duplicate of an existing circuit;
+- the circuit ids shown match `launch/out/196.json` (#1-#14) and the chain (#15 onward);
 - the fee shown in the Processor view matches `readFees()` on the day.
+
+After recording, disclose the demo's mint, tape-out and label transactions in [ISSUANCE.md](ISSUANCE.md) §6.
+
+## In progress
+
+More features are being added and are not part of this submission's claims: Genesis Drop, an in-browser Trainer, a Neural Arena game and a TapeOut marketplace.
 
 ## Final checklist before submitting
 
@@ -106,8 +114,10 @@ Before recording, check that:
 - [x] The flagship `xor-net-ref` brain wallet is open (0x9E1d…3166).
 - [x] CerebrScope is deployed (0x2640…e528, Sourcify-verified) and `scope` appears in `launch/out/196.json`.
 - [x] The processor address, deployment wallet and circuit tx links are filled in above and in README.md.
-- [x] The landing page's live strip shows the mainnet CPU, and the issuance cards show the real values.
+- [x] The landing page's Electrical characteristics table shows the mainnet CPU, and the issuance values are the real ones.
 - [ ] The demo video is uploaded and linked.
 - [x] The deadline is confirmed: 2026-10-09 06:00 UTC+2.
-- [ ] The repository is public.
-- [ ] dApp hosting URL and contact are filled in above.
+- [ ] Make the repo public.
+- [x] dApp hosting URL filled in above (verify it in a browser before submitting).
+- [ ] Contact filled in above (TODO_USER).
+- [ ] Demo transactions disclosed in ISSUANCE.md §6.

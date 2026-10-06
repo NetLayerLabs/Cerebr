@@ -16,8 +16,8 @@ The terms below are live on X Layer mainnet since 2026-10-05. They were passed t
 | Supply cap | **1,000,000** | `createCPU(..., transistorSupply, ...)` |
 | Unit price | **0.00001 OKB** per transistor | `createCPU(..., mintPrice)` |
 | Who can mint | Anyone, at the same price, until the cap is reached | TapeOut |
-| Minted at launch | 1,241 (0.1241% of the cap): 141 burned into the 14 catalog circuits, 1,100 kept by the creator (section 6) | launch |
-| Team allocation, presale, vesting | None reserved in the contract. The creator's 1,100 were minted through the public `mint()` at the public price and are disclosed below | — |
+| Minted to date | 1,251 (0.1251% of the cap), all by the deployment wallet: 1,241 at launch (1,139 NAND + 102 LATCH) and 10 NAND on 2026-10-06. 157 burned (141 into the 14 catalog circuits, 16 NAND into #15); 994 NAND + 100 LATCH held by the creator (section 6) | `mint()` |
+| Team allocation, presale, vesting | None reserved in the contract. Every transistor minted so far was minted by the creator through the public `mint()` at the public price, and is disclosed below | - |
 
 Behaviour, verified on the fork:
 
@@ -32,7 +32,7 @@ Cerebr's transistors are synapses, so the price is set for building neurons, not
 
 1. **Gates are cheap.** Each gate costs 0.00001 OKB, a fraction of a cent-equivalent, so a community neuron of a few to a few dozen gates costs 0.00001–0.0004 OKB in transistors. A 150-gate network costs about 0.0015 OKB in transistors, plus TapeOut's 0.0013 OKB tape-out fee, the 0.00066 OKB mint-call fee and gas. Builders pay for TapeOut's fees, not for our gates.
 2. **Large headroom.** The whole showcase catalog burns 141 transistors, **0.0141% of the cap**. The cap leaves room for thousands of community networks before scarcity matters, and burns never refill it.
-3. **It is listed.** TapeOut's app lists a processor only with `supplyCap >= 10000` and `minted >= 1`. Cerebr clears both (`listedInTapeoutApp: true`).
+3. **It meets the listing rule.** TapeOut's app lists a processor only with `supplyCap >= 10000` and `minted >= 1`. Cerebr clears both (`listedInTapeoutApp: true`).
 4. **Honest revenue.** A sell-out pays the creator 10 OKB; the price is not a fundraising instrument.
 
 The trade-off: at this price TapeOut's flat 0.00066 OKB mint-call fee is most of a small mint (57% of a 50-transistor mint). Minting enough for several circuits in one call spreads that fee, and REF lets networks reuse neurons with no mint at all.
@@ -79,12 +79,14 @@ The "buffered" output mode, which matches TapeOut's own compiler, adds 2 NAND pe
 | Mint 1,139 NAND (139 burned + 1,000 kept): 1,139 × 0.00001 + 0.00066 | 0.01205 |
 | Mint 102 LATCH (2 burned + 100 kept): 102 × 0.00001 + 0.00066 | 0.00168 |
 | 14 tape-outs × 0.0013 | 0.0182 |
-| Gas (18 transactions) | 0.0000975 |
-| **Gross** | **0.0386275** |
+| Gas (18 transactions: `createCPU`, 2 mints, 14 tape-outs, `withdraw`) | 0.00009748 |
+| **Gross** | **0.03862748** |
 | Creator revenue returned via `withdraw()` (1,241 × 0.00001) | −0.01241 |
 | **Net** | **0.02621748** |
 
-Brain wallet #5 opened afterwards (0.08 OKB, tx [0x8781…dad3](https://www.oklink.com/xlayer/tx/0x8781ed8467f4cef1d10dce3ec48cf1da99cfea615b250da8a352eda7a538dad3)).
+Brain wallet #5 was opened afterwards in 1 more transaction (0.08 OKB fee + 0.0000033 OKB gas, tx [0x8781…dad3](https://www.oklink.com/xlayer/tx/0x8781ed8467f4cef1d10dce3ec48cf1da99cfea615b250da8a352eda7a538dad3)). With it, `costs.net` in [`launch/out/196.json`](launch/out/196.json) is 0.10622082 OKB over 19 transactions.
+
+The 2026-10-06 real-wallet test (mint 10 NAND, tape out #15, name it) is outside these figures; see section 6.
 
 ## 4. Where the OKB goes
 
@@ -112,8 +114,12 @@ Cerebr's only revenue is the unit price of transistors minted by others. Cerebr 
 
 Wash trading or self-trading disqualifies a hackathon entry, and we would not do it anyway.
 
-- **We disclose our own activity exactly.** At launch the deployment wallet minted 1,241 transistors in two public `mint()` calls at the public price: 141 were burned into the 14 catalog circuits, each taped out **once**, and the creator keeps **1,000 NAND + 100 LATCH** (0.11% of the cap) for building circuits later. Every transaction is listed in `launch/out/196.json` and linked from SUBMISSION.md and LAUNCH.md.
+- **We disclose our own activity exactly.** At launch the deployment wallet minted 1,241 transistors in two public `mint()` calls at the public price: 141 were burned into the 14 catalog circuits, each taped out **once**. Launch transactions are listed in `launch/out/196.json` and linked from SUBMISSION.md and LAUNCH.md.
+- **The 2026-10-06 real-wallet test.** The owner tested the live app with the deployment wallet: one public `mint()` of 10 NAND ([0x1fb9…3f2a](https://www.oklink.com/xlayer/tx/0x1fb9dc0eb048bd2d88f985694dc7d7005235dfd7ff27790d44fd4d474af53f2a)), one tape-out of a new design, circuit #15 "Studio test neuron" (y = [x0 + x1 + x2 - x3 ≥ 2], 16 NAND, [0x4133…1c15](https://www.oklink.com/xlayer/tx/0x413387037233847f2d2dd24c2bfa0733a5300d93e4e4f195d3ac9bd4ca1f1c15)), and one CerebrScope label ([0xc5ff…95fb](https://www.oklink.com/xlayer/tx/0xc5ffa319abb3f5dd0202c4b194efaab71ab6f22d677074050d1403d0f33f95fb)). The 14 catalog circuits were also named onchain that day by `sdk/scripts/label-catalog.ts` (14 `setLabel` transactions, no OKB value).
+- **Totals as of 2026-10-06.** `minted()` = 1,251, all minted by the deployment wallet; 157 burned (141 into #1-#14, 16 into #15); the creator holds **994 NAND + 100 LATCH** (0.11% of the cap) for building circuits later. Circuits #1-#15 are all owned by the creator and all labelled in CerebrScope. Only #5's brain wallet is opened.
+- **No transfers, no other wallets yet.** Every transistor and circuit transfer event since launch is a mint or burn by the creator. Nothing has moved between wallets, and no other wallet has minted or taped out yet.
+- **Shared deployment wallet.** The deployment wallet is also used by other NetLayer Labs projects; none of those transactions touch Cerebr's contracts.
 - **The kept transistors are not wash trading.** They are a primary mint at the public price, with no trades, transfers or sales, and they do not count as demand. Because the deployment wallet is also the creator, their unit price came back through `withdraw()`, so in practice they cost only the shared mint-call fee and gas. We state this rather than hide it.
 - **No circular flows.** We never move transistors or circuits between wallets we control to inflate `minted`, the circuit count or volume. We use no sock-puppet minters and run no incentivised loops.
-- **The creator's refund is disclosed.** When the creator mints, the unit price comes back through `withdraw()` (0.01241 OKB at launch). Only the protocol fee is a real cost. We do not count those mints as demand.
-- **Organic numbers only.** The landing page's live strip reads `minted()` and the circuit count directly from the chain. It shows no inflated or off-chain figures.
+- **The creator's refund is disclosed.** When the creator mints, the unit price comes back through `withdraw()` (0.01241 OKB paid at launch). The 10-NAND test's 0.0001 OKB is still `owed()` to the creator and has not been withdrawn. Only the protocol fee is a real cost. We do not count those mints as demand.
+- **Organic numbers only.** The landing page's Electrical characteristics table reads `minted()` and the circuit count directly from the chain. It shows no inflated or offchain figures.
