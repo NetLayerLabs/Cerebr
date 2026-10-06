@@ -194,7 +194,7 @@ export const en = {
   'l.iss.li3':
     '<b>Where the OKB goes.</b> The unit price goes to the processor’s creator; the mint and tape-out fees go to TapeOut.',
   'l.iss.li4':
-    '<b>No fake activity.</b> All circuits so far (the 14-circuit catalog and one live-app test, #15) were taped out once each from the deployment wallet{creator}, which also holds the rest of its public mints ({nand} NAND and {latch} LATCH, read live). Every mint is a primary mint at the public price, disclosed in ISSUANCE.md. We never trade with ourselves.',
+    '<b>No fake activity.</b> Circuits #1 to #16 (the 14-circuit catalog, one live-app test, #15, and the NeuralArena bot, #16, which burned 590 NAND) were each taped out once from the deployment wallet{creator}, with transistors it minted itself. After those burns and the 400 NAND it deposited in the Genesis Drop, it holds {nand} NAND and {latch} LATCH (read live). Every mint is a primary mint at the public price, disclosed in ISSUANCE.md. We never trade with ourselves.',
   'l.iss.th.circuit': 'Circuit',
   'l.iss.th.transistors': 'Transistors',
   'l.iss.th.fee': 'Fee (OKB)',
@@ -382,6 +382,7 @@ export const en = {
 
   // errors (lib/errors.ts)
   'err.rejected': 'Request rejected in wallet.',
+  'err.insufficientFunds': 'Not enough OKB for this transaction (value + gas).',
   'err.reverted': 'Reverted: {name}',
   'err.FeeTooLow': 'The fee sent is below what TapeOut asks. Fees may have changed: reload and try again.',
   'err.ProtocolFeeTooLow': 'The protocol fee sent is below what TapeOut asks. Reload and try again.',
@@ -503,6 +504,7 @@ export const en = {
   'st.stepTape': 'Tape out {name}',
   'st.stepTapeDep': 'Tape out {name} (dependency)',
   'st.stepName': 'Name it onchain',
+  'st.stepNameDep': 'Name {name} onchain (dependency)',
   'st.nameTx': 'Name #{id} onchain',
   'st.depMissing': 'A dependency is still missing onchain',
   'st.directOut': 'direct outputs',
@@ -598,6 +600,7 @@ export const en = {
   'gal.tapeOne': 'Tape one out →',
   'gal.stateful': 'stateful',
   'gal.gates': '{n} gates',
+  'gal.gate': '1 gate',
   'gal.ownNand': '{n} own NAND',
   'gal.owner': 'owner',
   'gal.you': 'you',

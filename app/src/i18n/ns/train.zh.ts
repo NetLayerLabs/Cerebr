@@ -35,6 +35,7 @@ export const zh: Record<keyof typeof en, string> = {
   'train.mode': 'prefer: robust（最大裕度）',
   'train.train': '用 {n} 个样本训练',
   'train.retrain': '重新训练',
+  'train.retrainOn': '用 {n} 个样本重新训练',
   'train.needBoth': '“激发”和“静默”至少各需一个样本。',
   'train.intro':
     '训练会遍历所有三值权重向量（−1、0、+1），找出裕度最大的神经元，因此对从未见过的图也能判断正确。如果单个神经元无法区分这些样本，就加入一个隐藏层。全程在浏览器中运行，只需几毫秒。',
@@ -50,7 +51,9 @@ export const zh: Record<keyof typeof en, string> = {
   'train.accuracyV': '{pct}% · 错 {errors} 个',
   'train.margin': '裕度',
   'train.tolerates': '可容忍 {n} 个杂散像素（{m} 像素）',
+  'train.toleratesOne': '可容忍 1 个杂散像素（{m} 像素）',
   'train.toleratesBits': '可容忍 {n} 个输入翻转（{m} 位）',
+  'train.toleratesBitsOne': '可容忍 1 个输入翻转（{m} 位）',
   'train.marginOne': '1 像素：翻转一个像素就可能改变结果',
   'train.marginOneBits': '1 位：翻转一个输入就可能改变结果',
   'train.time': '训练用时',

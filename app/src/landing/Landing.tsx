@@ -339,8 +339,8 @@ function XorStory({ live }: { live: Live }) {
   const flat = byId(FLAT_XOR)
   const net = byId(XOR_REF)
   const [h1, h2, out] = xor?.refs ?? []
-  // eval(5, 0b10): x1 = 1, x0 = 0 is row 1
-  const y10 = xor?.rows[1][4]
+  // eval(5, 0b01): x0 = 1, x1 = 0 is row 2, the inputs the "run it" link opens the playground with
+  const y01 = xor?.rows[2][4]
   const { t, rich } = useI18n()
   return (
     <section className="ds-section">
@@ -417,7 +417,7 @@ function XorStory({ live }: { live: Live }) {
           </span>
         </div>
         <div>
-          <b>eval({XOR_REF}, 0b10) → {L(y10)}</b>
+          <b>eval({XOR_REF}, 0b01) → {L(y01)}</b>
           <span>{rich('l.xor.free', { a: (c) => <a href={playground(5)}>{c}</a> })}</span>
         </div>
       </div>

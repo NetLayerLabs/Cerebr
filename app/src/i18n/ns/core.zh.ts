@@ -188,7 +188,7 @@ export const zh: CoreDict = {
     '<b>用即销毁。</b>已流片电路中的每个 NAND 门销毁一个 NAND 晶体管，每个 LATCH 销毁一个 LATCH。销毁不会释放上限额度，因此晶体管只会越来越稀缺。',
   'l.iss.li3': '<b>OKB 的去向。</b>单价收入归处理器创建者；铸造手续费和流片费归 TapeOut。',
   'l.iss.li4':
-    '<b>没有虚假活跃。</b>迄今为止的所有电路（14 个目录电路和一个在线应用测试电路 #15）均由部署钱包{creator}各流片一次，该钱包还持有其余的公开铸造（{nand} 个 NAND 和 {latch} 个 LATCH，实时读取）。每一次铸造都是按公开价格进行的一级铸造，并在 ISSUANCE.md 中披露。我们从不自买自卖。',
+    '<b>没有虚假活跃。</b>电路 #1 至 #16（14 个目录电路、一个在线应用测试电路 #15，以及消耗了 590 个 NAND 的 NeuralArena 机器人 #16）均由部署钱包{creator}使用其自行铸造的晶体管各流片一次。除去这些消耗和它存入创世空投的 400 个 NAND，它持有 {nand} 个 NAND 和 {latch} 个 LATCH（实时读取）。每一次铸造都是按公开价格进行的一级铸造，并在 ISSUANCE.md 中披露。我们从不自买自卖。',
   'l.iss.th.circuit': '电路',
   'l.iss.th.transistors': '晶体管',
   'l.iss.th.fee': '费用（OKB）',
@@ -368,6 +368,7 @@ export const zh: CoreDict = {
 
   // errors (lib/errors.ts)
   'err.rejected': '请求已在钱包中被拒绝。',
+  'err.insufficientFunds': 'OKB 余额不足以支付这笔交易（金额 + gas）。',
   'err.reverted': '交易回滚：{name}',
   'err.FeeTooLow': '发送的费用低于 TapeOut 的要求。费用可能已变动：请刷新后重试。',
   'err.ProtocolFeeTooLow': '发送的协议费低于 TapeOut 的要求。请刷新后重试。',
@@ -487,6 +488,7 @@ export const zh: CoreDict = {
   'st.stepTape': '流片 {name}',
   'st.stepTapeDep': '流片 {name}（依赖项）',
   'st.stepName': '在链上命名',
+  'st.stepNameDep': '在链上命名 {name}（依赖项）',
   'st.nameTx': '在链上为 #{id} 命名',
   'st.depMissing': '仍有依赖项未上链',
   'st.directOut': '直接输出',
@@ -581,6 +583,7 @@ export const zh: CoreDict = {
   'gal.tapeOne': '去流片一个 →',
   'gal.stateful': '有状态',
   'gal.gates': '{n} 个门',
+  'gal.gate': '1 个门',
   'gal.ownNand': '自有 {n} 个 NAND',
   'gal.owner': '持有者',
   'gal.you': '你',

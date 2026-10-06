@@ -86,6 +86,7 @@ export const PINS_ZH: Record<string, string> = {
   spike: '脉冲',
   inhibit: '抑制',
   fire: '发放',
+  veto: '否决',
 }
 
 /** Names / stories the app or SDK generates for non-catalog designs. */
@@ -94,6 +95,13 @@ export const GENERIC_ZH: Record<string, string> = {
   'Neural Network': '神经网络',
   'Neural Network (REF-composed)': '神经网络（REF 组合）',
   'A binarized neuron with integer synapses, compiled to NAND gates.': '一个具有整数突触的二值化神经元，编译为 NAND 门。',
+  // Circuits #15 and #16 on X Layer, as labelled onchain in CerebrScope (not catalog entries).
+  'Vote-with-veto neuron': '带否决的投票神经元',
+  'y = [ +x0 +x1 +x2 -x3 >= 2 ]: three excitatory votes and one inhibitory veto. Taped out through the Cerebr app Circuit Studio.':
+    'y = [ +x0 +x1 +x2 -x3 >= 2 ]：三个兴奋性投票和一个抑制性否决。通过 Cerebr 应用的电路工作室流片。',
+  'Neural Arena Bot': '神经竞技场机器人',
+  'Unbeatable tic-tac-toe policy as a 7-layer threshold network (362 neurons, 590 NAND): win > block > safe threat > centre > corners > edges. Input 2i = bot on cell i, 2i+1 = human on cell i; output = one-hot move. Called onchain by NeuralArena 0xD984b3D13603AB51af02ddFFaa1FD86bE8c162BD.':
+    '不可战胜的井字棋策略，实现为 7 层阈值网络（362 个神经元，590 个 NAND）：取胜 > 阻挡 > 安全威胁 > 中心 > 角 > 边。输入 2i = 格 i 上的机器人棋子，2i+1 = 格 i 上的人类棋子；输出 = 独热编码的落子。由 NeuralArena 0xD984b3D13603AB51af02ddFFaa1FD86bE8c162BD 在链上调用。',
   // The Cerebr processor's own story (launch/config.json, written onchain at createCPU).
   'Cerebr is an on-chain neural processor. Its transistors are synapses: every NAND minted here is wired into a neuron. Its circuits are neurons and networks, compiled from threshold units into NAND netlists and taped out on X Layer; REF links taped-out neurons into deeper networks, so the brain grows by reuse. eval() is inference: anyone can run any Cerebr circuit on-chain, for free, forever.':
     'Cerebr 是一颗链上神经网络处理器。它的晶体管就是突触：这里铸造的每个 NAND 都会被接入一个神经元。它的电路是神经元和网络，由阈值单元编译为 NAND 网表并在 X Layer 上流片；REF 将已流片的神经元连接成更深的网络，让大脑通过复用不断成长。eval() 就是推理：任何人都可以在链上免费、永久地运行任意 Cerebr 电路。',

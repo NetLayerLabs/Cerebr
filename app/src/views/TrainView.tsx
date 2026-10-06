@@ -227,7 +227,7 @@ export function TrainView({ arg }: { arg?: string }) {
             <span className="tiny muted mono">{t('train.mode')}</span>
           </div>
           <button className="btn primary big train-go" onClick={train} disabled={locked || !nFire || !nSilent}>
-            {model && !stale ? t('train.retrain') : t('train.train', { n: items.length })}
+            {!model ? t('train.train', { n: items.length }) : stale ? t('train.retrainOn', { n: items.length }) : t('train.retrain')}
           </button>
           {(!nFire || !nSilent) && <p className="small muted">{t('train.needBoth')}</p>}
           {trainError && <div className="error small">{trainError}</div>}
@@ -297,7 +297,9 @@ function ModelPanel({ m, stale, tryBits }: { m: Model; stale: boolean; tryBits: 
           v={
             net.converged
               ? margin > 1
-                ? t(grid ? 'train.tolerates' : 'train.toleratesBits', { n: margin - 1, m: margin })
+                ? margin === 2
+                  ? t(grid ? 'train.toleratesOne' : 'train.toleratesBitsOne', { m: margin })
+                  : t(grid ? 'train.tolerates' : 'train.toleratesBits', { n: margin - 1, m: margin })
                 : t(grid ? 'train.marginOne' : 'train.marginOneBits')
               : '-'
           }

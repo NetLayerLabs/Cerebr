@@ -195,7 +195,7 @@ const XOR_LAYERS: NeuronSpec[][] = [[OR2, NAND2], [AND2]];
 const xorMeta = {
   name: 'The XOR Problem',
   description: 'Two-layer network: hidden OR-neuron and NAND-neuron, output AND-neuron. y = x0 XOR x1.',
-  story: 'Minsky & Papert showed a single perceptron cannot learn XOR. Two layers can - here, in NAND gates, on chain.',
+  story: 'Minsky & Papert showed a single perceptron cannot learn XOR. Two layers can - here, in NAND gates, onchain.',
   inputs: ['x0', 'x1'],
   outputs: ['y'],
 };
@@ -223,7 +223,7 @@ const LINE_LAYERS: NeuronSpec[][] = [LINE_HIDDEN, [pool([0, 1, 2], 'horizontal')
 const lineMeta = {
   name: 'Line Detector',
   description: '3×3 binarized network: 8 line cells (3 rows, 3 columns, 2 diagonals; w=+1 on the stroke, θ=3) pooled by any-of neurons (θ=1). Outputs are multi-hot [horizontal, vertical, diagonal]; all zero means no line.',
-  story: 'A miniature visual cortex: simple cells tuned to orientation, complex cells pooling them - 512 images, every answer on chain.',
+  story: 'A miniature visual cortex: simple cells tuned to orientation, complex cells pooling them - 512 images, every answer onchain.',
   inputs: PIXELS,
   outputs: ['horizontal', 'vertical', 'diagonal'],
 };
@@ -271,7 +271,7 @@ export const spikingNeuron: NeuralCircuit = {
   id: 'spiking-neuron',
   name: 'Integrate-and-Fire Neuron',
   description: 'Sequential neuron with a 2-bit membrane potential in two LATCHes: integrates input spikes, fires on the third and resets; `inhibit` clears it. Run with step().',
-  story: 'The neuron remembers. Its potential lives in latches between calls - a heartbeat of state on chain.',
+  story: 'The neuron remembers. Its potential lives in latches between calls - a heartbeat of state onchain.',
   inputs: ['spike', 'inhibit'],
   outputs: ['fire'],
   state: ['p0', 'p1'],
