@@ -1,6 +1,7 @@
 import { useCpu, useNet } from '../hooks/useCpu.ts'
 import { TAPEOUT } from '../lib/cerebr.ts'
 import { shortAddr } from '../lib/format.ts'
+import { BuiltBy } from './BuiltBy.tsx'
 
 export function Footer() {
   const { explorerAddr, chain, cfg } = useNet()
@@ -25,9 +26,12 @@ export function Footer() {
       </div>
       <p className="tiny muted">
         Cerebr on {chain?.name ?? 'X Layer'} · A processor created through the TapeOut factory: transistors are TapeOut
-        ERC-1155 NAND / LATCH, circuits are TapeOut ERC-721 netlists evaluated on-chain. TapeOut's X Layer contracts are
+        ERC-1155 NAND / LATCH, circuits are TapeOut ERC-721 netlists evaluated onchain. TapeOut's X Layer contracts are
         upgradeable and unaudited (test phase), so every fee shown here is read live before you sign.
       </p>
+      <div className="footer-credit">
+        <BuiltBy />
+      </div>
     </footer>
   )
 }
