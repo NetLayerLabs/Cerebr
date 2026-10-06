@@ -114,8 +114,6 @@ input { font: inherit; color: inherit; }
 body:has(.shell) { overflow-x: clip; }
 .brand { display: flex; align-items: center; gap: 10px; }
 .header a.brand { color: var(--text); border: 0; }
-.brand-name { font: 600 16px/1 var(--sans); letter-spacing: -0.01em; text-transform: none; }
-.brand-tag { font: 500 10px/1 var(--mono); color: var(--faint); border: 1px solid var(--line-2); padding: 4px 6px; border-radius: 2px; letter-spacing: 0.08em; }
 .section-head h2 { font: 500 11.5px/1.2 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; }
 .brand-sub { font: 500 10px/1 var(--mono); color: var(--faint); letter-spacing: 0.12em; text-transform: uppercase; margin-top: 5px; }
 .header-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
@@ -499,3 +497,11 @@ html:lang(zh) :is(.ds-kicker, .ds-sec-bar, .ds-table-head, .ds-table th, .ds-her
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* ---------- Cerebr lockup: show the variant for the active theme ---------- */
+.brand-lockup { display: inline-flex; align-items: center; line-height: 0; }
+.brand-lockup img { display: block; height: auto; max-width: 100%; }
+.brand-lockup-light { display: none !important; }
+[data-theme="light"] .brand-lockup-dark { display: none !important; }
+[data-theme="light"] .brand-lockup-light { display: block !important; }
+@media (max-width: 380px) { .brand-lockup img { width: 118px; } }

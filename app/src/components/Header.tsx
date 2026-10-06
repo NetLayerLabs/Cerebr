@@ -5,7 +5,7 @@ import { useNet } from '../hooks/useCpu.ts'
 import { fmt, shortAddr } from '../lib/format.ts'
 import { useToasts } from '../hooks/useToasts.tsx'
 import { errorMessage } from '../lib/errors.ts'
-import { Logo } from './Logo.tsx'
+import { BrandLockup } from './BrandLockup.tsx'
 import { XLAYER_ADD_CHAIN } from '../config/chains.ts'
 import { hasInjectedProvider, isMobile, metamaskDeepLink, okxDeepLink } from '../lib/wallets.ts'
 import { Preferences } from './Preferences.tsx'
@@ -70,9 +70,7 @@ export function Header() {
   return (
     <header className="header">
       <a className="brand" href="/" title={t('hdr.home')}>
-        <Logo size={26} />
-        <span className="brand-name">Cerebr</span>
-        <span className="brand-tag">CRB-1</span>
+        <BrandLockup height={28} />
       </a>
 
       <Preferences className="header-prefs" />

@@ -3,7 +3,7 @@ import { EXPLORER, ISSUANCE } from '../landing/issuance.ts'
 import { useI18n, type Key } from '../i18n/index.tsx'
 import { shortAddr } from '../lib/format.ts'
 import { BuiltBy } from './BuiltBy.tsx'
-import { Logo } from './Logo.tsx'
+import { BrandLockup } from './BrandLockup.tsx'
 
 /**
  * The one footer, shared by the landing page and every app view: brand column (logo, tagline,
@@ -60,8 +60,7 @@ export function SiteFooter() {
     <footer className="site-footer">
       <div className="sf-brand">
         <a className="sf-logo" href="/">
-          <Logo size={24} />
-          <span>Cerebr</span>
+          <BrandLockup height={32} />
         </a>
         <p className="sf-tagline">{t('sf.tagline')}</p>
         <div className="sf-social">

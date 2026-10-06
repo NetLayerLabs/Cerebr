@@ -74,8 +74,6 @@ body:has(.ds) { background: var(--bg); }
   background: color-mix(in srgb, var(--ink) 82%, transparent); backdrop-filter: blur(14px) saturate(140%);
 }
 .ds-brand { display: inline-flex; align-items: center; gap: 10px; }
-.ds-brand-name { font: 600 17px/1 var(--sans); letter-spacing: -0.01em; }
-.ds-brand-tag { font: 500 10px/1 var(--mono); color: var(--faint); border: 1px solid var(--rule-2); padding: 4px 6px; border-radius: 2px; letter-spacing: 0.08em; }
 .ds-links { display: flex; gap: 28px; margin-left: auto; }
 .ds-prefs { flex: none; }
 .ds-nav .ds-links + .ds-prefs { margin-left: 4px; }
@@ -318,7 +316,6 @@ html:lang(zh) .ds-partner-sub { letter-spacing: 0.04em; }
   .ds-section { padding-top: 72px; }
   .ds-hide-sm { display: none; }
   .ds-sec-meta { display: none; }
-  .ds-brand-tag { display: none; }
 }
 @media (max-width: 560px) {
   .ds-blocks, .ds-ratings, .ds-apps, .ds-grid-xor { grid-template-columns: 1fr; }

@@ -1,4 +1,4 @@
-import { Logo } from '../components/Logo.tsx'
+import { BrandLockup } from '../components/BrandLockup.tsx'
 import { SiteFooter } from '../components/SiteFooter.tsx'
 import { TapeOutMark, XLayerMark } from '../components/PartnerMarks.tsx'
 import { formatGwei } from 'viem'
@@ -112,9 +112,7 @@ function Nav() {
     <header className="ds-nav">
       <span className="ds-progress" aria-hidden />
       <a className="ds-brand" href="/">
-        <Logo size={26} />
-        <span className="ds-brand-name">Cerebr</span>
-        <span className="ds-brand-tag">CRB-1</span>
+        <BrandLockup height={28} />
       </a>
       <nav className="ds-links" aria-label={t('l.nav.aria')}>
         <a href="#how">{t('l.nav.arch')}</a>
