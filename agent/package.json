@@ -1,0 +1,15 @@
+{
+  "name": "@cerebr/agent",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Cerebr Agent keeper daemon: calls CerebrAgent.act() on X Layer on a fixed interval (Node 26 runs the TypeScript natively)",
+  "engines": { "node": ">=24.12" },
+  "scripts": {
+    "start": "node src/main.ts",
+    "typecheck": "tsc --noEmit -p .",
+    "fork:e2e": "node scripts/fork-e2e.ts"
+  },
+  "dependencies": { "viem": "2.57.2" },
+  "devDependencies": { "typescript": "5.9.3", "@types/node": "24.19.1" }
+}
