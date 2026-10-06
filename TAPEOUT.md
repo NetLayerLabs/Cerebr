@@ -143,3 +143,140 @@ The gross total is about 0.110 OKB; net of the creator refund it is about 0.100 
 3. Mint at least 1 transistor so the CPU meets `minted >= 1` and the app lists it. Mint enough NAND for the showcase circuits.
 4. Tape out the neuron circuits, leaf circuits first, then the REF-composed networks. Verify each one with `truthTable` or `eval`.
 5. Optionally `open()` the flagship circuit's account (0.08 OKB).
+
+## 9. Marketplace (circuit NFTs)
+
+Verified on 2026-10-06 against mainnet with read-only `cast` calls to `https://rpc.xlayer.tech` and on an anvil fork at block 72,514,523 (`anvil --fork-url https://rpc.xlayer.tech --chain-id 196 --auto-impersonate --port 8602`). To rerun: `cd sdk && FORK_RPC=http://127.0.0.1:8602 node scripts/fork-market.ts` (39 checks print PASS, plus one INFO line; the script reverts the fork afterwards). SDK: `sdk/src/tapeout/market.ts`.
+
+### 9.1 What exists on X Layer
+
+| What | Address | Evidence |
+|---|---|---|
+| Circuit market (UUPS proxy) | `0xd89f358c48a7B632c9845af2a02A32eB90DD75DB` | 130-byte EIP-1967 proxy; `factory()` = TapeOut factory; owner `0xB3D8…3138`; `isSealed() = false` |
+| Circuit market impl | `0x38d688F4793a9Bf270c2c99492c9a1e45163dB6E` | EIP-1967 slot; 27 selectors, all matching the BSC circuit-market ABI |
+| Transistor order book (asks/bids) | **none** | see below |
+
+* **The TapeOut client does not know about the X Layer market.** In `main.js` the chain-56 config has `market`, `askMarket`, `circuitMarket`, but the chain-196 config is `features: { containers: true }` only, and every market module is hard-wired to chain 56 (`jt = 56`, `Ht = 56`). So listings on X Layer will not show in TapeOut's own UI today; Cerebr must render them.
+* How it was found: the factory was created in block 70,995,047 by `0x571d…aF15` (the protocolWallet). Enumerating that deployer's CREATE addresses (nonce 0 to 66) gives the transistor and circuit impls (0, 1), the factory impl and proxy (2, 3), **the circuit market impl and proxy (4, 5, proxy code from block 70,995,076)**, payments, the account beacon and impl, the opener, containers and the BEM OFT/rigs. None of them exposes `placeAsk`/`placeBid`/`asks`/`bids`. The BSC market addresses (`0x6feE…B46f`, `0xA6a8…16E4`) have no code on X Layer. **There is no TapeOut transistor market on X Layer**, so transistors can only be traded peer to peer (ERC-1155 transfers) or by minting.
+* Unused so far: `nextListingId()` was 0 on mainnet. The same proxy address also has code on Base.
+
+### 9.2 Interface (fork-verified)
+
+* `list(circuits, tokenId, uint96 price) returns (uint256 id)`. **Approval-based, not escrow**: the NFT stays in the seller's wallet. Requires `approve(market, id)` or `setApprovalForAll(market, true)`, otherwise it reverts `"not approved"`. Non-owner: `"not owner"`. Zero price: `"zero price"`. Ids start at 1. Listing the same NFT again replaces the earlier listing (the old id is cleared).
+* `listingFor(circuits, tokenId) -> (id, seller, price, valid)`, `listingOf(circuits, tokenId) -> id`, `listingView(id) -> (seller, circuits, tokenId, price, feeBps, valid)`, `listings(id)`, `nextListingId()`. A cleared listing reads as all zeros.
+* `valid` is true only while the seller still owns the NFT **and** the market is still approved. After a transfer or `setApprovalForAll(market,false)` it is false. **If the NFT comes back to the seller, the old listing becomes valid again at the old price**, so sellers should cancel explicitly.
+* `buy(id, uint96 expectedPrice) payable`: msg.value must equal the price exactly (`"wrong value"` for under- or overpayment), and `expectedPrice` must equal the current price (`"price changed"`), which guards against a `setPrice` front-run. **The seller cannot buy their own listing (`"own listing"`).** A stale listing reverts `ERC721InsufficientApproval` (`0x177e802f`). A sold or delisted id reverts.
+* `setPrice(id, price)`: seller only (`"not your listing"`); emits `PriceChanged`.
+* `delist(id)`: seller only. `delistStale(id)`: **anyone**, only for an invalid listing. Both emit `Delisted(id, by, stale)`.
+* Fees: `feeBps() = 100` (1%), `MAX_FEE_BPS() = 300`, owner-settable via `setFeeBps`. **The fee is snapshotted into each listing** (the fork raised the global fee to 300 after listing, and the sale still charged 100). On `buy`, the seller is **paid in the same transaction** (`price - floor(price*feeBps/10000)`), and the fee stays in the market as `owed(protocolWallet)` (pulled with `withdraw()`). There is no `feeRecipient()` (it reverts).
+* Events: `Listed 0x723f7333…`, `Sold 0x2938a0a3…` (`paidToSeller`, `fee`), `PriceChanged 0x8aa4fa52…`, `Delisted 0xd42ab404…`. The X Layer RPC caps `eth_getLogs` at 100 blocks, so read listings by NFT (`listingFor` via multicall) instead of scanning.
+
+### 9.3 Fork evidence (circuit #15 of Cerebr, `0xB04E…93FF`)
+
+* The creator `0xc742…960C` approved and listed #15 at 0.01 OKB (listing id 1), repriced it to 0.012, and a separate synthetic buyer bought it with `expectedPrice = 0.012`. Before that, buying at the old 0.01 reverted `"price changed"`. `ownerOf(15)` became the buyer. The seller balance rose by exactly 0.01188 OKB, and `owed(protocolWallet)` and the market balance rose by 0.00012 OKB.
+* Brain wallet `0xd8cA…9E23` (opened on the fork only): `owner()` was the creator before the sale and the buyer after it. **The native account and everything in it go to the buyer.**
+* The buyer relisted (with `setApprovalForAll`), delisted, listed twice (the first id was cleared), transferred the NFT away (listing `valid=false`, buy reverted), transferred it back (valid again), transferred it away again, and a third party cleared it with `delistStale`. Revoking approval also invalidated a listing.
+* Gas: `approve` 56,340; `setApprovalForAll` 54,375; `list` 219,914 (first listing ever) / 198,756; `setPrice` 37,755; `buy` 118,315; `delist` 47,108; `delistStale` 58,170. At about 0.02 gwei each costs well under 0.00001 OKB.
+
+### 9.4 Cerebr policy: no self-trading
+
+The hackathon voids self-trading (wash trading). **Cerebr will never trade with itself**: the creator wallet and any Cerebr-controlled wallet must never buy Cerebr listings, fund buyers, or relist to inflate volume. The contract already rejects `buy` from the listing's seller (`"own listing"`), but a second wallet would get through, so this is a policy, not just a guard. The UI must:
+* hide or disable Buy when the connected wallet is the seller (`buyBlockReason(...) === 'own-listing'`, also enforced in `buyListing`);
+* hide Buy on stale listings and offer `delistStale` instead;
+* always pass the displayed price as `expectedPrice`, and on `"price changed"` re-read and re-confirm;
+* warn before a sale that the circuit's brain wallet and its balance go to the buyer, and suggest the seller empty it first;
+* warn sellers that listings survive transfers and re-activate if the NFT comes back, and offer Cancel.
+
+## 10. Drops (transistor airdrops, Genesis Drop)
+
+Verified on 2026-10-06 against mainnet reads, TapeOut's live client, and an anvil fork at block 72,514,975 (`anvil --fork-url https://rpc.xlayer.tech --chain-id 196 --auto-impersonate --port 8601`). Nothing was broadcast.
+
+### 10.1 TapeOut has no drops contract on X Layer
+
+* TapeOut's drops contract (the "Airdrop" or 空投 pool) exists **only on BNB Chain**: `0x7Fd055496b638aD81f58B33Fd04d6e90bbC2a672` (chainId 56, `factory()` = `0x68224F…F7e2`, `nextDropId()` = 131 on 2026-10-06). It is not a proxy: all three EIP-1967 slots are zero. TapeOut describes it as having no owner, no upgrade path, no pause and no fee.
+* Evidence that X Layer has none:
+  1. In the client bundle (`tapeout.net` → `index-BUCYPwtS.js`, identical to our saved `main.js`), only the BSC chain config has an `airdrop:` address. The X Layer config (`id:196`) has `features:{containers:!0}` and no `airdrop`. The drops page hardcodes chain 56 (`const _r=56 … Kx=()=>Te(_r)`, then `Kx().airdrop`).
+  2. The newer `/app` bundle (`/assets/index-BN6fIJi7.js`, with chunks `Airdrop-*.js` and `chain-*.js`) also sets `airdrop` only on the BSC `DEPLOYMENT`.
+  3. `cast code 0x7Fd0…a672 --rpc-url https://rpc.xlayer.tech` returns `0x`.
+  4. A `DropCreated` topic scan (`0x75fa255e…c3f8`) over all of X Layer from the factory block 70,995,047 to 72,514,406 matched 0 logs from any contract. It used TapeOut's `/rpc-xlayer` log node with 10k-block ranges, and the same scan found 298 `CPUCreated` logs, which shows the scan works.
+* TapeOut publishes the contract's creation code in its client (`/assets/artifacts-BZhnQij0.js`, `Airdrop.{abi,bytecode}`, used by its "DeployAirdrop" page). Its only constructor argument is the factory. **When deployed on the fork with the BSC factory as the argument, it reproduced the BSC runtime byte for byte**, so it is the same contract. Deployed with the X Layer factory `0x1f09…0761`, it works unchanged against X Layer CPUs. The runtime codehash is `0xcda21775…229d` for the X Layer instance and `0x5d887615…454a` for BSC. The creation code hash is `0xe461553c…6c04`.
+* **To run a Genesis Drop on X Layer, Cerebr must deploy this exact contract once** (`deployDrops()`, 1,346,828 gas), because no shared instance exists. TapeOut's own UI will not show X Layer drops, since its drops page reads chain 56 only. Cerebr's app lists them with `listDrops()`.
+
+### 10.2 Interface (selectors match `cast selectors` on the BSC bytecode)
+
+* `create(address transistors, uint8 tokenId, uint256 amount, uint96 perClaim) returns (uint256 dropId)`
+  * Pulls `amount` from msg.sender with ERC-1155 `safeTransferFrom`, so **`setApprovalForAll(drops, true)` on the transistors contract is required first**. Without it the call reverts `ERC1155MissingApprovalForAll` (`0xe237d922`).
+  * Reverts: `"perClaim = 0"`, `"amount < perClaim"`, `"bad tokenId"` (only 0 = NAND and 1 = LATCH are accepted), and `ERC1155InsufficientBalance`. A non-transistors address (no code, a circuits contract, or the factory) reverts without data.
+  * `amount` does not have to be a multiple of `perClaim`. The remainder is dust that only `cancel` returns.
+  * Gas: 196,300 for the first drop on a contract and 179,188 afterwards. Approval costs 54,395 and revoking it costs 32,483.
+* `claim(uint256 dropId)`
+  * **Any address, once per drop**, receives exactly `perClaim`. Gas: 101,583.
+  * There is **no allowlist, signature, captcha, cooldown, or fee.** The only limit is one claim per address per drop, so the drop is sybil-able.
+  * Reverts: `"no drop"`, `"cancelled"`, `"already claimed"`, and `"drained"` (when `remaining < perClaim`).
+  * Contract claimers without `onERC1155Received` revert `ERC1155InvalidReceiver` (`0x57f447ce`). ERC-6551 brain wallets do implement the receiver.
+  * The creator can claim their own drop.
+* `cancel(uint256 dropId)` and `cancelTo(uint256 dropId, address to)`
+  * Creator only (`"not creator"`) and only once (`"already cancelled"`).
+  * Refunds all of `remaining`, dust included, to the creator or to `to`. Gas: 59,296.
+  * Nothing else can withdraw funds from the contract.
+* Views:
+  * `drops(id) → (creator, perClaim, transistors, tokenId, cancelled, remaining, claimedCount)`
+  * `nextDropId()`: **the last assigned id** (= the drop count). Ids start at 1.
+  * `getDrops(from, count) → (ids, Drop[])`: clamps to the existing range. TapeOut pages it 100 at a time.
+  * `claimed(id, who)`
+  * `claimedBy(who, ids[]) → bool[]`
+  * `factory()`
+* Events:
+  * `DropCreated(uint256 indexed dropId, address indexed creator, address indexed transistors, uint8 tokenId, uint256 amount, uint96 perClaim)`
+  * `Claimed(uint256 indexed dropId, address indexed who, uint256 amount)`
+  * `DropCancelled(uint256 indexed dropId, uint256 refunded)`
+* Direct ERC-1155 transfers into the contract revert `"direct transfer not accepted"`.
+
+### 10.3 Fork evidence (`cd sdk && FORK_RPC=http://127.0.0.1:8601 node scripts/fork-drop.ts`: 35 checks, all PASS)
+
+1. Deploy (1,346,828 gas, `verifyDrops` ok).
+2. The impersonated Cerebr creator `0xc742…960C` (994 NAND) approves and creates **400 NAND at 16 per claim** (dropId 1, 25 shares).
+3. Three fresh addresses claim 16 each. A double claim, a cancel by a stranger, an unknown id, a contract claimer and a direct transfer all revert as listed above.
+4. A claimer holding only the 16 claimed NAND tapes out the **Genesis Neuron**, `y = [e0+e1+e2 − 2·inhibit ≥ 1]`. It is `thresholdNeuronCircuit([-2,1,1,1], 1)`: exactly 16 NAND, with all 16 cases verified locally. It became Cerebr circuit #16 on the fork, with 264,291 gas and the claimer's NAND balance back to 0. The claimer paid exactly `TAPEOUT_FEE` (0.0013 OKB) plus gas. The on-chain truth table matched.
+5. The creator cancels and gets back 352. A claim after the cancel reverts `"cancelled"`.
+6. A 20/16 drop leaves dust of 4. The second claim reverts `"drained"`, and `cancelTo` returns the 4. With `revokeApproval: true` the approval is cleared.
+
+### 10.4 SDK (`sdk/src/tapeout/drops.ts`)
+
+* Constants:
+  * `XLAYER_DROPS` (`undefined` until the mainnet deploy) and `BSC_DROPS`
+  * the codehashes, `DROPS_CREATION_CODE`
+  * `dropsAbi` and `erc1155ApprovalAbi` (typed `as const`)
+  * `DROP_ERRORS`
+* Pure helpers: `dropShares`, `planDrop`, `toDrop`, `dropsDeployData`, `explainDropError`, `requireDrops`.
+* Reads:
+  * `dropCount`
+  * `readDrop`
+  * `listDrops({ transistors, creator, liveOnly, limit })`: uses `nextDropId` and `getDrops`, with no `eth_getLogs`
+  * `hasClaimed`, `claimedBy`
+  * `verifyDrops`: checks code, `factory()` and the codehash
+* Writes:
+  * `deployDrops`
+  * `createDrop`: approves if needed, with optional `revokeApproval`
+  * `claimDrop`
+  * `cancelDrop({ to })`: uses `cancelTo` when `to` is given
+
+### 10.5 Costs (X Layer gas ~0.02 gwei)
+
+| Who | What | Cost |
+|---|---|---|
+| Cerebr, once | deploy drops | 1.35M gas ≈ 0.000027 OKB |
+| Creator, per drop | approve (first time) + create | 0.25M gas ≈ 0.000005 OKB |
+| New user | claim | 0.10M gas ≈ 0.000002 OKB |
+| New user | tape out a 16-NAND neuron | 0.0013 OKB fee + ~0.26M gas ≈ 0.0013053 OKB |
+
+There are no drop fees. The only cost to the creator is the NAND given away, worth `mintPrice` = 0.00001 OKB each. Because `mintPrice` is paid to the creator through `withdraw()`, the creator can re-mint NAND for just the 0.00066 OKB protocol fee per mint call.
+
+### 10.6 Genesis Drop: mainnet steps (proposed; only the user signs)
+
+1. Rehearse with `scripts/fork-drop.ts`.
+2. Deploy: send a transaction with data `dropsDeployData(XLAYER.factory)`, value 0 and about 1.35M gas, from any key (the contract has no owner). Check the deployment with `verifyDrops(pc, addr)` (codehash `0xcda21775…229d`). Then set `XLAYER_DROPS` in `drops.ts`.
+3. From the creator `0xc742…960C`, call `transistors(0x84b5…2D2D).setApprovalForAll(drops, true)` (54k gas).
+4. From the creator, call `drops.create(0x84b5…2D2D, 0, 400, 16)` (196k gas). The result is dropId 1 with 25 claims.
+5. Optionally, call `setApprovalForAll(drops, false)` (32k gas). With `createDrop` this is `revokeApproval: true`.
+6. Monitor with `readDrop`. Use `cancelDrop` to reclaim the rest, then create the next tranche.
