@@ -66,8 +66,10 @@ Everything below is live on X Layer mainnet (chain 196) and was verified by dire
 | CerebrScope deployed | [0x17d0…9cfd](https://www.okx.com/web3/explorer/xlayer/tx/0x17d01f5dbdc49a9dc88d6fc2f7b347dd55bc903e17fa70cfd2d34ea036359cfd) |
 | Onchain names for circuits #1-#14 | 14 `setLabel` transactions on CerebrScope (2026-10-06), written by [`sdk/scripts/label-catalog.ts`](sdk/scripts/label-catalog.ts) |
 | Real-wallet test through the live app UI | Mint 10 NAND [0x1fb9…3f2a](https://www.okx.com/web3/explorer/xlayer/tx/0x1fb9dc0eb048bd2d88f985694dc7d7005235dfd7ff27790d44fd4d474af53f2a), tape out circuit #15 [0x4133…1c15](https://www.okx.com/web3/explorer/xlayer/tx/0x413387037233847f2d2dd24c2bfa0733a5300d93e4e4f195d3ac9bd4ca1f1c15), name it onchain [0xc5ff…95fb](https://www.okx.com/web3/explorer/xlayer/tx/0xc5ffa319abb3f5dd0202c4b194efaab71ab6f22d677074050d1403d0f33f95fb) |
+| NeuralArena bot taped out | Circuit #16 "Neural Arena Bot" (590 NAND) [0x0867…6f78](https://www.okx.com/web3/explorer/xlayer/tx/0x0867ed331fa75965a70facd01b0a0f0f456c9c0be33b4e0f5787f5eec70b6f78), named onchain [0x8ba8…f65c](https://www.okx.com/web3/explorer/xlayer/tx/0x8ba86cbbad574129c4060c19d7f9be7a7148810ef01c7a4b4d2913e6c2b7f65c); see [ARENA.md](ARENA.md) |
+| CerebrAgent deployed | [`0x3d73…3340`](https://www.okx.com/web3/explorer/xlayer/address/0x3d736c6419dCa667a351907578b68717Cd6e3340) (Sourcify exact match), deploy tx [0xa9aa…a31f](https://www.okx.com/web3/explorer/xlayer/tx/0xa9aaacef0f3af99dc0046a67d5e3132879c65301415fca4b10202d617e15a31f), first decision [0xb738…c4ed](https://www.okx.com/web3/explorer/xlayer/tx/0xb738dac247760db5bad17709b019a953384132cf5e9c558698a69e7925e2c4ed); see [AGENT.md](AGENT.md) |
 
-State at time of writing: **15 circuits** taped out, **1,251** transistors minted of 1,000,000, the processor registered in the TapeOut factory (`isCPU = true`) and meets TapeOut's app listing rule (supply cap ≥ 10,000, minted ≥ 1). The full launch record, with every transaction, is in [LAUNCH.md](LAUNCH.md#mainnet-launch-record-2026-10-05) and [`launch/out/196.json`](launch/out/196.json).
+State at time of writing: **16 circuits** taped out (`nextId()` = 16), **1,251** transistors minted of 1,000,000, the processor registered in the TapeOut factory (`isCPU = true`) and meets TapeOut's app listing rule (supply cap ≥ 10,000, minted ≥ 1). The full launch record, with every transaction, is in [LAUNCH.md](LAUNCH.md#mainnet-launch-record-2026-10-05) and [`launch/out/196.json`](launch/out/196.json).
 
 ## Hackathon requirements and judging criteria
 
@@ -75,7 +77,7 @@ State at time of writing: **15 circuits** taped out, **1,251** transistors minte
 |---|---|---|
 | Processor deployed on X Layer **through the TapeOut factory** | `createCPU` on the TapeOut factory; `factory.isCPU(processor) = true` | [create tx](https://www.okx.com/web3/explorer/xlayer/tx/0x3295efc1ceec4aba0f918f89e5316fd62f1f705abdc52d483715e4fcada86815), [`sdk/scripts/launch.ts`](sdk/scripts/launch.ts) |
 | Transistor supply, unit price and cap set and disclosed at deployment | **1,000,000 transistors at 0.00001 OKB**, the parameters of `createCPU`, recorded in its `CPUCreated` event and published on the landing page | [ISSUANCE.md](ISSUANCE.md), [`launch/config.json`](launch/config.json) |
-| At least one circuit taped out before the window closes | **15 circuits** (#1-#14 catalog, #15 Studio test), all checked onchain against the simulator on every input | [catalog table](#the-circuit-catalog) |
+| At least one circuit taped out before the window closes | **16 circuits** (#1-#14 catalog, #15 Studio test, #16 NeuralArena bot), all checked onchain against the simulator or reference on every input | [catalog table](#the-circuit-catalog) |
 | A clear use case | Verifiable onchain inference: game AI, decision primitives for DeAI agents, and public neurons other teams can `REF` | [SUBMISSION.md](SUBMISSION.md) |
 | Mainnet launch | X Layer mainnet, chain 196 | addresses above |
 
@@ -155,8 +157,9 @@ Every circuit is compiled by the SDK, checked against its reference model on eve
 | #13 | 2-bit Adder | 4 → 3 | 14 NAND | 14 | [0xdbbe…f3f3](https://www.okx.com/web3/explorer/xlayer/tx/0xdbbec9cd6b0909f3e505e3927f6f9e8e3f60e63039fd2aaae9ac01a141dbf3f3) |
 | #14 | Integrate-and-Fire Neuron | 2 → 1 | 17 NAND + 2 LATCH | 19 | [0x91e5…7016](https://www.okx.com/web3/explorer/xlayer/tx/0x91e5a6585576e608318a33d7d616b0e6fe769bce3aa3510b9e08782ca11d7016) |
 | #15 | Studio test neuron (y = [x0 + x1 + x2 - x3 ≥ 2]) | 4 → 1 | 16 NAND | 16 | [0x4133…1c15](https://www.okx.com/web3/explorer/xlayer/tx/0x413387037233847f2d2dd24c2bfa0733a5300d93e4e4f195d3ac9bd4ca1f1c15) |
+| #16 | Neural Arena Bot (7-layer tic-tac-toe network) | 18 → 9 | 590 NAND | 590 | [0x0867…6f78](https://www.okx.com/web3/explorer/xlayer/tx/0x0867ed331fa75965a70facd01b0a0f0f456c9c0be33b4e0f5787f5eec70b6f78) |
 
-#1-#14 were taped out by the launch runbook; #15 was taped out through the live app's Circuit Studio during the real-wallet test. All 15 are owned by the deployment wallet and named onchain in CerebrScope. Gate costs are exact: a circuit burns exactly its NAND and LATCH count in transistors, and `REF`s burn nothing.
+#1-#14 were taped out by the launch runbook; #15 was taped out through the live app's Circuit Studio during the real-wallet test; #16 is the NeuralArena bot ([ARENA.md](ARENA.md)), checked against an independent reference policy on all 19,683 boards. All 16 are owned by the deployment wallet and named onchain in CerebrScope. Gate costs are exact: a circuit burns exactly its NAND and LATCH count in transistors, and `REF`s burn nothing.
 
 ## The app
 
@@ -183,6 +186,8 @@ The app at [`/app`](https://usecerebr.vercel.app/app) talks only to X Layer main
 **Train**: draw examples on a pixel grid (or pick a preset), train a threshold network in the browser, see its weights and held-out score, and when no single neuron fits, the hidden layer it needs. The trained model is compiled to NAND, checked against the model on every input, then taped out and named onchain through the same flow as the Studio.
 
 **Arena**: play tic-tac-toe against circuit #16, a 590-gate neural network, through NeuralArena [`0xD984…62BD`](https://www.okx.com/web3/explorer/xlayer/address/0xD984b3D13603AB51af02ddFFaa1FD86bE8c162BD). Every bot move is an `eval()` of #16 inside your `play()` transaction; the app decodes each move's inference receipt and replays it with `eval()`. A draw is the best a human can get.
+
+**Agent**: CerebrAgent [`0x3d73…3340`](https://www.okx.com/web3/explorer/xlayer/address/0x3d736c6419dCa667a351907578b68717Cd6e3340) is an autonomous onchain agent whose brain is circuit #8, the 19-NAND Go/No-Go Neuron. A keeper calls `act()` every 10 minutes; the contract derives five input pins from chain state (basefee, its EMA, the UTC hour, blocks since its last Go), runs one `eval()` of #8 and records Go, No-Go or Abstain in a 64-entry ring buffer. No funds, no admin. The Agent view shows the live pins, the decision feed and a per-decision replay through `eval()` ([AGENT.md](AGENT.md)).
 
 **Marketplace**: every Gallery card can list, reprice, delist or buy its circuit on TapeOut's circuit market [`0xd89f…75DB`](https://www.okx.com/web3/explorer/xlayer/address/0xd89f358c48a7B632c9845af2a02A32eB90DD75DB) (single-token approval, 1% fee fixed per listing, the brain wallet moves with the NFT, buys pass the expected price). Cerebr's own wallets never buy.
 
@@ -241,11 +246,12 @@ Cerebr has no token of its own. **The asset is the Cerebr processor's transistor
 
 Why these terms: a neural circuit uses many gates, so cheap gates keep a community neuron at a fraction of a cent in transistors (a 150-gate network is about 0.0015 OKB plus fees), while a 1,000,000 cap leaves room for thousands of circuits. Burns never free room under the cap, so transistors only get scarcer with use, and `REF` makes reusing a taped-out neuron free.
 
-**Disclosed creator activity** (no trades, no transfers, every mint a primary mint at the public price):
+**Disclosed creator activity** (no trades; the only transfer is the 400-NAND Genesis Drop deposit; every mint a primary mint at the public price):
 
 - Launch: 1,139 NAND + 102 LATCH minted; 141 burned into the 14 catalog circuits; the unit price came back to the creator through `withdraw()`.
 - 2026-10-06 real-wallet test of the live app: 10 NAND minted and 16 burned into circuit #15.
-- The deployment wallet holds the rest: **994 NAND and 100 LATCH** at time of writing.
+- 2026-10-06: 590 NAND burned into circuit #16 (the NeuralArena bot) and 400 NAND deposited into the Genesis Drop on TapeOut's drops contract, to be claimed by other wallets at 16 per address.
+- The deployment wallet holds the rest: **4 NAND and 100 LATCH** at time of writing (747 burned in total, 400 in the drop).
 
 Full design, alternatives and the cost of every circuit: [ISSUANCE.md](ISSUANCE.md).
 
@@ -326,8 +332,11 @@ sdk/src/tapeout/     TapeOut client: addresses, ABIs, encoding and quotes, viem 
 sdk/scripts/         fork-smoke.ts, launch.ts (launch runbook), label-catalog.ts (onchain names)
 sdk/test/            SDK tests
 src/scope/           CerebrScope (lens, die-shot SVG, metadata, labels)
-script/              DeployScope.s.sol
-test/scope/          CerebrScope unit, fuzz and fork tests
+src/arena/           NeuralArena (tic-tac-toe against circuit #16)
+src/agent/           CerebrAgent (autonomous agent whose policy is circuit #8)
+script/              DeployScope.s.sol, DeployArena.s.sol, DeployAgent.s.sol
+test/                scope/, arena/, agent/: unit, fuzz and fork tests
+agent/               CerebrAgent keeper daemon (Docker, systemd)
 launch/              config.json (identity and issuance terms), out/ and state (mainnet launch records)
 app/                 landing page and dApp (Vite, React, wagmi, viem)
 media/               screenshots used in this README
@@ -342,11 +351,13 @@ media/               screenshots used in this README
 | [ISSUANCE.md](ISSUANCE.md) | Transistor issuance design, alternatives, the cost of each circuit, fee flows and the anti-wash-trading stance |
 | [SUBMISSION.md](SUBMISSION.md) | The hackathon submission and demo script |
 | [AUDIT.md](AUDIT.md) | The internal security review and its findings |
+| [ARENA.md](ARENA.md) | NeuralArena: the 590-NAND bot circuit #16, its checks and its mainnet record |
+| [AGENT.md](AGENT.md) | CerebrAgent: input mapping, safety, costs, verification and its mainnet record |
 | [app/README.md](app/README.md) | Running, building and deploying the app |
 
 ## Risks
 
-TapeOut's X Layer contracts are in a test phase: they are upgradeable and unaudited, and their owner can change code and fees. Cerebr holds no user funds; mints, tape-outs and wallet openings are direct calls to TapeOut's contracts. CerebrScope is a lens with no payable functions and no admin. Circuits run as view calls with gas limits, so onchain networks stay small, from tens to hundreds of gates. Nothing here is investment advice.
+TapeOut's X Layer contracts are in a test phase: they are upgradeable and unaudited, and their owner can change code and fees. Cerebr holds no user funds; mints, tape-outs and wallet openings are direct calls to TapeOut's contracts. CerebrScope, NeuralArena and CerebrAgent have no payable functions and no admin. Circuits run as view calls with gas limits, so onchain networks stay small, from tens to hundreds of gates. Nothing here is investment advice.
 
 ## License
 
