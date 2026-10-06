@@ -1,4 +1,5 @@
 import { short } from './issuance.ts'
+import { useT } from '../i18n/index.tsx'
 
 /**
  * Hero illustration: a schematic of the live Cerebr processor drawn as a datasheet pinout. Pins are
@@ -28,24 +29,25 @@ export function Pinout({ name, symbol, circuits, cpu, chainId, reads }: PinoutPr
   const pinY = (i: number) => body.y + pitch * (i + 1)
   const lit = Math.min(circuits ?? 0, COLS * ROWS)
   const n = LEFT.length + RIGHT.length
+  const t = useT()
   return (
-    <svg viewBox="0 0 560 480" className="ds-pinout" role="img" aria-label={`Schematic of the live ${name ?? 'Cerebr'} processor: TapeOut writes in, view functions out`}>
+    <svg viewBox="0 0 560 480" className="ds-pinout" role="img" aria-label={t('l.pin.aria', { name: name ?? 'Cerebr' })}>
       <defs>
         <pattern id="dsDie" width="26" height="26" patternUnits="userSpaceOnUse">
-          <path d="M26 0H0V26" fill="none" stroke="rgba(236,237,238,0.06)" />
+          <path d="M26 0H0V26" fill="none" className="ds-die-grid" />
         </pattern>
       </defs>
 
       {/* pins: the real TapeOut interface */}
       {LEFT.map((label, i) => (
-        <g key={label}>
+        <g key={label} className="ds-pin-g" style={{ '--i': i } as React.CSSProperties}>
           <line x1={body.x - 46} y1={pinY(i)} x2={body.x} y2={pinY(i)} className="ds-pin" />
           <text x={body.x - 54} y={pinY(i) + 4} textAnchor="end" className="ds-pin-label">{label}</text>
           <text x={body.x + 12} y={pinY(i) + 3} className="ds-pin-num">{i + 1}</text>
         </g>
       ))}
       {RIGHT.map((label, i) => (
-        <g key={label}>
+        <g key={label} className="ds-pin-g" style={{ '--i': i + 0.5 } as React.CSSProperties}>
           <line x1={body.x + body.s} y1={pinY(i)} x2={body.x + body.s + 46} y2={pinY(i)} className="ds-pin" />
           {reads.has(label) && <line x1={body.x + body.s} y1={pinY(i)} x2={body.x + body.s + 46} y2={pinY(i)} className="ds-pin-sig" pathLength={100} style={{ animationDelay: `${0.4 + i * 0.5}s` }} />}
           <text x={body.x + body.s + 54} y={pinY(i) + 4} className="ds-pin-label">{label}</text>
@@ -65,15 +67,15 @@ export function Pinout({ name, symbol, circuits, cpu, chainId, reads }: PinoutPr
           width="14"
           height="14"
           className="ds-cell"
-          style={{ animationDelay: `${(i * 0.37) % 3}s` }}
+          style={{ '--i': i, '--blink': `${(i * 0.37) % 3}s` } as React.CSSProperties}
         >
-          <title>{`Circuit #${i + 1}`}</title>
+          <title>{t('l.pin.circuit', { n: i + 1 })}</title>
         </rect>
       ))}
       <circle cx={body.x + 16} cy={body.y + 16} r="4" className="ds-pin1" />
       <text x={body.x + body.s / 2} y={body.y + body.s - 38} textAnchor="middle" className="ds-chip-name">{name ? name.toUpperCase() : '…'}</text>
       <text x={body.x + body.s / 2} y={body.y + body.s - 20} textAnchor="middle" className="ds-chip-sub">
-        {symbol ?? '…'} · {circuits !== undefined ? `${circuits} CIRCUIT${circuits === 1 ? '' : 'S'} TAPED OUT` : '…'}
+        {symbol ?? '…'} · {circuits !== undefined ? t(circuits === 1 ? 'l.pin.tapedOne' : 'l.pin.tapedMany', { n: circuits }) : '…'}
       </text>
 
       {/* dimension annotation */}
@@ -81,10 +83,10 @@ export function Pinout({ name, symbol, circuits, cpu, chainId, reads }: PinoutPr
       <line x1={body.x} y1={body.y + body.s + 46} x2={body.x} y2={body.y + body.s + 58} className="ds-dim" />
       <line x1={body.x + body.s} y1={body.y + body.s + 46} x2={body.x + body.s} y2={body.y + body.s + 58} className="ds-dim" />
       <text x={body.x + body.s / 2} y={body.y + body.s + 72} textAnchor="middle" className="ds-dim-label">
-        {cpu ? short(cpu).toUpperCase().replace('0X', '0x') : '…'} · CHAIN {chainId ?? '…'}
+        {cpu ? short(cpu).toUpperCase().replace('0X', '0x') : '…'} · {t('l.pin.chain')} {chainId ?? '…'}
       </text>
-      <text x={body.x - 46} y={body.y - 40} className="ds-dim-label">WRITES</text>
-      <text x={body.x + body.s + 46} y={body.y - 40} textAnchor="end" className="ds-dim-label">READS</text>
+      <text x={body.x - 46} y={body.y - 40} className="ds-dim-label">{t('l.pin.writes')}</text>
+      <text x={body.x + body.s + 46} y={body.y - 40} textAnchor="end" className="ds-dim-label">{t('l.pin.reads')}</text>
     </svg>
   )
 }
@@ -95,6 +97,7 @@ export function Pinout({ name, symbol, circuits, cpu, chainId, reads }: PinoutPr
  */
 export function TimingDiagram({ spikes, counts, fires }: { spikes: number[]; counts?: number[]; fires?: number[] }) {
   const steps = spikes.length
+  const t = useT()
   const x0 = 96
   const w = 36
   const rows = [
@@ -118,27 +121,27 @@ export function TimingDiagram({ spikes, counts, fires }: { spikes: number[]; cou
     clkD += ` V${yy} H${x0 + ((i + 1) * w) / 2}`
   })
   return (
-    <svg viewBox={`0 0 ${x0 + steps * w + 12} 200`} className="ds-timing" role="img" aria-label="Timing diagram: the integrate-and-fire neuron fires on every third input spike">
+    <svg viewBox={`0 0 ${x0 + steps * w + 12} 200`} className="ds-timing" role="img" aria-label={t('l.timing.aria')}>
       {Array.from({ length: steps + 1 }, (_, i) => (
         <line key={i} x1={x0 + i * w} y1="8" x2={x0 + i * w} y2="190" className="ds-grid-v" />
       ))}
       {rows.map((r) => (
         <text key={r.label} x="0" y={r.y + 2} className="ds-wave-label">{r.label}</text>
       ))}
-      <path d={clkD} className="ds-wave" />
-      <path d={wave(spikes, 78)} className="ds-wave" />
+      <path d={clkD} className="ds-wave ds-trace" pathLength={100} style={{ '--d': '0ms' } as React.CSSProperties} />
+      <path d={wave(spikes, 78)} className="ds-wave ds-trace" pathLength={100} style={{ '--d': '350ms' } as React.CSSProperties} />
       {!counts && (
         <text x={x0 + (steps * w) / 2} y="154" textAnchor="middle" className="ds-bus-v">
-          simulating #14's onchain netlist…
+          {t('l.timing.sim', { id: 14 })}
         </text>
       )}
       {counts?.map((v, i) => (
-        <g key={i}>
+        <g key={i} className="ds-count-g" style={{ '--i': i } as React.CSSProperties}>
           <path d={`M${x0 + i * w + 4} 126 L${x0 + i * w + 8} 116 H${x0 + (i + 1) * w - 4} L${x0 + (i + 1) * w} 126 L${x0 + (i + 1) * w - 4} 136 H${x0 + i * w + 8} Z`} className="ds-bus" />
           <text x={x0 + i * w + w / 2 + 2} y="130" textAnchor="middle" className="ds-bus-v">{v}</text>
         </g>
       ))}
-      {fires && <path d={wave(fires, 174)} className="ds-wave ds-wave-acc" />}
+      {fires && <path d={wave(fires, 174)} className="ds-wave ds-wave-acc ds-trace" pathLength={100} style={{ '--d': '1500ms' } as React.CSSProperties} />}
     </svg>
   )
 }

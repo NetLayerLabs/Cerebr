@@ -31,7 +31,7 @@ export const ISSUANCE: Issuance = {
 }
 
 export const RPC_196 = env.VITE_RPC_196 || 'https://rpc.xlayer.tech'
-export const EXPLORER = 'https://www.oklink.com/xlayer'
+export const EXPLORER = 'https://www.okx.com/web3/explorer/xlayer'
 
 /** Wei to a short OKB string without trailing zeros. */
 export function okb(wei: bigint): string {

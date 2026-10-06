@@ -1,5 +1,6 @@
 import { Logo } from '../components/Logo.tsx'
-import { BuiltBy } from '../components/BuiltBy.tsx'
+import { SiteFooter } from '../components/SiteFooter.tsx'
+import { TapeOutMark, XLayerMark } from '../components/PartnerMarks.tsx'
 import { formatGwei } from 'viem'
 import type { CpuInfo, TapeoutFees } from '@cerebr/sdk/tapeout'
 import { Pinout, TimingDiagram } from './Pinout.tsx'
@@ -18,16 +19,21 @@ import {
   type Timing,
   type XorLive,
 } from './useCpuStats.ts'
+import { Preferences } from '../components/Preferences.tsx'
+import { useI18n, type Key, type T } from '../i18n/index.tsx'
+import { useCircuitText } from '../i18n/circuits.ts'
+import { CountUp, useLandingMotion } from './motion.tsx'
+import { useRef } from 'react'
 import './landing.css'
 
 const APP_HREF = '/app'
-const TAPEOUT_HREF = 'https://tapeout.net'
 const REPO_HREF = 'https://github.com/NetLayerLabs/Cerebr'
 const DOC = 'CRB-DS-001'
 
 const int = (n: bigint | number) => Number(n).toLocaleString('en-US')
-/** A live value, or a neutral '…' until its read lands. */
+/** A live value, or a neutral '…' (language-neutral) until its read lands. */
 const L = <T,>(x: T | undefined, f: (x: T) => React.ReactNode = String): React.ReactNode => (x === undefined ? '…' : f(x))
+/** Gate counts as 'n NAND + n LATCH + n REF' (identifiers, not translated). */
 const gates = (c: Counts) =>
   [`${c.nand} NAND`, c.latch ? `${c.latch} LATCH` : '', c.ref ? `${c.ref} REF` : ''].filter(Boolean).join(' + ')
 const burns = (c: Counts) => c.nand + c.latch
@@ -42,9 +48,10 @@ const SPIKES = [1, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0]
 const playground = (id: number) => `${APP_HREF}#playground/${id}`
 
 function Launch({ size = 'md' }: { size?: 'md' | 'lg' }) {
+  const { t } = useI18n()
   return (
     <a className={`ds-btn ds-btn-acc ds-btn-${size}`} href={APP_HREF}>
-      Launch app <span aria-hidden>↗</span>
+      {t('l.launch')}
     </a>
   )
 }
@@ -72,8 +79,10 @@ function useLive(): Live {
 
 export function Landing() {
   const live = useLive()
+  const root = useRef<HTMLDivElement>(null)
+  useLandingMotion(root)
   return (
-    <div className="ds">
+    <div className="ds" ref={root}>
       <Nav />
       <main>
         <Hero live={live} />
@@ -90,7 +99,7 @@ export function Landing() {
         <Faq />
         <FinalCta />
       </main>
-      <Footer />
+      <SiteFooter />
     </div>
   )
 }
@@ -98,35 +107,39 @@ export function Landing() {
 /* ------------------------------------------------------------------------------------------------ */
 
 function Nav() {
+  const { t } = useI18n()
   return (
     <header className="ds-nav">
+      <span className="ds-progress" aria-hidden />
       <a className="ds-brand" href="/">
         <Logo size={26} />
         <span className="ds-brand-name">Cerebr</span>
         <span className="ds-brand-tag">CRB-1</span>
       </a>
-      <nav className="ds-links">
-        <a href="#how">Architecture</a>
-        <a href="#xor">XOR</a>
-        <a href="#catalog">Circuits</a>
-        <a href="#issuance">Issuance</a>
-        <a href="#wallets">Wallets</a>
-        <a href="#security">Security</a>
-        <a href="#faq">FAQ</a>
+      <nav className="ds-links" aria-label={t('l.nav.aria')}>
+        <a href="#how">{t('l.nav.arch')}</a>
+        <a href="#xor">{t('l.nav.xor')}</a>
+        <a href="#catalog">{t('l.nav.circuits')}</a>
+        <a href="#issuance">{t('l.nav.issuance')}</a>
+        <a href="#wallets">{t('l.nav.wallets')}</a>
+        <a href="#security">{t('l.nav.security')}</a>
+        <a href="#faq">{t('l.nav.faq')}</a>
       </nav>
+      <Preferences className="ds-prefs" />
     </header>
   )
 }
 
 /** Datasheet section header: a ruled bar with the section number, title and page meta. */
 function Sec({ id, n, label, meta, title, children }: { id?: string; n: string; label: string; meta?: string; title: React.ReactNode; children?: React.ReactNode }) {
+  const { t } = useI18n()
   return (
-    <div className="ds-sec" id={id}>
+    <div className="ds-sec" id={id} data-rv="sec">
       <div className="ds-sec-bar">
         <span className="ds-sec-n">§{n}</span>
         <span className="ds-sec-label">{label}</span>
         <span className="ds-sec-fill" />
-        <span className="ds-sec-meta">{meta ?? `${DOC} · p.${n}`}</span>
+        <span className="ds-sec-meta">{meta ?? t('l.sec.page', { doc: DOC, n })}</span>
       </div>
       <h2 className="ds-h2">{title}</h2>
       {children && <p className="ds-lede">{children}</p>}
@@ -136,6 +149,7 @@ function Sec({ id, n, label, meta, title, children }: { id?: string; n: string; 
 
 function Hero({ live }: { live: Live }) {
   const { cpu, circuits, misc, xor, timing } = live
+  const { t, rich } = useI18n()
   const reads = new Set<string>()
   if (circuits) ['circuitInfo()', 'netlist()', 'ownerOf()'].forEach((r) => reads.add(r))
   if (xor) reads.add('eval()')
@@ -143,37 +157,47 @@ function Hero({ live }: { live: Live }) {
   return (
     <section className="ds-hero">
       <div className="ds-hero-copy">
-        <div className="ds-kicker">
-          <span className="ds-live" /> Live on X Layer mainnet · built on TapeOut
+        <div className="ds-partner">
+          <span className="ds-partner-tile" aria-hidden>
+            <XLayerMark size={13} />
+          </span>
+          <span className="ds-partner-main">
+            <span className="ds-live" aria-hidden />
+            {t('l.hero.live')}
+          </span>
+          <span className="ds-partner-div" aria-hidden />
+          <span className="ds-partner-sub">
+            <span className="ds-partner-mark" aria-hidden>
+              <TapeOutMark size={13} />
+            </span>
+            {t('l.hero.builtOn')}
+          </span>
         </div>
-        <h1 className="ds-h1">
-          A neural processor,
-          <br />
-          <em>taped out</em> onchain.
-        </h1>
-        <p className="ds-hero-lede">
-          Cerebr compiles neurons into real NAND netlists and tapes them out on its own TapeOut processor. Every
-          transistor is a synapse, every circuit is a neuron you own, and anyone can run inference onchain with{' '}
-          <code>eval()</code>.
-        </p>
+        <h1 className="ds-h1">{rich('l.hero.title')}</h1>
+        <p className="ds-hero-lede">{rich('l.hero.lede')}</p>
         <div className="ds-cta">
           <Launch size="lg" />
           <a className="ds-btn ds-btn-line ds-btn-lg" href="#xor">
-            See a neuron solve XOR
+            {t('l.hero.cta2')}
           </a>
         </div>
         <dl className="ds-hero-spec">
           <div>
-            <dt>Gates</dt>
+            <dt>{t('l.hero.gates')}</dt>
             <dd>NAND · LATCH · REF</dd>
           </div>
           <div>
-            <dt>Inference</dt>
+            <dt>{t('l.hero.inference')}</dt>
             <dd>eval() · step()</dd>
           </div>
           <div>
-            <dt>Network</dt>
-            <dd>X Layer · {L(misc?.chainId)}</dd>
+            <dt>{t('l.hero.network')}</dt>
+            <dd className="ds-hero-net">
+              <span aria-hidden>
+                <XLayerMark size={11} />
+              </span>
+              X Layer
+            </dd>
           </div>
         </dl>
       </div>
@@ -186,10 +210,7 @@ function Hero({ live }: { live: Live }) {
           chainId={misc?.chainId}
           reads={reads}
         />
-        <figcaption>
-          Fig. 1 - Schematic of the live processor, top view. Pins are its TapeOut functions (lit when this page has
-          read them onchain); one die cell per taped-out circuit.
-        </figcaption>
+        <figcaption>{t('l.hero.fig')}</figcaption>
       </figure>
     </section>
   )
@@ -198,46 +219,47 @@ function Hero({ live }: { live: Live }) {
 /** Live CPU state as a datasheet "electrical characteristics" table; config values until the read lands. */
 function Characteristics() {
   const s = useCpuStats()
+  const { t } = useI18n()
   const pct = s && s.supplyCap > 0n ? Number((s.minted * 10_000n) / s.supplyCap) / 100 : undefined
   const rows: [string, string, React.ReactNode, string][] = [
-    ['Processor', '-', L(s?.name), s?.symbol ?? '…'],
-    ['Transistor supply cap', 'N_cap', L(s?.supplyCap, int), 'NAND + LATCH'],
-    ['Transistors minted', 'N_min', L(s?.minted, int), pct !== undefined ? `${pct}% of cap` : ''],
-    ['Unit price', 'P_t', L(s?.mintPrice, okb), 'OKB / transistor'],
-    ['Mint fee', 'F_m', L(s?.protocolFee, okb), 'OKB / call → TapeOut'],
-    ['Tape-out fee', 'F_t', L(s?.tapeoutFee, okb), 'OKB / circuit → TapeOut'],
-    ['Circuits taped out', 'C', L(s?.circuitCount, int), 'on this processor'],
+    [t('l.char.processor'), '-', L(s?.name), s?.symbol ?? '…'],
+    [t('l.char.cap'), 'N_cap', <CountUp value={s?.supplyCap} />, 'NAND + LATCH'],
+    [t('l.char.minted'), 'N_min', <CountUp value={s?.minted} />, pct !== undefined ? t('l.char.pct', { pct }) : ''],
+    [t('l.char.price'), 'P_t', L(s?.mintPrice, okb), t('l.char.priceU')],
+    [t('l.char.mintFee'), 'F_m', L(s?.protocolFee, okb), t('l.char.mintFeeU')],
+    [t('l.char.tapeFee'), 'F_t', L(s?.tapeoutFee, okb), t('l.char.tapeFeeU')],
+    [t('l.char.circuits'), 'C', <CountUp value={s?.circuitCount} />, t('l.char.circuitsU')],
   ]
   return (
     <section className="ds-section ds-char">
       <div className="ds-table-head">
-        <span>Electrical characteristics</span>
+        <span>{t('l.char.title')}</span>
         <span className="ds-table-meta">
           {s ? (
             <>
-              <span className="ds-live" /> read live from chain ·{' '}
+              <span className="ds-live" /> {t('l.char.live')} ·{' '}
               <a href={`${EXPLORER}/address/${s.transistors}`} target="_blank" rel="noreferrer">
-                OKLink ↗
+                {t('common.explorer')} ↗
               </a>
             </>
           ) : (
-            'reading from X Layer…'
+            t('l.char.reading')
           )}
         </span>
       </div>
-      <div className="ds-table-wrap">
+      <div className="ds-table-wrap" data-rv="rows">
         <table className="ds-table">
           <thead>
             <tr>
-              <th>Parameter</th>
-              <th>Symbol</th>
-              <th className="r">Value</th>
-              <th>Unit</th>
+              <th>{t('l.th.param')}</th>
+              <th>{t('l.th.symbol')}</th>
+              <th className="r">{t('l.th.value')}</th>
+              <th>{t('l.th.unit')}</th>
             </tr>
           </thead>
           <tbody>
-            {rows.map(([p, sym, v, u]) => (
-              <tr key={p}>
+            {rows.map(([p, sym, v, u], i) => (
+              <tr key={i} style={{ '--i': i } as React.CSSProperties}>
                 <td>{p}</td>
                 <td className="ds-sym">{sym}</td>
                 <td className="r ds-val">{v}</td>
@@ -253,49 +275,29 @@ function Characteristics() {
 
 /* ------------------------------------------------------------------------------------------------ */
 
-const STEPS = [
-  {
-    n: 'A',
-    title: 'Mint transistors',
-    body: 'Transistors are the synapses. Mint NAND (and LATCH, for memory) from the Cerebr processor’s fixed supply at a fixed unit price.',
-    fn: 'transistors.mint(NAND, n)',
-  },
-  {
-    n: 'B',
-    title: 'Compile a neuron',
-    body: 'Give the compiler integer weights and a threshold. It tries four constructions and keeps the netlist with the fewest NAND gates.',
-    fn: 'neuron({ weights, theta })',
-  },
-  {
-    n: 'C',
-    title: 'Tape it out',
-    body: 'The netlist goes onchain as a circuit NFT. Each NAND burns one transistor, so every neuron is paid for in real silicon.',
-    fn: 'circuits.tapeout(nl, nIn, nOut)',
-  },
-  {
-    n: 'D',
-    title: 'Compose & infer',
-    body: 'Wire taped-out neurons into networks with REF, which reuses a circuit without burning transistors. Run any of them for free with eval.',
-    fn: 'circuits.eval(id, inputs)',
-  },
+const STEPS: { n: string; title: Key; body: Key; fn: string }[] = [
+  { n: 'A', title: 'l.step.a.t', body: 'l.step.a.b', fn: 'transistors.mint(NAND, n)' },
+  { n: 'B', title: 'l.step.b.t', body: 'l.step.b.b', fn: 'neuron({ weights, theta })' },
+  { n: 'C', title: 'l.step.c.t', body: 'l.step.c.b', fn: 'circuits.tapeout(nl, nIn, nOut)' },
+  { n: 'D', title: 'l.step.d.t', body: 'l.step.d.b', fn: 'circuits.eval(id, inputs)' },
 ]
 
 function HowItWorks() {
+  const { t, rich } = useI18n()
   return (
     <section className="ds-section">
-      <Sec id="how" n="01" label="Functional description" title={<>From transistors to neurons <em>to networks.</em></>}>
-        TapeOut gives every processor two contracts: transistors you mint and circuits you tape out by burning them.
-        Cerebr adds the missing piece, a compiler that turns neural networks into those circuits.
+      <Sec id="how" n="01" label={t('l.how.label')} title={rich('l.how.title')}>
+        {t('l.how.lede')}
       </Sec>
-      <ol className="ds-blocks">
+      <ol className="ds-blocks" data-rv="stagger">
         {STEPS.map((s, i) => (
-          <li key={s.n} className="ds-block">
+          <li key={s.n} className="ds-block" style={{ '--i': i } as React.CSSProperties}>
             <div className="ds-block-top">
               <span className="ds-block-n">{s.n}</span>
               {i < STEPS.length - 1 && <span className="ds-block-arrow" aria-hidden>→</span>}
             </div>
-            <h3>{s.title}</h3>
-            <p>{s.body}</p>
+            <h3>{t(s.title)}</h3>
+            <p>{t(s.body)}</p>
             <code className="ds-fn">{s.fn}</code>
           </li>
         ))}
@@ -313,23 +315,22 @@ function XorStory({ live }: { live: Live }) {
   const [h1, h2, out] = xor?.refs ?? []
   // eval(5, 0b10): x1 = 1, x0 = 0 is row 1
   const y10 = xor?.rows[1][4]
+  const { t, rich } = useI18n()
   return (
     <section className="ds-section">
-      <Sec id="xor" n="02" label="Application note · XOR" title={<>One neuron can’t. <em>Two layers can.</em></>}>
-        In 1969 Minsky and Papert showed that a single threshold neuron can never compute XOR: no straight line separates
-        its true cases from its false ones. Add a hidden layer and the problem disappears. Cerebr tapes out that exact
-        network and runs it onchain.
+      <Sec id="xor" n="02" label={t('l.xor.label')} title={rich('l.xor.title')}>
+        {t('l.xor.lede')}
       </Sec>
       <div className="ds-grid-xor">
-        <figure className="ds-fig ds-fig-wide">
+        <figure className="ds-fig ds-fig-wide" data-rv="xor">
           <XorNetwork refs={xor?.refs} />
-          <figcaption>Fig. 2 - Two-layer network. Each node is a taped-out circuit; each edge is a REF.</figcaption>
+          <figcaption>{t('l.xor.fig2')}</figcaption>
         </figure>
-        <figure className="ds-fig">
+        <figure className="ds-fig" data-rv="plane">
           <XorPlane />
-          <figcaption>Fig. 3 - Input plane. Two hidden neurons, two lines; XOR is the band between.</figcaption>
+          <figcaption>{t('l.xor.fig3')}</figcaption>
         </figure>
-        <figure className="ds-fig">
+        <figure className="ds-fig" data-rv="truth">
           <table className="ds-truth">
             <thead>
               <tr>
@@ -342,8 +343,8 @@ function XorStory({ live }: { live: Live }) {
             </thead>
             <tbody>
               {xor
-                ? xor.rows.map((r) => (
-                    <tr key={r.slice(0, 2).join('')}>
+                ? xor.rows.map((r, i) => (
+                    <tr key={r.slice(0, 2).join('')} style={{ '--i': i } as React.CSSProperties}>
                       {r.map((v, i) => (
                         <td key={i} className={i === 4 ? (v ? 'hi' : 'lo') : undefined}>
                           {v}
@@ -363,13 +364,13 @@ function XorStory({ live }: { live: Live }) {
             </tbody>
           </table>
           <figcaption>
-            Table 1 - Truth table, y = AND(OR, NAND).{' '}
+            {t('l.xor.table')}{' '}
             {xor ? (
               <>
-                <span className="ds-live" /> eval(#{XOR_REF}) read live; OR and NAND are eval(#{h1}) and eval(#{h2}).
+                <span className="ds-live" /> {t('l.xor.tableLive', { ref: XOR_REF, h1, h2 })}
               </>
             ) : (
-              'Running eval() on X Layer…'
+              t('l.xor.tableLoading')
             )}
           </figcaption>
         </figure>
@@ -377,23 +378,21 @@ function XorStory({ live }: { live: Live }) {
       <div className="ds-facts3">
         <div>
           <b>{L(flat && gates(flat.counts))}</b>
-          <span>
-            flattened into one circuit (#{FLAT_XOR}), burning {L(flat && burns(flat.counts))} transistors
-          </span>
+          <span>{rich('l.xor.flat', { id: FLAT_XOR, n: L(flat && burns(flat.counts)) })}</span>
         </div>
         <div>
           <b>{L(net && gates(net.counts))}</b>
           <span>
-            built from the taped-out OR, NAND and AND neurons ({xor ? `#${h1}, #${h2}, #${out}` : '…'}) as circuit #
-            {XOR_REF}, burning {net ? (burns(net.counts) ? `${burns(net.counts)} transistors` : 'nothing new') : '…'}
+            {t('l.xor.ref', {
+              ids: xor ? `#${h1}, #${h2}, #${out}` : '…',
+              id: XOR_REF,
+              burn: net ? (burns(net.counts) ? t('l.xor.burnN', { n: burns(net.counts) }) : t('l.xor.burnNone')) : '…',
+            })}
           </span>
         </div>
         <div>
           <b>eval({XOR_REF}, 0b10) → {L(y10)}</b>
-          <span>
-            a free view call, so anyone can check the answer -{' '}
-            <a href={playground(5)}>run it ↗</a>
-          </span>
+          <span>{rich('l.xor.free', { a: (c) => <a href={playground(5)}>{c}</a> })}</span>
         </div>
       </div>
     </section>
@@ -401,48 +400,54 @@ function XorStory({ live }: { live: Live }) {
 }
 
 function XorNetwork({ refs }: { refs?: number[] }) {
+  const { t } = useI18n()
   const id = (k: number) => (refs?.[k] !== undefined ? `#${refs[k]}` : '…')
-  const node = (x: number, y: number, label: string, sub: string, acc = false) => (
-    <g>
+  /** d = reveal delay (ms): inputs, then layer-1 edges, hidden nodes, layer-2 edges, output. */
+  const D = (d: number) => ({ '--d': `${d}ms` }) as React.CSSProperties
+  const node = (x: number, y: number, label: string, sub: string, acc = false, d = 0) => (
+    <g className="ds-node-g" style={D(d)}>
       <circle cx={x} cy={y} r="28" className={acc ? 'ds-node ds-node-acc' : 'ds-node'} />
       <text x={x} y={y + 2} textAnchor="middle" className="ds-node-t">{label}</text>
       <text x={x} y={y + 16} textAnchor="middle" className="ds-node-s">{sub}</text>
     </g>
   )
-  const edge = (x1: number, y1: number, x2: number, y2: number, w: string, t = 0.7) => {
+  const edge = (x1: number, y1: number, x2: number, y2: number, w: string, t = 0.7, d = 150) => {
     const lx = x1 + (x2 - x1) * t
     const ly = y1 + (y2 - y1) * t
     return (
-      <g>
-        <line x1={x1} y1={y1} x2={x2} y2={y2} className="ds-edge" />
+      <g style={D(d)}>
+        <line x1={x1} y1={y1} x2={x2} y2={y2} className="ds-edge ds-edge-draw" pathLength={100} />
         <line x1={x1} y1={y1} x2={x2} y2={y2} className="ds-edge-sig" pathLength={100} />
-        <rect x={lx - 14} y={ly - 9} width="28" height="17" rx="2" className="ds-w" />
-        <text x={lx} y={ly + 3.5} textAnchor="middle" className="ds-w-t">{w}</text>
+        <g className="ds-wg">
+          <rect x={lx - 14} y={ly - 9} width="28" height="17" rx="2" className="ds-w" />
+          <text x={lx} y={ly + 3.5} textAnchor="middle" className="ds-w-t">{w}</text>
+        </g>
       </g>
     )
   }
   return (
-    <svg viewBox="0 0 440 260" className="ds-svg" role="img" aria-label="Two-layer neural network computing XOR: OR and NAND hidden neurons feeding an AND output neuron">
-      <text x="52" y="22" textAnchor="middle" className="ds-ax">INPUT</text>
-      <text x="215" y="22" textAnchor="middle" className="ds-ax">HIDDEN</text>
-      <text x="372" y="22" textAnchor="middle" className="ds-ax">OUTPUT</text>
+    <svg viewBox="0 0 440 260" className="ds-svg" role="img" aria-label={t('l.xor.netAria')}>
+      <text x="52" y="22" textAnchor="middle" className="ds-ax">{t('l.xor.input')}</text>
+      <text x="215" y="22" textAnchor="middle" className="ds-ax">{t('l.xor.hidden')}</text>
+      <text x="372" y="22" textAnchor="middle" className="ds-ax">{t('l.xor.output')}</text>
       {edge(80, 80, 187, 75, '+1')}
       {edge(80, 80, 187, 185, '−1', 0.78)}
       {edge(80, 190, 187, 75, '+1', 0.78)}
       {edge(80, 190, 187, 185, '−1')}
-      {edge(243, 75, 344, 130, '+1', 0.5)}
-      {edge(243, 185, 344, 130, '+1', 0.5)}
-      {node(52, 80, 'x0', 'in')}
-      {node(52, 190, 'x1', 'in')}
-      {node(215, 75, 'OR', `θ=1 · ${id(0)}`)}
-      {node(215, 185, 'NAND', `θ=−1 · ${id(1)}`)}
-      {node(372, 130, 'AND', `θ=2 · ${id(2)}`, true)}
+      {edge(243, 75, 344, 130, '+1', 0.5, 900)}
+      {edge(243, 185, 344, 130, '+1', 0.5, 900)}
+      {node(52, 80, 'x0', t('l.xor.in'))}
+      {node(52, 190, 'x1', t('l.xor.in'))}
+      {node(215, 75, 'OR', `θ=1 · ${id(0)}`, false, 700)}
+      {node(215, 185, 'NAND', `θ=−1 · ${id(1)}`, false, 700)}
+      {node(372, 130, 'AND', `θ=2 · ${id(2)}`, true, 1450)}
       <text x="372" y="186" textAnchor="middle" className="ds-node-s">y = x0 ⊕ x1</text>
     </svg>
   )
 }
 
 function XorPlane() {
+  const { t } = useI18n()
   const pts: [number, number, number][] = [
     [0, 0, 0],
     [0, 1, 1],
@@ -459,7 +464,7 @@ function XorPlane() {
     [px(1.85), py(-0.35)],
   ]
   return (
-    <svg viewBox="0 0 220 200" className="ds-svg" role="img" aria-label="The XOR cases in the input plane, separated by two lines">
+    <svg viewBox="0 0 220 200" className="ds-svg" role="img" aria-label={t('l.xor.planeAria')}>
       <defs>
         <clipPath id="dsPlaneClip">
           <rect x="16" y="8" width="196" height="186" />
@@ -474,7 +479,7 @@ function XorPlane() {
       <line x1={px(0)} y1="14" x2={px(0)} y2="185" className="ds-axis" />
       {pts.map(([a, b, y]) => (
         <g key={`${a}${b}`}>
-          <circle cx={px(a)} cy={py(b)} r="8" className={y ? 'ds-pt-hi' : 'ds-pt-lo'} />
+          <circle cx={px(a)} cy={py(b)} r="8" className={y ? 'ds-pt-hi' : 'ds-pt-lo'} style={{ '--i': a * 2 + b } as React.CSSProperties} />
           <text x={px(a) + 16} y={py(b) + (b ? -10 : 22)} textAnchor="middle" className="ds-ax">
             {a}
             {b}
@@ -493,24 +498,28 @@ type Kind = 'Neuron' | 'Network' | 'REF' | 'Stateful' | 'Arithmetic' | 'Circuit'
 
 // Human copy for the circuits taped out by the launch script, keyed by onchain id. I/O, gate counts
 // and the ids themselves are read from chain (each row is matched to the circuit with that id).
-const CATALOG: { part: string; id: number; name: string; kind: Kind; note: string }[] = [
-  { part: 'CRB-N2A', id: 1, name: 'AND neuron', kind: 'Neuron', note: 'Weights +1, +1, fires at 2.' },
-  { part: 'CRB-N2O', id: 2, name: 'OR neuron', kind: 'Neuron', note: 'Weights +1, +1, fires at 1.' },
-  { part: 'CRB-N2I', id: 3, name: 'Inhibitory neuron', kind: 'Neuron', note: 'Weights −1, −1, threshold −1. A single gate.' },
-  { part: 'CRB-X2', id: 4, name: 'XOR network', kind: 'Network', note: 'The two-layer network, flattened.' },
-  { part: 'CRB-X2R', id: 5, name: 'XOR network (REF)', kind: 'REF', note: 'Same truth table, built from three taped-out neurons.' },
-  { part: 'CRB-M3', id: 6, name: 'Majority-3', kind: 'Neuron', note: 'Votes yes when at least two of three inputs do.' },
-  { part: 'CRB-M5', id: 7, name: 'Majority-5', kind: 'Neuron', note: 'Five-voter consensus neuron.' },
-  { part: 'CRB-T5', id: 8, name: 'Go/No-Go neuron', kind: 'Neuron', note: 'Three excitatory and two inhibitory inputs, threshold 2.' },
-  { part: 'CRB-L9', id: 11, name: 'Line detector', kind: 'Network', note: 'Horizontal, vertical and diagonal lines on a 3×3 grid.' },
-  { part: 'CRB-L9R', id: 12, name: 'Line detector (REF)', kind: 'REF', note: 'Eight line cells and three pooling neurons, all reused.' },
-  { part: 'CRB-A2', id: 13, name: '2-bit adder', kind: 'Arithmetic', note: 'Ripple adder, the building block for counting neurons.' },
-  { part: 'CRB-S2L', id: 14, name: 'Integrate-and-fire', kind: 'Stateful', note: 'Fires on every third spike. Runs with step().' },
+// name / note are i18n keys (l.c<id>.name / l.c<id>.note).
+const CATALOG: { part: string; id: number; name: Key; kind: Kind; note: Key }[] = [
+  { part: 'CRB-N2A', id: 1, name: 'l.c1.name', kind: 'Neuron', note: 'l.c1.note' },
+  { part: 'CRB-N2O', id: 2, name: 'l.c2.name', kind: 'Neuron', note: 'l.c2.note' },
+  { part: 'CRB-N2I', id: 3, name: 'l.c3.name', kind: 'Neuron', note: 'l.c3.note' },
+  { part: 'CRB-X2', id: 4, name: 'l.c4.name', kind: 'Network', note: 'l.c4.note' },
+  { part: 'CRB-X2R', id: 5, name: 'l.c5.name', kind: 'REF', note: 'l.c5.note' },
+  { part: 'CRB-M3', id: 6, name: 'l.c6.name', kind: 'Neuron', note: 'l.c6.note' },
+  { part: 'CRB-M5', id: 7, name: 'l.c7.name', kind: 'Neuron', note: 'l.c7.note' },
+  { part: 'CRB-T5', id: 8, name: 'l.c8.name', kind: 'Neuron', note: 'l.c8.note' },
+  { part: 'CRB-L9', id: 11, name: 'l.c11.name', kind: 'Network', note: 'l.c11.note' },
+  { part: 'CRB-L9R', id: 12, name: 'l.c12.name', kind: 'REF', note: 'l.c12.note' },
+  { part: 'CRB-A2', id: 13, name: 'l.c13.name', kind: 'Arithmetic', note: 'l.c13.note' },
+  { part: 'CRB-S2L', id: 14, name: 'l.c14.name', kind: 'Stateful', note: 'l.c14.note' },
 ]
 /** Launch-script helpers (the line cell and any-of-3 pooling neuron CRB-L9R REFs), described in the note. */
 const HELPER_IDS = [9, 10]
 const CATALOG_IDS = [...CATALOG.map((c) => c.id), ...HELPER_IDS]
-const nameOf = (id: number) => CATALOG.find((c) => c.id === id)?.name ?? `Circuit #${id}`
+const nameOf = (t: T, id: number) => {
+  const k = CATALOG.find((c) => c.id === id)?.name
+  return k ? t(k) : t('l.cat.circuitN', { id })
+}
 
 interface Row {
   key: string
@@ -522,20 +531,20 @@ interface Row {
   c?: LiveCircuit
 }
 
-function catalogRows(circuits: LiveCircuit[] | undefined): Row[] {
-  if (!circuits) return CATALOG.map((c) => ({ key: c.part, part: c.part, name: c.name, kind: c.kind, note: c.note }))
+function catalogRows(circuits: LiveCircuit[] | undefined, t: T, ct: ReturnType<typeof useCircuitText>): Row[] {
+  if (!circuits) return CATALOG.map((c) => ({ key: c.part, part: c.part, name: t(c.name), kind: c.kind, note: t(c.note) }))
   return circuits
     .filter((c) => !HELPER_IDS.includes(Number(c.id)))
     .map((c): Row => {
       const id = Number(c.id)
       const copy = CATALOG.find((x) => x.id === id)
-      if (copy) return { key: copy.part, part: copy.part, name: copy.name, kind: copy.kind, note: copy.note, id, c }
+      if (copy) return { key: copy.part, part: copy.part, name: t(copy.name), kind: copy.kind, note: t(copy.note), id, c }
       return {
         key: `#${id}`,
         part: '-',
-        name: c.label || `Circuit #${id}`,
+        name: c.label ? ct.name(c.label) : t('l.cat.circuitN', { id }),
         kind: c.nState ? 'Stateful' : c.counts.ref ? 'REF' : 'Circuit',
-        note: c.labelDescription ?? `Taped out by ${short(c.owner)}.`,
+        note: c.labelDescription ? ct.description(c.labelDescription) : t('l.cat.tapedBy', { addr: short(c.owner) }),
         id,
         c,
       }
@@ -544,43 +553,43 @@ function catalogRows(circuits: LiveCircuit[] | undefined): Row[] {
 
 function Catalog({ live }: { live: Live }) {
   const { circuits, byId } = live
-  const rows = catalogRows(circuits)
+  const { t, rich } = useI18n()
+  const ct = useCircuitText()
+  const rows = catalogRows(circuits, t, ct)
   const lineRef = byId(LINE_REF)
   const helpers = lineRef ? [...new Set(lineRef.refs.map((r) => r.id))].filter((id) => HELPER_IDS.includes(id)) : HELPER_IDS
   return (
     <section className="ds-section">
-      <Sec id="catalog" n="03" label="Ordering information" title={<>Neurons you can run, <em>own and reuse.</em></>}>
-        Every circuit is compiled to a TapeOut netlist and checked against its reference model on every possible input.
-        Gate counts are exact and read from each circuit’s onchain netlist: a circuit costs exactly that many
-        transistors to tape out.
+      <Sec id="catalog" n="03" label={t('l.cat.label')} title={rich('l.cat.title')}>
+        {t('l.cat.lede')}
       </Sec>
-      <div className="ds-table-wrap">
+      <div className="ds-table-wrap" data-rv="rows">
         <table className="ds-table ds-catalog">
           <thead>
             <tr>
-              <th>Part</th>
-              <th>Circuit</th>
-              <th>Type</th>
-              <th>I/O</th>
-              <th className="r">Gates</th>
-              <th className="ds-hide-sm">Description</th>
-              <th className="r">Onchain</th>
+              <th>{t('l.cat.th.part')}</th>
+              <th>{t('l.cat.th.circuit')}</th>
+              <th>{t('l.cat.th.type')}</th>
+              <th>{t('l.cat.th.io')}</th>
+              <th className="r">{t('l.cat.th.gates')}</th>
+              <th className="ds-hide-sm">{t('l.cat.th.desc')}</th>
+              <th className="r">{t('l.cat.th.onchain')}</th>
             </tr>
           </thead>
           <tbody>
-            {rows.map((r) => (
-              <tr key={r.key}>
+            {rows.map((r, i) => (
+              <tr key={r.key} style={{ '--i': i } as React.CSSProperties}>
                 <td className="ds-part">{r.part}</td>
                 <td className="ds-strong">{r.name}</td>
                 <td>
-                  <span className={`ds-tag ds-tag-${r.kind.toLowerCase()}`}>{r.kind}</span>
+                  <span className={`ds-tag ds-tag-${r.kind.toLowerCase()}`}>{t(`l.kind.${r.kind}`)}</span>
                 </td>
                 <td className="ds-mono">{r.c ? `${r.c.nIn} → ${r.c.nOut}` : '…'}</td>
                 <td className="r ds-mono">{r.c ? gates(r.c.counts) : '…'}</td>
                 <td className="ds-dim-t ds-hide-sm">{r.note}</td>
                 <td className="r">
                   {r.id !== undefined ? (
-                    <a className="ds-id" href={playground(r.id)} title={`Run circuit #${r.id} onchain`}>
+                    <a className="ds-id" href={playground(r.id)} title={t('l.cat.run', { id: r.id })}>
                       #{r.id} ↗
                     </a>
                   ) : (
@@ -595,20 +604,12 @@ function Catalog({ live }: { live: Live }) {
       <p className="ds-note">
         {circuits ? (
           <>
-            <span className="ds-live" /> I/O and gates read live from {circuits.length} circuits on X Layer (
-            <code>circuitInfo</code> + decoded <code>netlist</code>).{' '}
+            <span className="ds-live" /> {rich('l.cat.live', { n: circuits.length })}{' '}
           </>
         ) : (
-          'Reading circuits from X Layer… '
+          t('l.cat.reading') + ' '
         )}
-        REF reuses a circuit already taped out - on Cerebr or on any other TapeOut processor - without burning more
-        transistors. The tape-out fee still applies to each new circuit. Helper circuits{' '}
-        {helpers.map((id, i) => (
-          <span key={id}>
-            {i ? ' and ' : ''}#{id}
-          </span>
-        ))}{' '}
-        are the line cell and any-of-3 pooling neuron used by CRB-L9R.
+        {t('l.cat.note', { ids: helpers.map((id) => `#${id}`).join(t('common.and')) })}
       </p>
     </section>
   )
@@ -618,31 +619,33 @@ function Stateful({ live }: { live: Live }) {
   const { timing, byId } = live
   const c = byId(SPIKING)
   const n = SPIKES.length
+  const { t, rich } = useI18n()
   return (
     <section className="ds-section">
-      <Sec n="04" label="Application note · memory" title={<>Neurons that <em>remember.</em></>}>
-        LATCH transistors hold state between calls, so a circuit can integrate over time. CRB-S2L counts input spikes in
-        {c ? ` ${c.counts.latch} latches` : ' latches'} and fires on every third one - a spiking neuron in{' '}
-        {L(c && gates(c.counts).replace(' + ', ' and '))}, stepped onchain with <code>step()</code>.
+      <Sec n="04" label={t('l.mem.label')} title={rich('l.mem.title')}>
+        {rich('l.mem.lede', {
+          latches: c ? t('l.mem.latchesN', { n: c.counts.latch }) : t('l.mem.latches'),
+          gates: L(c && gates(c.counts).replace(' + ', t('common.and'))),
+        })}
       </Sec>
-      <figure className="ds-fig ds-fig-timing">
+      <figure className="ds-fig ds-fig-timing" data-rv="scope">
         <TimingDiagram spikes={SPIKES} counts={timing?.counts} fires={timing?.fires} />
         <figcaption>
-          Fig. 4 - CRB-S2L timing, computed from #{SPIKING}’s onchain netlist with the SDK simulator; every tick then
-          checked with <code>step()</code> on X Layer. COUNT is held in {c ? c.counts.latch : '…'} LATCHes; FIRE goes high
-          on every third spike.{' '}
+          {rich('l.mem.fig4', { id: SPIKING, n: c ? c.counts.latch : '…' })}{' '}
           {timing?.verified !== undefined ? (
             timing.mismatch === undefined ? (
               <>
-                <span className="ds-live" /> Verified onchain: {timing.verified}/{n} ticks.
+                <span className="ds-verified">
+                  <span className="ds-live" /> {t('l.mem.verified', { v: timing.verified, n })}
+                </span>
               </>
             ) : (
-              `step() disagrees at tick ${timing.mismatch + 1} (${timing.verified}/${n} ticks match).`
+              t('l.mem.mismatch', { t: timing.mismatch + 1, v: timing.verified, n })
             )
           ) : timing ? (
-            'Checking ticks with step()…'
+            t('l.mem.checking')
           ) : (
-            'Reading netlist…'
+            t('l.mem.reading')
           )}
         </figcaption>
       </figure>
@@ -655,22 +658,22 @@ function Stateful({ live }: { live: Live }) {
 function IssuanceSection({ live }: { live: Live }) {
   const { cpu, fees, byId, misc } = live
   const holdings = useCreatorHoldings(cpu)
+  const { t, rich } = useI18n()
   const ratings: { k: string; v: React.ReactNode; u: string }[] = [
-    { k: 'Transistor supply cap', v: L(cpu?.supplyCap, int), u: 'NAND + LATCH share it' },
-    { k: 'Unit price', v: L(cpu?.mintPrice, okb), u: 'OKB per transistor' },
-    { k: 'Mint fee', v: L(fees?.protocolFee, okb), u: 'OKB per mint call → TapeOut' },
-    { k: 'Tape-out fee', v: L(fees?.tapeoutFee, okb), u: 'OKB per circuit → TapeOut' },
+    { k: t('l.iss.cap'), v: <CountUp value={cpu?.supplyCap} />, u: t('l.iss.capU') },
+    { k: t('l.iss.price'), v: L(cpu?.mintPrice, okb), u: t('l.iss.priceU') },
+    { k: t('l.iss.mintFee'), v: L(fees?.protocolFee, okb), u: t('l.iss.mintFeeU') },
+    { k: t('l.iss.tapeFee'), v: L(fees?.tapeoutFee, okb), u: t('l.iss.tapeFeeU') },
   ]
   const gas = misc && Number(formatGwei(misc.gasPrice)).toLocaleString('en-US', { maximumSignificantDigits: 2 })
   return (
     <section className="ds-section">
-      <Sec id="issuance" n="05" label="Absolute ratings · issuance" title={<>One asset: <em>the transistor.</em></>}>
-        Cerebr has no token of its own. The asset is the Cerebr processor’s transistor, issued through the TapeOut factory
-        with a supply cap and unit price that are public from the moment it was deployed.
+      <Sec id="issuance" n="05" label={t('l.iss.label')} title={rich('l.iss.title')}>
+        {t('l.iss.lede')}
       </Sec>
-      <div className="ds-ratings">
-        {ratings.map((r) => (
-          <div key={r.k} className="ds-rating">
+      <div className="ds-ratings" data-rv="stagger">
+        {ratings.map((r, i) => (
+          <div key={i} className="ds-rating" style={{ '--i': i } as React.CSSProperties}>
             <div className="ds-rating-k">{r.k}</div>
             <div className="ds-rating-v">{r.v}</div>
             <div className="ds-rating-u">{r.u}</div>
@@ -678,50 +681,42 @@ function IssuanceSection({ live }: { live: Live }) {
         ))}
       </div>
       <div className="ds-cols">
-        <ul className="ds-list">
+        <ul className="ds-list" data-rv="stagger">
+          <li>{rich('l.iss.li1')}</li>
+          <li>{rich('l.iss.li2')}</li>
+          <li>{rich('l.iss.li3')}</li>
           <li>
-            <b>Fixed supply, fixed price.</b> Set once at <code>createCPU</code>; Cerebr cannot change them (TapeOut’s
-            contracts that enforce them are upgradeable by TapeOut). No curve, no presale, no team allocation.
-          </li>
-          <li>
-            <b>Burned by use.</b> Each NAND gate in a taped-out circuit burns one NAND transistor, each LATCH one LATCH.
-            Burns don’t free room under the cap, so transistors only get scarcer.
-          </li>
-          <li>
-            <b>Where the OKB goes.</b> The unit price goes to the processor’s creator; the mint and tape-out fees go to
-            TapeOut.
-          </li>
-          <li>
-            <b>No fake activity.</b> Showcase circuits were taped out once each from the deployment wallet
-            {cpu ? (
-              <>
-                {' '}
-                (
-                <a href={`${EXPLORER}/address/${cpu.creator}`} target="_blank" rel="noreferrer">
-                  {short(cpu.creator)}
-                </a>
-                )
-              </>
-            ) : null}
-            , which also holds {L(holdings?.nand, int)} NAND and {L(holdings?.latch, int)} LATCH minted at the public
-            price (read live) - all disclosed. We never trade with ourselves.
+            {rich('l.iss.li4', {
+              creator: cpu ? (
+                <>
+                  {' '}
+                  (
+                  <a href={`${EXPLORER}/address/${cpu.creator}`} target="_blank" rel="noreferrer">
+                    {short(cpu.creator)}
+                  </a>
+                  )
+                </>
+              ) : null,
+              nand: L(holdings?.nand, int),
+              latch: L(holdings?.latch, int),
+            })}
           </li>
         </ul>
-        <div className="ds-table-wrap">
+        <div className="ds-table-wrap" data-rv="rows">
           <table className="ds-table">
             <thead>
               <tr>
-                <th>Circuit</th>
-                <th className="r">Transistors</th>
-                <th className="r">Fee (OKB)</th>
+                <th>{t('l.iss.th.circuit')}</th>
+                <th className="r">{t('l.iss.th.transistors')}</th>
+                <th className="r">{t('l.iss.th.fee')}</th>
               </tr>
             </thead>
             <tbody>
-              {COST_IDS.map((id) => {
+              {COST_IDS.map((id, i) => {
                 const c = byId(id)
                 return (
-                  <tr key={id}>
-                    <td>{nameOf(id)}</td>
+                  <tr key={id} style={{ '--i': i } as React.CSSProperties}>
+                    <td>{nameOf(t, id)}</td>
                     <td className="r ds-mono">{L(c && burns(c.counts))}</td>
                     <td className="r ds-mono">{L(fees?.tapeoutFee, okb)}</td>
                   </tr>
@@ -729,11 +724,7 @@ function IssuanceSection({ live }: { live: Live }) {
               })}
             </tbody>
           </table>
-          <p className="ds-note">
-            Plus the transistors at the unit price, {L(fees?.protocolFee, okb)} OKB per mint call and gas (~{L(gas)} gwei
-            on X Layer now). Transistor counts come from each circuit’s onchain netlist; fees are TapeOut’s, can change
-            and are read live here and by the dApp before every quote.
-          </p>
+          <p className="ds-note">{rich('l.iss.note', { fee: L(fees?.protocolFee, okb), gas: L(gas) })}</p>
         </div>
       </div>
     </section>
@@ -742,35 +733,27 @@ function IssuanceSection({ live }: { live: Live }) {
 
 function BrainWallets({ live }: { live: Live }) {
   const { fees, misc } = live
+  const { t, rich } = useI18n()
   return (
     <section className="ds-section">
-      <Sec id="wallets" n="06" label="Peripherals · brain wallets" title={<>Every neuron can <em>hold a wallet.</em></>}>
-        Each taped-out circuit can open TapeOut’s native ERC-6551 account. A neuron can then hold OKB, tokens and NFTs
-        and call contracts. Whoever owns the circuit NFT controls its wallet.
+      <Sec id="wallets" n="06" label={t('l.wal.label')} title={rich('l.wal.title')}>
+        {t('l.wal.lede')}
       </Sec>
       <div className="ds-cols">
-        <figure className="ds-fig">
+        <figure className="ds-fig" data-rv="wallet">
           <WalletDiagram misc={misc} />
           <figcaption>
-            Fig. 5 - Circuit NFT and its native account. Live example: circuit #{String(WALLET_ID)}
-            {misc ? `, wallet ${misc.wallet.opened ? 'opened' : 'not opened yet'} (read live).` : '.'}
+            {t('l.wal.fig5', {
+              id: String(WALLET_ID),
+              status: misc ? (misc.wallet.opened ? t('l.wal.opened') : t('l.wal.notOpened')) : t('l.wal.end'),
+            })}
           </figcaption>
         </figure>
-        <ul className="ds-list">
-          <li>
-            <b>Address known up front.</b> <code>accountOf(circuit)</code> returns the wallet address before it exists,
-            so a neuron can receive funds straight away.
-          </li>
-          <li>
-            <b>Opened on demand.</b> <code>open()</code> deploys the account for {L(fees?.openFee, okb)} OKB, paid to TapeOut.
-          </li>
-          <li>
-            <b>Sold with the neuron.</b> Control follows the circuit NFT. Transfer the circuit and its wallet goes with it.
-          </li>
-          <li>
-            <b>One rule.</b> Never send a circuit into its own wallet: it would own itself and be locked for good. The dApp
-            offers no circuit transfers, so it can’t happen there.
-          </li>
+        <ul className="ds-list" data-rv="stagger">
+          <li>{rich('l.wal.li1')}</li>
+          <li>{rich('l.wal.li2', { fee: L(fees?.openFee, okb) })}</li>
+          <li>{rich('l.wal.li3')}</li>
+          <li>{rich('l.wal.li4')}</li>
         </ul>
       </div>
     </section>
@@ -779,22 +762,23 @@ function BrainWallets({ live }: { live: Live }) {
 
 function WalletDiagram({ misc }: { misc?: Misc }) {
   const id = String(WALLET_ID)
+  const { t } = useI18n()
   return (
-    <svg viewBox="0 0 400 240" className="ds-svg" role="img" aria-label="A Cerebr circuit NFT controlling its TapeOut native account">
+    <svg viewBox="0 0 400 240" className="ds-svg" role="img" aria-label={t('l.wal.aria')}>
       <rect x="120" y="10" width="160" height="44" className="ds-box ds-box-acc" />
-      <text x="134" y="30" className="ds-box-t">CIRCUIT #{id} · XOR</text>
-      <text x="134" y="45" className="ds-box-s">NFT · owned by you</text>
-      <line x1="200" y1="54" x2="200" y2="82" className="ds-edge" strokeDasharray="3 4" />
-      <text x="208" y="72" className="ds-box-s">owner()</text>
+      <text x="134" y="30" className="ds-box-t">{t('l.wal.d.circuit', { id })}</text>
+      <text x="134" y="45" className="ds-box-s">{t('l.wal.d.owned')}</text>
+      <line x1="200" y1="54" x2="200" y2="82" className="ds-edge ds-owner-link" strokeDasharray="3 4" />
+      <text x="208" y="72" className="ds-box-s ds-owner-label">owner()</text>
       <rect x="20" y="82" width="360" height="148" className="ds-box ds-box-dash" />
-      <text x="36" y="104" className="ds-box-t">NATIVE ACCOUNT · ERC-6551</text>
+      <text x="36" y="104" className="ds-box-t">{t('l.wal.d.account')}</text>
       <rect x="36" y="118" width="150" height="44" className="ds-box" />
-      <text x="50" y="137" className="ds-box-t">OKB · TOKENS</text>
-      <text x="50" y="152" className="ds-box-s">held by the neuron</text>
+      <text x="50" y="137" className="ds-box-t">{t('l.wal.d.tokens')}</text>
+      <text x="50" y="152" className="ds-box-s">{t('l.wal.d.held')}</text>
       <rect x="214" y="118" width="150" height="44" className="ds-box" />
       <text x="228" y="137" className="ds-box-t">execute()</text>
-      <text x="228" y="152" className="ds-box-s">calls any contract</text>
-      <text x="36" y="190" className="ds-box-s">owner() = ownerOf(#{id}), at all times</text>
+      <text x="228" y="152" className="ds-box-s">{t('l.wal.d.calls')}</text>
+      <text x="36" y="190" className="ds-box-s">{t('l.wal.d.always', { id })}</text>
       <text x="36" y="208" className="ds-box-s">
         opener.accountOf(circuits, {id}) → {misc ? short(misc.wallet.account) : '…'}
       </text>
@@ -805,35 +789,24 @@ function WalletDiagram({ misc }: { misc?: Misc }) {
 /** Circuits in the issuance cost table (copy keys, matched onchain by id). */
 const COST_IDS = [3, 4, 5, 11, 12]
 
-const USES = [
-  {
-    t: 'Onchain game AI',
-    b: 'Enemy logic, bot players and referees that run as real circuits. Every move can be replayed and checked by anyone with a view call.',
-  },
-  {
-    t: 'Verifiable inference for agents',
-    b: 'DeAI agents call a small, fixed classifier onchain and can check exactly which circuit made the decision. No oracle, no server.',
-  },
-  {
-    t: 'Composable neurons',
-    b: 'Our neurons are public building blocks. Any team on TapeOut can REF them into a bigger network without burning a transistor.',
-  },
-  {
-    t: 'Teaching how brains compute',
-    b: 'From threshold units to spiking neurons, each idea is a circuit you can open, read gate by gate and run live.',
-  },
+const USES: { t: Key; b: Key }[] = [
+  { t: 'l.app.1.t', b: 'l.app.1.b' },
+  { t: 'l.app.2.t', b: 'l.app.2.b' },
+  { t: 'l.app.3.t', b: 'l.app.3.b' },
+  { t: 'l.app.4.t', b: 'l.app.4.b' },
 ]
 
 function Applications() {
+  const { t, rich } = useI18n()
   return (
     <section className="ds-section">
-      <Sec n="07" label="Typical applications" title={<>Small, honest intelligence <em>that lives onchain.</em></>} />
-      <ol className="ds-apps">
+      <Sec n="07" label={t('l.app.label')} title={rich('l.app.title')} />
+      <ol className="ds-apps" data-rv="alt">
         {USES.map((u, i) => (
-          <li key={u.t}>
+          <li key={u.t} style={{ '--i': i } as React.CSSProperties}>
             <span className="ds-apps-n">0{i + 1}</span>
-            <h3>{u.t}</h3>
-            <p>{u.b}</p>
+            <h3>{t(u.t)}</h3>
+            <p>{t(u.b)}</p>
           </li>
         ))}
       </ol>
@@ -841,26 +814,27 @@ function Applications() {
   )
 }
 
-const SDK_SNIPPET = `import { getCircuit, encodeHex, tapeout } from '@cerebr/sdk'
+const SDK_SNIPPET = (t: T) => `import { getCircuit, encodeHex, tapeout } from '@cerebr/sdk'
 
-// compile the two-layer XOR network to a NAND netlist
+${t('l.dev.c1')}
 const nl = getCircuit('xor-net').build({ mode: 'direct' })
 
-// tape it out on the Cerebr processor (burns 6 NAND)
+${t('l.dev.c2')}
 const { circuitId } = await tapeout.tapeout(wallet, client, {
   circuits: CEREBR, netlist: encodeHex(nl), nIn: 2, nOut: 1,
 })
 
-// run it onchain, for free: x0 = 1, x1 = 0
+${t('l.dev.c3')}
 await tapeout.evalCircuit(client, {
   circuits: CEREBR, id: circuitId, inputs: [1, 0],
 }) // → [1]`
 
 function Builders() {
-  const lines = SDK_SNIPPET.split('\n')
+  const { t, rich } = useI18n()
+  const lines = SDK_SNIPPET(t).split('\n')
   return (
     <section className="ds-section">
-      <Sec n="08" label="Development tools" title={<>A compiler, an SDK <em>and an onchain renderer.</em></>} />
+      <Sec n="08" label={t('l.dev.label')} title={rich('l.dev.title')} />
       <div className="ds-cols">
         <div className="ds-code">
           <div className="ds-code-bar">
@@ -876,23 +850,11 @@ function Builders() {
             ))}
           </pre>
         </div>
-        <ul className="ds-list">
-          <li>
-            <b>Neural compiler.</b> Threshold neurons, majority votes, multi-layer networks and spiking neurons compile to
-            TapeOut netlists. A built-in simulator matches TapeOut’s own, byte for byte.
-          </li>
-          <li>
-            <b>TapeOut SDK.</b> Typed viem helpers for every step - create a CPU, mint, tape out, eval, step and open
-            accounts - with fee quotes read live from the chain.
-          </li>
-          <li>
-            <b>CerebrScope.</b> An onchain lens that draws each circuit as an SVG die shot from its actual gates and
-            serves its metadata. TapeOut circuits return an empty <code>tokenURI</code> today; Scope fills that gap.
-          </li>
-          <li>
-            <b>Verified twice.</b> Every TapeOut call was checked on a mainnet fork, then on mainnet itself, where every
-            catalog circuit matched the simulator on every input. This page re-checks XOR and the spiking neuron live.
-          </li>
+        <ul className="ds-list" data-rv="stagger">
+          <li>{rich('l.dev.li1')}</li>
+          <li>{rich('l.dev.li2')}</li>
+          <li>{rich('l.dev.li3')}</li>
+          <li>{rich('l.dev.li4')}</li>
         </ul>
       </div>
     </section>
@@ -901,29 +863,30 @@ function Builders() {
 
 function Security({ live }: { live: Live }) {
   const { fees } = live
+  const { t, rich } = useI18n()
   return (
     <section className="ds-section">
-      <Sec id="security" n="09" label="Reliability" title={<>What we control, <em>and what we don’t.</em></>}>
-        Cerebr adds no custody and no token of its own. Here is exactly where your OKB and your trust go.
+      <Sec id="security" n="09" label={t('l.sec.label')} title={rich('l.sec.title')}>
+        {t('l.sec.lede')}
       </Sec>
-      <div className="ds-cols ds-cols-even">
+      <div className="ds-cols ds-cols-even" data-rv="alt">
         <div className="ds-panel">
-          <div className="ds-panel-h">Guaranteed by design</div>
+          <div className="ds-panel-h">{t('l.sec.good')}</div>
           <ul className="ds-checks">
-            <li>Cerebr holds no user funds. Mints, tape-outs and wallets are direct calls to TapeOut’s contracts.</li>
-            <li>CerebrScope holds no funds and has no admin; only a circuit’s owner can label it. Source verified on Sourcify.</li>
-            <li>Supply cap and unit price were set once at deployment and are read live from chain here. Cerebr cannot change them.</li>
-            <li>The dApp reads fees live and sends exact amounts, so no OKB is stranded by overpaying.</li>
-            <li>Every catalog circuit is checked against its reference model on all inputs before and after tape-out.</li>
+            <li>{t('l.sec.g1')}</li>
+            <li>{t('l.sec.g2')}</li>
+            <li>{t('l.sec.g3')}</li>
+            <li>{t('l.sec.g4')}</li>
+            <li>{t('l.sec.g5')}</li>
           </ul>
         </div>
         <div className="ds-panel ds-panel-warn">
-          <div className="ds-panel-h">Disclosed risks</div>
+          <div className="ds-panel-h">{t('l.sec.risks')}</div>
           <ul className="ds-warns">
-            <li>TapeOut’s X Layer contracts are in a test phase, upgradeable and unaudited. Their owner can change code and fees.</li>
-            <li>Opening a brain wallet costs {L(fees?.openFee, okb)} OKB (read live), paid to TapeOut, not to Cerebr.</li>
-            <li>Circuits run as view calls with gas limits, so onchain networks stay small: tens to hundreds of gates.</li>
-            <li>Our compiler, CerebrScope, launch script and dApp had an internal review (AUDIT.md), not a third-party audit.</li>
+            <li>{t('l.sec.r1')}</li>
+            <li>{rich('l.sec.r2', { fee: L(fees?.openFee, okb) })}</li>
+            <li>{t('l.sec.r3')}</li>
+            <li>{t('l.sec.r4')}</li>
           </ul>
         </div>
       </div>
@@ -931,43 +894,29 @@ function Security({ live }: { live: Live }) {
   )
 }
 
-const FAQ = [
-  [
-    'What is TapeOut?',
-    'A protocol on X Layer where anyone can create a processor. Each processor has transistors you mint and circuits you tape out by burning them. Cerebr is one of those processors, specialised in neural circuits.',
-  ],
-  [
-    'Is there a Cerebr token?',
-    'No. The asset is the Cerebr processor’s transistor, issued through the TapeOut factory. Circuits are NFTs on the same processor.',
-  ],
-  [
-    'Are these real neural networks?',
-    'They are binary neural networks: neurons with integer weights and a threshold, outputting 0 or 1. Small, but real, and every one runs gate by gate onchain.',
-  ],
-  [
-    'Does running a circuit cost anything?',
-    'No. eval and step are view functions, so you can call them for free from any wallet, script or contract read.',
-  ],
-  [
-    'Can I use Cerebr neurons in my own circuit?',
-    'Yes. Add a REF to the circuit’s id in your netlist. It burns no transistors and pays no royalty; you only pay the normal tape-out fee for your own circuit.',
-  ],
-  ['What do I need to start?', 'An injected wallet such as OKX Wallet and a little OKB on X Layer for transistors, fees and gas.'],
-] as const
+const FAQ: [Key, Key][] = [
+  ['l.faq.1.q', 'l.faq.1.a'],
+  ['l.faq.2.q', 'l.faq.2.a'],
+  ['l.faq.3.q', 'l.faq.3.a'],
+  ['l.faq.4.q', 'l.faq.4.a'],
+  ['l.faq.5.q', 'l.faq.5.a'],
+  ['l.faq.6.q', 'l.faq.6.a'],
+]
 
 function Faq() {
+  const { t, rich } = useI18n()
   return (
     <section className="ds-section">
-      <Sec id="faq" n="10" label="Frequently asked" title={<>Questions, <em>answered.</em></>} />
-      <div className="ds-faq">
+      <Sec id="faq" n="10" label={t('l.faq.label')} title={rich('l.faq.title')} />
+      <div className="ds-faq" data-rv="stagger">
         {FAQ.map(([q, a], i) => (
-          <details key={q} className="ds-qa">
+          <details key={q} className="ds-qa" style={{ '--i': i } as React.CSSProperties}>
             <summary>
               <span className="ds-qa-n">Q{i + 1}</span>
-              <span className="ds-qa-q">{q}</span>
+              <span className="ds-qa-q">{t(q)}</span>
               <span className="ds-qa-x" aria-hidden />
             </summary>
-            <p>{a}</p>
+            <p>{t(a)}</p>
           </details>
         ))}
       </div>
@@ -976,53 +925,20 @@ function Faq() {
 }
 
 function FinalCta() {
+  const { t, rich } = useI18n()
   return (
     <section className="ds-final">
       <div className="ds-final-copy">
         <span className="ds-sec-n">§11</span>
-        <h2 className="ds-final-h">
-          Build a neuron. Tape it out.
-          <br />
-          <em>Watch it think.</em>
-        </h2>
-        <p className="ds-lede">Mint transistors, compile a circuit, tape it out and test it live - all from the dApp.</p>
+        <h2 className="ds-final-h">{rich('l.final.title')}</h2>
+        <p className="ds-lede">{t('l.final.lede')}</p>
       </div>
       <div className="ds-final-cta">
         <Launch size="lg" />
         <a className="ds-btn ds-btn-line ds-btn-lg" href={REPO_HREF} target="_blank" rel="noreferrer">
-          Read the source
+          {t('l.final.source')}
         </a>
       </div>
     </section>
-  )
-}
-
-function Footer() {
-  return (
-    <footer className="ds-footer">
-      <div className="ds-footer-top">
-        <div className="ds-footer-brand">
-          <a className="ds-brand" href="/">
-            <Logo size={22} />
-            <span className="ds-brand-name">Cerebr</span>
-          </a>
-          <BuiltBy />
-        </div>
-        <nav className="ds-footer-links">
-          <a href={APP_HREF}>App</a>
-          <a href={REPO_HREF} target="_blank" rel="noreferrer">
-            GitHub
-          </a>
-          <a href={TAPEOUT_HREF} target="_blank" rel="noreferrer">
-            TapeOut
-          </a>
-          {ISSUANCE.cpu && (
-            <a href={`${EXPLORER}/address/${ISSUANCE.cpu}`} target="_blank" rel="noreferrer">
-              Processor on OKLink
-            </a>
-          )}
-        </nav>
-      </div>
-    </footer>
   )
 }
