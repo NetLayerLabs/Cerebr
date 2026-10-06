@@ -23,7 +23,7 @@ export function ProcessorView() {
         <p className="muted">
           A processor created through the TapeOut factory on X Layer. Its transistors (NAND and LATCH) are the asset: mint
           them, then burn them into neural circuits (threshold neurons, majority votes, the XOR network, a 3×3 line
-          detector) that anyone can run on-chain with <code>eval()</code>.
+          detector) that anyone can run onchain with <code>eval()</code>.
         </p>
       </section>
       <section className="stats">
@@ -128,10 +128,10 @@ function MintPanel({ cpu }: { cpu: CpuState }) {
         ))}
       </div>
       <dl className="quote">
-        <Row k={`${amount?.toString() ?? '—'} × unit price`} v={`${fmt(amount ? amount * cpu.mintPrice : undefined, 6)} OKB`} />
+        <Row k={`${amount?.toString() ?? '-'} × unit price`} v={`${fmt(amount ? amount * cpu.mintPrice : undefined, 6)} OKB`} />
         <Row k="Protocol fee (per call)" v={`${fmt(cpu.protocolFee, 6)} OKB`} />
         <Row k="You pay (msg.value)" v={`${fmt(tx?.value, 6)} OKB`} strong />
-        <Row k="Network gas (est.)" v={gasPrice ? `~${fmt(gas, 3)} OKB` : '—'} />
+        <Row k="Network gas (est.)" v={gasPrice ? `~${fmt(gas, 3)} OKB` : '-'} />
         <Row k="Your balance" v={balances ? `${balances.nand} NAND · ${balances.latch} LATCH` : isConnected ? '…' : 'connect a wallet'} />
       </dl>
       {over && <div className="error small">Only {cpu.remaining.toString()} transistors remain under the cap.</div>}
@@ -186,7 +186,7 @@ function OurCircuits() {
       <div className="card-head">
         <h2>Neural circuit library</h2>
         <span className="small muted">
-          {isLoading ? 'reading the CPU…' : `${onChain.size} of ${CATALOG.length} catalog circuits on chain · ${others.length} other`}
+          {isLoading ? 'reading the CPU…' : `${onChain.size} of ${CATALOG.length} catalog circuits onchain · ${others.length} other`}
         </span>
       </div>
       <div className="lib">

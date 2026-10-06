@@ -8,6 +8,7 @@ import { useTx } from '../hooks/useTx.ts'
 import { href } from '../hooks/useRoute.ts'
 import { TAPEOUT, openTx } from '../lib/cerebr.ts'
 import { fmt, shortAddr } from '../lib/format.ts'
+import { MAX_LABEL_NAME, byteLength, fitLabel, setLabelTx } from '../lib/scope.ts'
 import { DieShot } from '../components/DieShot.tsx'
 import { Addr, Seg } from '../components/ui.tsx'
 
@@ -57,11 +58,18 @@ export function GalleryView() {
 
   return (
     <section className="gallery-wrap">
+      <section className="hero">
+        <h1>
+          Every circuit, <span className="grad">drawn from its gates.</span>
+        </h1>
+        <p className="muted">
+          Each card is a circuit taped out on the processor, with its die shot rendered from the real netlist, its owner and
+          its native TapeOut brain wallet.
+        </p>
+      </section>
       <div className="section-head">
-        <h1 className="h1-sm">Gallery</h1>
-        <span className="small muted">
-          {circuits ? `${circuits.length} circuits on the processor · die shots drawn from each circuit's real netlist` : ''}
-        </span>
+        <h2>Circuits</h2>
+        <span className="small muted">{circuits ? `${circuits.length} on the processor` : ''}</span>
         <Seg value={filter} onChange={setFilter} options={[['all', 'All'], ['mine', 'Mine']]} small />
       </div>
       {isLoading && (
@@ -88,7 +96,7 @@ export function GalleryView() {
 
 function CircuitCard({ c, wallet }: { c: CircuitRow; wallet?: Wallet }) {
   const { address } = useConnection()
-  const { explorerAddr } = useNet()
+  const { explorerAddr, cfg } = useNet()
   const { cpu } = useCpu()
   const { send, busy } = useTx()
   const mine = !!address && c.owner.toLowerCase() === address.toLowerCase()
@@ -152,12 +160,76 @@ function CircuitCard({ c, wallet }: { c: CircuitRow; wallet?: Wallet }) {
             )}
           </div>
         </div>
+        {mine && !c.onchain && cfg?.scope && cpu && <NameOnchain c={c} />}
         <div className="card-actions">
           <a className="btn small" href={href('playground', c.id)}>
-            Run on-chain →
+            Run onchain →
           </a>
         </div>
       </div>
     </article>
+  )
+}
+
+/**
+ * Writes a label for a circuit the connected wallet owns that has none onchain yet
+ * (CerebrScope.setLabel). A recognised catalog circuit gets its catalog name, description and pin
+ * names in one click; anything else asks for a name first.
+ */
+function NameOnchain({ c }: { c: CircuitRow }) {
+  const { cfg } = useNet()
+  const { send, busy } = useTx()
+  const [editing, setEditing] = useState(false)
+  const [name, setName] = useState('')
+  const bytes = byteLength(name.trim())
+  const tooLong = bytes > MAX_LABEL_NAME
+  const write = (label: Parameters<typeof fitLabel>[0]) =>
+    send(`Name #${c.id} onchain`, setLabelTx(cfg!.scope!, cfg!.circuits, c.id, fitLabel(label, c.nIn, c.nOut)))
+
+  if (c.catalog) {
+    return (
+      <div className="name-onchain">
+        <button
+          className="btn small"
+          disabled={!!busy}
+          title={`Stores "${c.catalog.name}", its description and pin names in CerebrScope, readable by any app.`}
+          onClick={() => write(c.catalog!)}
+        >
+          Name onchain: {c.catalog.name}
+        </button>
+      </div>
+    )
+  }
+  if (!editing) {
+    return (
+      <div className="name-onchain">
+        <button className="btn small" disabled={!!busy} onClick={() => setEditing(true)} title="Store a name for this circuit in CerebrScope, readable by any app.">
+          Name onchain
+        </button>
+      </div>
+    )
+  }
+  return (
+    <form
+      className="name-onchain"
+      onSubmit={async (e) => {
+        e.preventDefault()
+        if (!name.trim() || tooLong) return
+        if (await write({ name, inputs: c.label.inputs, outputs: c.label.outputs })) setEditing(false)
+      }}
+    >
+      <div className="name-onchain-row">
+        <input className="input" autoFocus value={name} onChange={(e) => setName(e.target.value)} placeholder={`Name for #${c.id}`} spellCheck={false} />
+        <button className="btn small primary" type="submit" disabled={!!busy || !name.trim() || tooLong}>
+          Save
+        </button>
+        <button className="btn small ghost" type="button" disabled={!!busy} onClick={() => setEditing(false)}>
+          Cancel
+        </button>
+      </div>
+      <span className={`tiny mono ${tooLong ? 'error' : 'muted'}`}>
+        {tooLong ? `${bytes} bytes, the onchain limit is ${MAX_LABEL_NAME}` : `${bytes}/${MAX_LABEL_NAME} bytes`}
+      </span>
+    </form>
   )
 }

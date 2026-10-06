@@ -37,7 +37,7 @@ export function PlaygroundView({ circuitId }: { circuitId?: string }) {
     <>
       <section className="hero">
         <h1>
-          Inference, <span className="grad">on-chain.</span>
+          Inference, <span className="grad">onchain.</span>
         </h1>
         <p className="muted">
           Pick any circuit on the processor, set its inputs and run it with TapeOut's <code>eval()</code> as an{' '}
@@ -186,7 +186,7 @@ function Evaluated({ c, prog, inputs }: { c: CircuitRow; prog?: Program; inputs:
       <Outputs c={c} bits={q.data?.outputs} />
       <div className="compare">
         <div>
-          <div className="tiny muted">On-chain eval() · eth_call</div>
+          <div className="tiny muted">Onchain eval() · eth_call</div>
           {q.error ? (
             <div className="error small">{errorMessage(q.error)}</div>
           ) : (
@@ -201,7 +201,7 @@ function Evaluated({ c, prog, inputs }: { c: CircuitRow; prog?: Program; inputs:
       <dl className="quote">
         <div className="row">
           <dt>Gas used by eval</dt>
-          <dd className="mono">{q.data?.gas !== undefined ? q.data.gas.toLocaleString('en-US') : q.isFetching ? '…' : '—'}</dd>
+          <dd className="mono">{q.data?.gas !== undefined ? q.data.gas.toLocaleString('en-US') : q.isFetching ? '…' : '-'}</dd>
         </div>
         <div className="row">
           <dt>Round trip</dt>
@@ -279,7 +279,7 @@ function Clocked({ c, prog, inputs }: { c: CircuitRow; prog?: Program; inputs: n
       <Pins labels={stateLabels} bits={state} kind="out" />
       <div className="btn-row">
         <button className="btn primary" disabled={busy || !prog} onClick={clock}>
-          {busy ? 'Stepping…' : 'Clock step() on-chain'}
+          {busy ? 'Stepping…' : 'Clock step() onchain'}
         </button>
         <button
           className="btn ghost"
@@ -362,7 +362,7 @@ function Exhaustive({ c, prog }: { c: CircuitRow; prog?: Program }) {
   return (
     <section className="card exhaustive">
       <div className="card-head">
-        <h2>Verify every input on-chain</h2>
+        <h2>Verify every input onchain</h2>
         <button className="btn small" disabled={busy || !prog} onClick={verify}>
           {busy ? 'Evaluating…' : `Run all ${rows} inputs`}
         </button>
@@ -374,7 +374,7 @@ function Exhaustive({ c, prog }: { c: CircuitRow; prog?: Program }) {
       {res && 'error' in res && <div className="error small">{res.error}</div>}
       {res && 'ok' in res && (
         <div className={res.ok === res.rows ? 'ok' : 'error'}>
-          {res.ok === res.rows ? '✓' : '✕'} {res.ok}/{res.rows} on-chain answers match the simulator ({(res.ms / 1000).toFixed(1)} s)
+          {res.ok === res.rows ? '✓' : '✕'} {res.ok}/{res.rows} onchain answers match the simulator ({(res.ms / 1000).toFixed(1)} s)
         </div>
       )}
     </section>

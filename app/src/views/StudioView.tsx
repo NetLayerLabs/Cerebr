@@ -21,7 +21,7 @@ import {
   type Compiled,
   type Design,
 } from '../lib/cerebr.ts'
-import { saveLabel } from '../lib/labels.ts'
+import { MAX_LABEL_NAME, byteLength, fitLabel, setLabelTx, type OnchainLabel } from '../lib/scope.ts'
 import { fmt } from '../lib/format.ts'
 import { DieShot } from '../components/DieShot.tsx'
 import { SequenceTrace, TruthTable } from '../components/TruthTable.tsx'
@@ -165,7 +165,7 @@ function CatalogPicker({ value, onChange, onChain }: { value: string; onChange: 
                 {x.inputs.length}→{x.outputs.length} · {nl.counts.ref ? `${nl.counts.ref} REF` : `${nl.counts.nand} NAND`}
                 {nl.counts.latch ? ` +${nl.counts.latch} LATCH` : ''}
               </span>
-              {id !== undefined && <span className="cat-live tiny">on chain #{id.toString()}</span>}
+              {id !== undefined && <span className="cat-live tiny">onchain #{id.toString()}</span>}
             </button>
           )
         })}
@@ -361,9 +361,11 @@ function MiniNeuron({ name, spec, inputs, onChange }: { name: string; spec: Neur
   )
 }
 
+type Naming = 'pending' | 'done' | 'failed' | 'skipped'
+
 function CompiledPanel({ c, cpu, design, mode }: { c: Compiled; cpu: CpuState; design: Design; mode: OutputMode }) {
-  const { chainId } = useNet()
-  const { index } = useCircuits()
+  const { chainId, cfg } = useNet()
+  const { index, circuits } = useCircuits()
   const { isConnected } = useConnection()
   const { balances } = useBalances()
   const { send, busy } = useTx()
@@ -371,10 +373,21 @@ function CompiledPanel({ c, cpu, design, mode }: { c: Compiled; cpu: CpuState; d
   const qc = useQueryClient()
   const { data: gasPrice } = useGasPrice({ chainId })
   const [progress, setProgress] = useState<{ step: number; of: number; done?: bigint } | undefined>()
+  // The name written onchain (CerebrScope.setLabel) right after the tape-out. Editable before it.
+  const [name, setName] = useState(c.label.name)
+  const [naming, setNaming] = useState<{ state: Naming; label: OnchainLabel } | undefined>()
+  const scope = cfg?.scope
+  const nameBytes = byteLength(name.trim())
+  const nameError = nameBytes > MAX_LABEL_NAME ? `Name is ${nameBytes} bytes, the onchain limit is ${MAX_LABEL_NAME}.` : undefined
   const have = balances ?? { nand: 0n, latch: 0n }
   const plan = planDesign(c, have, cpu)
   const flat = flatGates(c.program)
-  const steps = [...plan.mints.map((m) => `Mint ${m.amount} ${m.label}`), ...plan.tapeouts.map((t) => `Tape out ${t.label}${t.dep ? ' (dependency)' : ''}`)]
+  const steps = [
+    ...plan.mints.map((m) => `Mint ${m.amount} ${m.label}`),
+    ...plan.tapeouts.map((t) => `Tape out ${t.label}${t.dep ? ' (dependency)' : ''}`),
+    ...(scope ? ['Name it onchain'] : []),
+  ]
+  const nameOf = (id: bigint) => circuits?.find((x) => x.id === id)?.label.name
 
   // Every exit refetches balances and the circuit index (awaited), so a retry plans from chain
   // state: no second mint for transistors already bought, no second tapeout of a landed dependency.
@@ -383,8 +396,17 @@ function CompiledPanel({ c, cpu, design, mode }: { c: Compiled; cpu: CpuState; d
     setProgress(undefined)
   }
 
+  /** CerebrScope.setLabel for the circuit just taped out. A rejection keeps the circuit: it can be retried or skipped. */
+  async function nameIt(id: bigint, label: OnchainLabel) {
+    if (!scope) return
+    setNaming({ state: 'pending', label })
+    const r = await send(`Name #${id} onchain`, setLabelTx(scope, cpu.circuits, id, label))
+    setNaming({ state: r ? 'done' : 'failed', label })
+    if (r) setProgress((p) => (p ? { ...p, step: p.of } : p))
+  }
+
   async function run() {
-    if (!index || !balances) return
+    if (!index || !balances || nameError) return
     const idx = new Map(index)
     let step = 0
     setProgress({ step, of: steps.length })
@@ -397,22 +419,21 @@ function CompiledPanel({ c, cpu, design, mode }: { c: Compiled; cpu: CpuState; d
     for (const d of c.deps.filter((x) => x.circuitId === undefined)) {
       const r = await send(`Tape out ${d.label.name}`, tapeoutTx(cpu.circuits, d.hex, d.netlist.nIn, d.netlist.nOut, cpu.tapeoutFee), { refresh: false })
       if (!r) return stop()
-      const id = tapedOutId(r, cpu.circuits)
-      addToIndex(idx, d.netlist, d.hex, id)
-      saveLabel(chainId, cpu.circuits, id, d.label)
+      addToIndex(idx, d.netlist, d.hex, tapedOutId(r, cpu.circuits))
       setProgress({ step: ++step, of: steps.length })
     }
     const final = compileDesign(design, { mode, cpu: cpu.circuits, index: idx })
     if (!final.hex) {
-      push({ kind: 'error', title: 'A dependency is still missing on chain' })
+      push({ kind: 'error', title: 'A dependency is still missing onchain' })
       return stop()
     }
     const r = await send(`Tape out ${final.label.name}`, tapeoutTx(cpu.circuits, final.hex, final.netlist.nIn, final.netlist.nOut, cpu.tapeoutFee), { refresh: false })
     if (!r) return stop()
     const id = tapedOutId(r, cpu.circuits)
-    saveLabel(chainId, cpu.circuits, id, labelFor(design, final.label))
     setProgress({ step: ++step, of: steps.length, done: id })
     await qc.invalidateQueries()
+    const base = labelFor(design, final.label)
+    await nameIt(id, fitLabel({ ...base, name: name.trim() || base.name }, final.netlist.nIn, final.netlist.nOut))
   }
 
   return (
@@ -445,9 +466,9 @@ function CompiledPanel({ c, cpu, design, mode }: { c: Compiled; cpu: CpuState; d
               <div className="tiny muted">REF dependencies</div>
               {c.deps.map((d) => (
                 <div key={d.placeholder} className="dep small">
-                  <span>{d.label.name}</span>
+                  <span>{(d.circuitId !== undefined && nameOf(d.circuitId)) || d.label.name}</span>
                   {d.circuitId !== undefined ? (
-                    <span className="pill on">#{d.circuitId.toString()} on chain</span>
+                    <span className="pill on">#{d.circuitId.toString()} onchain</span>
                   ) : (
                     <span className="pill">tape out first · {d.netlist.counts.nand} NAND</span>
                   )}
@@ -474,27 +495,69 @@ function CompiledPanel({ c, cpu, design, mode }: { c: Compiled; cpu: CpuState; d
         </div>
       )}
       {plan.blocked && <div className="error small">{plan.blocked}</div>}
+      {scope && progress?.done === undefined && (
+        <label className="name-field">
+          <span className="small muted">Name, written onchain after the tape-out</span>
+          <input className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder={c.label.name} disabled={!!progress} spellCheck={false} />
+          <span className={`tiny mono ${nameError ? 'error' : 'muted'}`}>
+            {nameError ?? `${nameBytes}/${MAX_LABEL_NAME} bytes · stored in CerebrScope with the pin names`}
+          </span>
+        </label>
+      )}
       {progress && (
         <ol className="steps small">
-          {steps.map((s, i) => (
-            <li key={s} className={i < progress.step ? 'done' : i === progress.step && !progress.done ? 'active' : ''}>
-              {s}
-            </li>
-          ))}
+          {steps.map((s, i) => {
+            const isNameStep = scope && i === steps.length - 1
+            const skipped = isNameStep && naming?.state === 'skipped'
+            const active = i === progress.step && (progress.done === undefined || (isNameStep && naming?.state !== 'done' && !skipped))
+            return (
+              <li key={s} className={i < progress.step ? 'done' : skipped ? 'skipped' : active ? 'active' : ''}>
+                {s}
+                {skipped ? ' (skipped)' : ''}
+              </li>
+            )
+          })}
         </ol>
       )}
       {progress?.done !== undefined ? (
-        <div className="done-row">
-          <span className="ok">✓ Taped out as circuit #{progress.done.toString()}</span>
-          <a className="btn primary small" href={href('playground', progress.done)}>
-            Run it on-chain →
-          </a>
-        </div>
+        <>
+          <div className="done-row">
+            <span className="ok">✓ Taped out as circuit #{progress.done.toString()}</span>
+            <a className="btn primary small" href={href('playground', progress.done)}>
+              Run it onchain →
+            </a>
+          </div>
+          {naming && <NamingStatus id={progress.done} naming={naming} busy={!!busy} onRetry={() => nameIt(progress.done!, naming.label)} onSkip={() => setNaming({ ...naming, state: 'skipped' })} />}
+        </>
       ) : (
-        <button className="btn primary big" disabled={!!busy || !!plan.blocked || !index || !balances || (!!progress && !progress.done)} onClick={run}>
+        <button className="btn primary big" disabled={!!busy || !!plan.blocked || !!nameError || !index || !balances || (!!progress && !progress.done)} onClick={run}>
           {busy ? busy + '…' : steps.length > 1 ? `Tape out (${steps.length} transactions)` : 'Tape out'}
         </button>
       )}
+    </div>
+  )
+}
+
+function NamingStatus({ id, naming, busy, onRetry, onSkip }: { id: bigint; naming: { state: Naming; label: OnchainLabel }; busy: boolean; onRetry: () => void; onSkip: () => void }) {
+  if (naming.state === 'pending') return <div className="banner info small">Naming #{id.toString()} "{naming.label.name}" onchain: confirm in your wallet…</div>
+  if (naming.state === 'done') return <div className="banner info small ok">✓ Named onchain: "{naming.label.name}". Every view of the app now reads this name from CerebrScope.</div>
+  if (naming.state === 'skipped')
+    return (
+      <div className="banner info small muted">
+        Not named. The circuit is yours either way; you can name it later from the <a href={href('gallery')}>Gallery</a>.
+      </div>
+    )
+  return (
+    <div className="banner info small naming-retry">
+      <span>Circuit #{id.toString()} is taped out but not named onchain yet. The circuit is yours either way.</span>
+      <span className="naming-actions">
+        <button className="btn small primary" disabled={busy} onClick={onRetry}>
+          Name it onchain
+        </button>
+        <button className="btn small ghost" disabled={busy} onClick={onSkip}>
+          Skip
+        </button>
+      </span>
     </div>
   )
 }
