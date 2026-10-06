@@ -4,7 +4,7 @@
 
 Cerebr is a TapeOut processor on X Layer mainnet, plus a compiler that turns neurons into real NAND netlists. We tape those neurons out as circuits on our own processor. Anyone can run them onchain for free with `eval()`, wire them into deeper networks with `REF`, train and tape out their own from the browser, play a game against one, and watch an autonomous agent that uses one as its brain.
 
-[**Live app**](https://usecerebr.vercel.app) · [Processor on OKX Explorer](https://www.okx.com/web3/explorer/xlayer/address/0xB04EB79D1A5EECaabAAfF7B77d7c27578EE693FF) · [Submission](SUBMISSION.md) · [TapeOut integration spec](TAPEOUT.md) · [Agent](AGENT.md) · [Arena](ARENA.md) · [Internal review](AUDIT.md)
+[**Live app: cerebr.xyz**](https://cerebr.xyz) · [Processor on OKX Explorer](https://www.okx.com/web3/explorer/xlayer/address/0xB04EB79D1A5EECaabAAfF7B77d7c27578EE693FF) · [Submission](SUBMISSION.md) · [TapeOut integration spec](TAPEOUT.md) · [Agent](AGENT.md) · [Arena](ARENA.md) · [Internal review](AUDIT.md)
 
 ![Cerebr landing page](media/landing.png)
 
@@ -122,7 +122,7 @@ Hackathon eligibility (processor created through the TapeOut factory, issuance d
 
 ## Product tour
 
-The app at [`/app`](https://usecerebr.vercel.app/app) talks only to X Layer mainnet. Every figure is read live from chain, every write is simulated before it is sent, and fees are read fresh before each quote. The screenshots below show real mainnet data.
+The app at [`cerebr.xyz/app`](https://cerebr.xyz/app) talks only to X Layer mainnet. Every figure is read live from chain, every write is simulated before it is sent, and fees are read fresh before each quote. The screenshots below show real mainnet data.
 
 **Processor**: the processor's live state, its disclosed issuance terms, transistor minting with an exact cost breakdown, the neural circuit library, and the Genesis Drop card.
 
@@ -351,7 +351,7 @@ flowchart LR
 
     subgraph OFF ["Off-chain"]
       SDK["sdk/ (@cerebr/sdk)<br/>compiler · simulator · trainer · TapeOut client"]
-      APP["app/ landing + dApp<br/>(Vercel)"]
+      APP["app/ landing + dApp<br/>(cerebr.xyz, Docker on our VPS)"]
       KEEP["agent/ keeper<br/>(Docker on VPS)"]
     end
     APP --> SDK
@@ -370,6 +370,7 @@ flowchart LR
 | [`agent/`](agent) | The keeper daemon with Docker, docker-compose and a hardened systemd unit. |
 | [`sdk/scripts`](sdk/scripts) | The resumable, idempotent launch runbook, catalog labelling, fork rehearsals for the drop and market, and the arena netlist builder. |
 | [`app/`](app) | The landing page (`/`) and the dApp (`/app`): Vite, React 19, wagmi and viem, using the SDK from source. |
+| [`deploy/`](deploy) | Self-hosting for [cerebr.xyz](https://cerebr.xyz): a two-stage image (build, then nginx with a strict CSP), a loopback-only compose service and the host nginx site with Let's Encrypt HTTPS. |
 
 ## Asset issuance
 
@@ -518,6 +519,7 @@ test/                scope/, arena/, agent/: unit, fuzz and fork tests
 agent/               CerebrAgent keeper daemon (Docker, docker-compose, systemd)
 launch/              config.json (identity and issuance terms), out/ and state (mainnet launch records)
 app/                 landing page and dApp (Vite, React, wagmi, viem)
+deploy/              self-hosting for cerebr.xyz (Dockerfile, nginx, compose, install.sh)
 media/               screenshots used in this README
 ```
 

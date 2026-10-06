@@ -26,18 +26,18 @@ FORK_RPC=http://127.0.0.1:8564 npm run smoke     # createCPU, tape out the catal
 
 `CPU=0x..` reuses an existing CPU (for example the mainnet one on a fork); `CHAIN_ID` must match anvil's `--chain-id`. Anvil dev accounts #0, #1 and #5 carry EIP-7702 delegations on X Layer mainnet, so on a fork they reject ERC-1155 transistors: the smoke test signs with account #2.
 
-**Build and deploy.** `npm run build` (typecheck + Vite) writes `dist/`; host it on any static host (`vercel.json` routes `/app`). After a launch: `npm run sync && npm run build`. See `.env.example` for overrides.
+**Build and deploy.** `npm run build` (typecheck + Vite) writes `dist/`. After a launch: `npm run sync && npm run build`. See `.env.example` for overrides.
 
-**Vercel settings.** Import `NetLayerLabs/Cerebr`, then set:
+**Hosting.** The live site, [cerebr.xyz](https://cerebr.xyz), is self-hosted on our VPS from [`../deploy`](../deploy):
 
-| Setting | Value |
+| Piece | What it does |
 |---|---|
-| Root Directory | `app` |
-| Include files outside the Root Directory | **enabled** (the app builds `../sdk` and `../launch` from source) |
-| Framework preset | Vite |
-| Build command | `npm run build` |
-| Output directory | `dist` |
-| Environment variables | none required (optional `VITE_RPC_196` for a private RPC) |
+| `deploy/Dockerfile` | builds the app in `node:22-alpine`, serves `dist/` from `nginx:alpine` with the `/app` rewrite, immutable caching for hashed assets and a strict CSP |
+| `deploy/docker-compose.yml` | the `cerebr-web` container on `127.0.0.1:8140` only, read-only, capabilities dropped, memory and CPU capped |
+| `deploy/nginx-host.conf` | the host nginx site for `cerebr.xyz`; certbot adds HTTPS and the redirect |
+| `deploy/install.sh` | installs or updates everything, checking `nginx -t` before any reload; `--https` runs certbot |
+
+Any static host works too, as long as `/app` and `/app/*` are rewritten to `/index.html`.
 
 | Script | |
 |---|---|

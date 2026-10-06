@@ -17,7 +17,7 @@ IGNIX X Layer "TapeOut Genesis Transistor" hackathon. Deadline: **2026-10-09 06:
 | CerebrScope | [`0x2640F8E89b2B107919568FFd42dFb46A1866e528`](https://www.okx.com/web3/explorer/xlayer/address/0x2640F8E89b2B107919568FFd42dFb46A1866e528) (deploy tx [0x17d0…9cfd](https://www.okx.com/web3/explorer/xlayer/tx/0x17d01f5dbdc49a9dc88d6fc2f7b347dd55bc903e17fa70cfd2d34ea036359cfd); source verified on [Sourcify](https://repo.sourcify.dev/contracts/full_match/196/0x2640F8E89b2B107919568FFd42dFb46A1866e528/), exact match) |
 | CerebrAgent | [`0x3d736c6419dCa667a351907578b68717Cd6e3340`](https://www.okx.com/web3/explorer/xlayer/address/0x3d736c6419dCa667a351907578b68717Cd6e3340) (deploy tx [0xa9aa…a31f](https://www.okx.com/web3/explorer/xlayer/tx/0xa9aaacef0f3af99dc0046a67d5e3132879c65301415fca4b10202d617e15a31f); source verified on Sourcify, exact match): an autonomous agent whose policy is circuit #8, acting every 10 minutes ([AGENT.md](AGENT.md)) |
 | Demo video | **TODO_USER** (2 minutes; script below) |
-| dApp / landing page | https://usecerebr.vercel.app (landing) and https://usecerebr.vercel.app/app (dApp); verify in a browser before submitting |
+| dApp / landing page | https://cerebr.xyz (landing) and https://cerebr.xyz/app (dApp), self-hosted on our VPS over HTTPS |
 | Repository | https://github.com/NetLayerLabs/Cerebr (**currently private: make it public before submitting**) |
 | Contact | **TODO_USER** |
 
@@ -136,6 +136,6 @@ Each write flow was tested end to end through the real UI on a local fork of X L
 - [ ] The demo video is uploaded and linked.
 - [x] The deadline is confirmed: 2026-10-09 06:00 UTC+2.
 - [ ] Make the repo public.
-- [x] dApp hosting URL filled in above (verify it in a browser before submitting).
+- [x] dApp hosting URL filled in above: https://cerebr.xyz, live over HTTPS (Let's Encrypt), every view checked in a browser on 2026-10-06 with 0 errors.
 - [ ] Contact filled in above (TODO_USER).
 - [ ] Demo transactions disclosed in ISSUANCE.md §6.
