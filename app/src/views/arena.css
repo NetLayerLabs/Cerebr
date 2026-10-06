@@ -1,0 +1,124 @@
+/* arena feature styles, owned by the arena engineer. Imported by views/ArenaView.tsx (and components/arena/*).
+   Shared tokens only (both themes); every class is prefixed .arena-*. Human = cross in amber (circuit inputs),
+   network = ring in the accent (circuit outputs). */
+
+.arena-stats { margin-bottom: 16px; }
+.arena-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
+
+/* ---------- board ---------- */
+.arena-stage { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 22px; align-items: start; }
+.arena-board { display: grid; grid-template-columns: repeat(3, var(--cell, 96px)); grid-auto-rows: var(--cell, 96px); gap: 0; border: 1px solid var(--line-2); background: var(--bg); width: max-content; }
+.arena-cell { position: relative; display: grid; place-items: center; padding: 0; margin: 0; border: 0; border-right: 1px solid var(--line-2); border-bottom: 1px solid var(--line-2); background: transparent; color: var(--text); transition: background 0.15s; }
+.arena-cell:nth-child(3n) { border-right: 0; }
+.arena-cell:nth-child(n + 7) { border-bottom: 0; }
+.arena-cell.open { cursor: pointer; }
+.arena-cell.open:hover, .arena-cell.open:focus-visible { background: var(--hover); outline: none; }
+.arena-cell.open:focus-visible { box-shadow: inset 0 0 0 1px var(--mint); }
+.arena-cell.sel { background: var(--warn-dim); }
+.arena-cell.win { background: var(--acc-dim); }
+.arena-board:not(.mini) .arena-cell.win.is-human { background: var(--warn-dim); }
+.arena-cell.hot { box-shadow: inset 0 0 0 1px var(--mint); }
+.arena-idx { position: absolute; left: 6px; top: 5px; font-size: 10px; color: var(--faint); letter-spacing: 0.04em; }
+.arena-mark { width: 62%; height: 62%; fill: none; stroke-width: 3.2; stroke-linecap: square; }
+.arena-mark.human { stroke: var(--amber); }
+.arena-mark.bot { stroke: var(--mint); }
+.arena-mark.ghost { opacity: 0.4; stroke-dasharray: 4 3; }
+.arena-cell:not(.open) .arena-mark:not(.ghost) { animation: arena-pop 0.22s ease-out; }
+@keyframes arena-pop { from { transform: scale(0.6); opacity: 0; } }
+.arena-board.mini { --cell: 30px; }
+.arena-board.mini .arena-mark { stroke-width: 4.5; }
+
+/* ---------- side panel ---------- */
+.arena-side { display: grid; gap: 4px; min-width: 0; }
+.arena-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; color: var(--muted); font-family: var(--mono); font-size: 12px; }
+.arena-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.arena-key { display: inline-block; width: 10px; height: 10px; border: 2px solid; }
+.arena-key.human { border-color: var(--amber); transform: rotate(45deg) scale(0.8); }
+.arena-key.bot { border-color: var(--mint); border-radius: 50%; }
+.arena-say { margin: 8px 0 0; line-height: 1.55; min-height: 3.1em; }
+.arena-side .btn-row { margin: 8px 0 4px; align-items: center; }
+.arena-preview-toggle { padding: 8px 10px; }
+.arena-pv { display: grid; gap: 6px; justify-items: start; padding: 12px; margin: 6px 0 4px; border: 1px solid color-mix(in srgb, var(--amber) 35%, transparent); background: var(--warn-dim); border-radius: 2px; }
+.arena-pv p { margin: 0; line-height: 1.5; }
+.arena-gas { margin-top: 10px; }
+.arena-gas-note { margin: 8px 0 0; line-height: 1.5; }
+
+/* ---------- status ---------- */
+.arena-status.s1 { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 45%, transparent); }
+.arena-status.s2, .arena-status.s4 { color: var(--good); border-color: color-mix(in srgb, var(--good) 45%, transparent); }
+.arena-status.s3 { color: var(--bad); border-color: color-mix(in srgb, var(--bad) 45%, transparent); }
+.arena-over { margin: 0 0 16px; padding: 14px 16px; border: 1px solid; border-left-width: 2px; border-radius: 2px; }
+.arena-over.won, .arena-over.draw { border-color: color-mix(in srgb, var(--good) 40%, transparent); background: var(--good-dim); }
+.arena-over.lost { border-color: color-mix(in srgb, var(--bad) 40%, transparent); background: var(--bad-dim); }
+.arena-over-h { font: italic 400 26px/1.15 var(--serif); }
+.arena-over.won .arena-over-h, .arena-over.draw .arena-over-h { color: var(--good); }
+.arena-over.lost .arena-over-h { color: var(--bad); }
+.arena-over p { margin: 6px 0 0; line-height: 1.55; }
+html:lang(zh) .arena-over-h { font: 500 20px/1.3 var(--sans); }
+.arena-spectate { margin: 0 0 14px; }
+
+/* ---------- receipts ---------- */
+.arena-rc-lede { margin: 0 0 14px; line-height: 1.55; }
+.arena-rc-list { display: grid; gap: 0; border-top: 1px solid var(--line-2); max-height: 860px; overflow: auto; }
+.arena-rcpt { display: grid; gap: 10px; padding: 14px 0; border-bottom: 1px solid var(--line); }
+.arena-rcpt-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.arena-rcpt-n { font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--mint); }
+html:lang(zh) .arena-rcpt-n { letter-spacing: 0.04em; }
+.arena-rcpt-body { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 16px; align-items: start; }
+.arena-rcpt-board { display: grid; gap: 6px; justify-items: start; max-width: 110px; }
+.arena-rcpt-board .tiny { line-height: 1.35; }
+.arena-rcpt-rows { border-top: 0; }
+.arena-rcpt-rows .row { padding: 6px 0; font-size: 12.5px; align-items: baseline; }
+.arena-rcpt-rows .row:last-child { border-bottom: 0; }
+.arena-rcpt-rows dd { display: grid; gap: 4px; justify-items: end; }
+.arena-hex { font-family: var(--mono); color: var(--text); }
+.arena-bits { display: inline-flex; flex-wrap: wrap; justify-content: flex-end; gap: 3px; font: 11px/1 var(--mono); }
+.arena-bits b { font-weight: 400; color: var(--tt-zero); min-width: 8px; text-align: center; padding: 2px 1px; }
+.arena-pair { display: inline-flex; border: 1px solid var(--line); }
+.arena-bits b.one.human { color: var(--amber); }
+.arena-bits b.one.bot { color: var(--mint); }
+.arena-bits b.one.out { color: var(--on-acc); background: var(--acc-fill); font-weight: 500; }
+.arena-bad { color: var(--bad); }
+.arena-rcpt-note { margin: 0; }
+.arena-rcpt-foot { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.arena-replay { display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 12px; min-width: 0; }
+.arena-replay .mono { overflow-wrap: anywhere; color: var(--muted); }
+.arena-replay .pill { margin-left: 0; }
+.shell main a.arena-tx { margin-left: auto; color: var(--muted); }
+
+/* ---------- your games ---------- */
+.arena-mine { margin-bottom: 16px; }
+.arena-table-wrap { overflow-x: auto; }
+.arena-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.arena-table th { text-align: left; padding: 0 10px 10px 0; font: 500 10.5px/1.2 var(--mono); text-transform: uppercase; letter-spacing: 0.12em; color: var(--faint); border-bottom: 1px solid var(--line-2); }
+html:lang(zh) .arena-table th { letter-spacing: 0.04em; }
+.arena-table td { padding: 9px 10px 9px 0; border-bottom: 1px solid var(--line); }
+.arena-table tr.on td { background: var(--hover); }
+.arena-table tr.on td:first-child { box-shadow: inset 2px 0 0 var(--mint); padding-left: 8px; }
+.arena-res { font: 500 11px/1 var(--mono); text-transform: uppercase; letter-spacing: 0.08em; }
+.arena-res.s1 { color: var(--warn); }
+.arena-res.s2, .arena-res.s4 { color: var(--good); }
+.arena-res.s3 { color: var(--bad); }
+.arena-open { text-align: right; }
+
+/* ---------- how it works ---------- */
+.arena-how { margin-bottom: 16px; }
+.arena-how-list { margin: 0; padding-left: 20px; display: grid; gap: 10px; line-height: 1.6; color: var(--muted); max-width: 920px; }
+.arena-how-list b { color: var(--text); font-weight: 500; }
+
+/* ---------- responsive ---------- */
+@media (max-width: 1240px) {
+  .arena-stage { grid-template-columns: 1fr; }
+}
+@media (max-width: 900px) {
+  .arena-grid { grid-template-columns: 1fr; }
+  .arena-stage { grid-template-columns: auto minmax(0, 1fr); }
+}
+@media (max-width: 640px) {
+  .arena-stage { grid-template-columns: 1fr; }
+  .arena-board:not(.mini) { --cell: min(96px, calc((100vw - 2 * var(--pad) - 34px) / 3)); margin: 0 auto; }
+}
+@media (max-width: 420px) {
+  .arena-rcpt-body { grid-template-columns: 1fr; }
+  .arena-rcpt-rows dd { justify-items: end; }
+}
