@@ -10,6 +10,7 @@ import { loadProgram, TAPEOUT } from '../lib/cerebr.ts'
 import { errorMessage } from '../lib/errors.ts'
 import { DieShot } from '../components/DieShot.tsx'
 import { Pins } from '../components/ui.tsx'
+import { GateAnimation } from '../components/GateAnimation.tsx'
 import { useI18n, type Key } from '../i18n/index.tsx'
 import { useCircuitText } from '../i18n/circuits.ts'
 
@@ -178,13 +179,24 @@ function Evaluated({ c, prog, inputs }: { c: CircuitRow; prog?: Program; inputs:
   const match = q.data && local && !stale ? q.data.outputs.every((v, i) => v === local[i]) : undefined
   const { t } = useI18n()
   const ct = useCircuitText()
+  // ---- ANIMATION (owned by the Market + Animation engineer): the "Animate" toggle state.
+  const [animate, setAnimate] = useState(false)
+  // ---- /ANIMATION
   return (
     <div className="card result">
       <div className="card-head">
         <h2>{t('pg.result')}</h2>
         {match !== undefined && <span className={`pill ${match ? 'on' : 'bad'}`}>{match ? t('pg.match') : t('pg.mismatch')}</span>}
+        {/* ---- ANIMATION: toggle */}
+        <button className={`chip anim-toggle ${animate ? 'on' : ''}`} aria-pressed={animate} title={t('anim.toggleTitle')} onClick={() => setAnimate((a) => !a)}>
+          {t('anim.toggle')}
+        </button>
+        {/* ---- /ANIMATION */}
       </div>
       <Outputs c={c} bits={q.data?.outputs} />
+      {/* ---- ANIMATION: components/GateAnimation.tsx */}
+      {animate && <GateAnimation c={c} prog={prog} inputs={inputs} outputs={stale ? undefined : q.data?.outputs} />}
+      {/* ---- /ANIMATION */}
       <div className="compare">
         <div>
           <div className="tiny muted">{t('pg.onchainEval')}</div>
@@ -245,6 +257,9 @@ function Clocked({ c, prog, inputs }: { c: CircuitRow; prog?: Program; inputs: n
   const [gas, setGas] = useState<bigint>()
   const { t } = useI18n()
   const last = ticks[0]
+  // ---- ANIMATION (owned by the Market + Animation engineer): the "Animate" toggle for stateful circuits.
+  const [animate, setAnimate] = useState(false)
+  // ---- /ANIMATION
 
   async function clock() {
     if (!pc || !cfg || !prog) return
@@ -276,8 +291,21 @@ function Clocked({ c, prog, inputs }: { c: CircuitRow; prog?: Program; inputs: n
       <div className="card-head">
         <h2>{t('pg.clocked')}</h2>
         {ticks.length > 0 && <span className={`pill ${allMatch ? 'on' : 'bad'}`}>{allMatch ? t('pg.match') : t('pg.mismatch')}</span>}
+        {/* ---- ANIMATION: toggle */}
+        <button className={`chip anim-toggle ${animate ? 'on' : ''}`} aria-pressed={animate} title={t('anim.toggleTitle')} onClick={() => setAnimate((a) => !a)}>
+          {t('anim.toggle')}
+        </button>
+        {/* ---- /ANIMATION */}
       </div>
       <Outputs c={c} bits={last?.outputs} />
+      {/* ---- ANIMATION: the last onchain step (its inputs, carried state and outputs), else the current state in the simulator */}
+      {animate &&
+        (last ? (
+          <GateAnimation c={c} prog={prog} inputs={last.inputs} state={last.state} outputs={last.outputs} seq />
+        ) : (
+          <GateAnimation c={c} prog={prog} inputs={inputs} state={state} seq />
+        ))}
+      {/* ---- /ANIMATION */}
       <div className="tiny muted pins-head">{t('pg.stateCarried')}</div>
       <Pins labels={stateLabels} bits={state} kind="out" />
       <div className="btn-row">
