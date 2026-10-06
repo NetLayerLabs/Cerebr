@@ -36,10 +36,10 @@ import '../views/market.css'
  */
 
 /**
- * Cerebr-controlled wallets (the deployment wallet, which also deployed NeuralArena and the drops).
- * They never buy on the marketplace at all (TAPEOUT.md §9.4: no self-trading, no wash trading).
+ * Cerebr-controlled wallets: the deployment wallet (which also deployed NeuralArena and the drops) and the
+ * Cerebr team test wallet. They never buy on the marketplace at all (TAPEOUT.md §9.4: no self-trading, no wash trading).
  */
-const CEREBR_WALLETS: readonly Address[] = ['0xc742AdA2872a042dD36D2E706907b4036968960C']
+const CEREBR_WALLETS: readonly Address[] = ['0xc742AdA2872a042dD36D2E706907b4036968960C', '0xcd0a2370f2dc12c1802707b7d9ab3fec891e3c02']
 
 const erc721Abi = parseAbi(['function approve(address to, uint256 tokenId)'])
 

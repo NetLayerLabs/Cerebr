@@ -17,9 +17,12 @@ const isOkx = (c: Connector) => /okx/i.test(c.name) || c.id === 'okxWallet' || c
 function useWalletOptions(t: T) {
   const all = useConnectors()
   const discoveredOkx = all.some((c) => c.id !== 'okxWallet' && isOkx(c))
+  // EIP-6963 connectors carry the wallet's rdns as id; the two configured in wagmi.ts do not.
+  const announced = all.some((c) => c.id !== 'okxWallet' && c.id !== 'injected')
   const okxInjected = typeof window !== 'undefined' && !!window.okxwallet
   return all
     .filter((c) => (c.id === 'okxWallet' ? !discoveredOkx : true)) // prefer the EIP-6963 entry when present
+    .filter((c) => (c.id === 'injected' ? !announced : true)) // window.ethereum is one of the announced wallets
     .map((c) => ({
       connector: c,
       label: c.id === 'injected' ? t('hdr.browserWallet') : c.name,

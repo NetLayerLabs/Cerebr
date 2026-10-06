@@ -1,4 +1,4 @@
-import { BaseError, ContractFunctionRevertedError, UserRejectedRequestError } from 'viem'
+import { BaseError, ContractFunctionRevertedError, InsufficientFundsError, UserRejectedRequestError } from 'viem'
 import { translate, type Key } from '../i18n/index.tsx'
 
 /** Custom errors with a friendly message (i18n key err.<ErrorName>). */
@@ -23,6 +23,7 @@ const FRIENDLY = new Set([
 export function errorMessage(e: unknown): string {
   if (e instanceof BaseError) {
     if (e.walk((x) => x instanceof UserRejectedRequestError)) return translate('err.rejected')
+    if (e.walk((x) => x instanceof InsufficientFundsError || (x as Error).name === 'InsufficientFundsError')) return translate('err.insufficientFunds')
     const revert = e.walk((x) => x instanceof ContractFunctionRevertedError)
     if (revert instanceof ContractFunctionRevertedError) {
       const name = revert.data?.errorName

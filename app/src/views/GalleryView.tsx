@@ -60,7 +60,7 @@ export function GalleryView() {
   // ---- /MARKET
   const shown = useMemo(() => {
     const list = [...(circuits ?? [])].reverse()
-    if (filter === 'mine') return address ? list.filter((c) => c.owner.toLowerCase() === address.toLowerCase()) : list
+    if (filter === 'mine') return address ? list.filter((c) => c.owner.toLowerCase() === address.toLowerCase()) : []
     // ---- MARKET: the "For sale" filter.
     if (filter === 'sale') return forSale ? list.filter((c) => forSale.has(c.id.toString())) : []
     // ---- /MARKET
@@ -149,7 +149,7 @@ function CircuitCard({ c, wallet }: { c: CircuitRow; wallet?: Wallet }) {
           <span className="mono">
             {c.nIn}→{c.nOut}
           </span>
-          <span className="mono">{t('gal.gates', { n: c.gateCount })}</span>
+          <span className="mono">{c.gateCount === 1 ? t('gal.gate') : t('gal.gates', { n: c.gateCount })}</span>
           {counts.ref > 0 && <span className="mono">{t('gal.ownNand', { n: counts.nand })}</span>}
           <span>
             {t('gal.owner')} {mine ? <b className="you">{t('gal.you')}</b> : <span className="mono">{shortAddr(c.owner)}</span>}
