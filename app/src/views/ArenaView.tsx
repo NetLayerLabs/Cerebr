@@ -141,12 +141,14 @@ export function ArenaView({ arg }: { arg?: string }) {
     await Promise.all([turns.refetch(), game.refetch()])
   }
 
-  const cells = game.data?.cells
   const canPlay = mine && g?.status === STATUS.Active && pending === undefined && !busy
-  const onCell = canPlay ? (i: number) => (preview ? setSel(i) : void play(i)) : undefined
+  // Preview is open to every visitor: it asks the bot about the game in play, or else about an empty board.
+  const pvBase = g?.status === STATUS.Active ? g : { bot: 0, human: 0 }
+  const cells = preview && g?.status !== STATUS.Active ? boardOf(0, 0) : game.data?.cells
+  const onCell = preview ? (pending === undefined ? setSel : undefined) : canPlay ? (i: number) => void play(i) : undefined
   const line = cells ? winLine(cells)?.line : undefined
 
-  const pv = usePreview(arena, g, preview ? sel : undefined)
+  const pv = usePreview(arena, pvBase, preview ? sel : undefined)
   const ghosts = [
     ...(pending !== undefined ? [{ cell: pending, who: HUMAN }] : []),
     ...(sel !== undefined && pending === undefined ? [{ cell: sel, who: HUMAN }] : []),
@@ -211,7 +213,9 @@ export function ArenaView({ arg }: { arg?: string }) {
               <p className="small arena-say" aria-live="polite">
                 {pending !== undefined
                   ? t('arena.say.mining', { c: pending })
-                  : gameId === undefined
+                  : preview
+                    ? t('arena.say.previewPick')
+                    : gameId === undefined
                     ? address
                       ? games.isLoading
                         ? t('arena.say.finding')
@@ -219,13 +223,15 @@ export function ArenaView({ arg }: { arg?: string }) {
                       : t('arena.say.connect')
                     : !g
                       ? '…'
-                      : g.status === STATUS.Active
-                        ? mine
-                          ? preview
-                            ? t('arena.say.previewPick')
-                            : t('arena.say.yourMove')
-                          : t('arena.say.watching')
-                        : t('arena.say.over')}
+                      : g.status === STATUS.None
+                        ? address
+                          ? t('arena.say.start')
+                          : t('arena.say.connect')
+                        : g.status === STATUS.Active
+                          ? mine
+                            ? t('arena.say.yourMove')
+                            : t('arena.say.watching')
+                          : t('arena.say.over')}
               </p>
               <div className="btn-row">
                 <button className={`btn ${g?.status === STATUS.Active && mine ? '' : 'primary'}`} onClick={startGame} disabled={!!busy || !arena}>
@@ -242,7 +248,7 @@ export function ArenaView({ arg }: { arg?: string }) {
                   {t('arena.btn.preview')}
                 </button>
               </div>
-              {preview && sel !== undefined && canPlay && (
+              {preview && sel !== undefined && pending === undefined && (
                 <div className="arena-pv">
                   <p className="small">
                     {pv.isFetching
@@ -259,9 +265,11 @@ export function ArenaView({ arg }: { arg?: string }) {
                     {pv.data?.kind === 'bot' && pv.data.reason ? ` ${t(`arena.fb.${FALLBACKS[pv.data.reason]}` as Key)}` : ''}
                   </p>
                   <p className="tiny muted">{t('arena.pv.note')}</p>
-                  <button className="btn primary small" onClick={() => play(sel)} disabled={!!busy}>
-                    {t('arena.btn.playCell', { c: sel })}
-                  </button>
+                  {canPlay && (
+                    <button className="btn primary small" onClick={() => play(sel)} disabled={!!busy}>
+                      {t('arena.btn.playCell', { c: sel })}
+                    </button>
+                  )}
                 </div>
               )}
               <GasNote lastLimit={lastLimit} />
@@ -307,17 +315,17 @@ export function ArenaView({ arg }: { arg?: string }) {
 }
 
 /** The bot's answer to a hypothetical human move, from previewBotMove (an eth_call: no transaction). */
-function usePreview(arena: Address | undefined, g: GameState | undefined, sel: number | undefined) {
+function usePreview(arena: Address | undefined, g: Pick<GameState, 'bot' | 'human'>, sel: number | undefined) {
   const { pc, chainId } = useNet()
   return useQuery({
     queryKey: ['cerebr', 'arena', 'preview', chainId, arena, g?.bot, g?.human, sel],
-    enabled: !!pc && !!arena && !!g && sel !== undefined,
+    enabled: !!pc && !!arena && sel !== undefined,
     staleTime: Infinity,
     queryFn: async (): Promise<{ kind: 'win' } | { kind: 'draw' } | { kind: 'bot'; cell: number; reason: number }> => {
-      const human = g!.human | (1 << sel!)
-      if (winLine(boardOf(g!.bot, human))?.who === HUMAN) return { kind: 'win' }
-      if ((human | g!.bot) === 0x1ff) return { kind: 'draw' }
-      const [cell, reason] = (await pc!.readContract({ address: arena!, abi: arenaAbi, functionName: 'previewBotMove', args: [g!.bot, human] })) as readonly [number, number]
+      const human = g.human | (1 << sel!)
+      if (winLine(boardOf(g.bot, human))?.who === HUMAN) return { kind: 'win' }
+      if ((human | g.bot) === 0x1ff) return { kind: 'draw' }
+      const [cell, reason] = (await pc!.readContract({ address: arena!, abi: arenaAbi, functionName: 'previewBotMove', args: [g.bot, human] })) as readonly [number, number]
       return { kind: 'bot', cell, reason }
     },
   })
