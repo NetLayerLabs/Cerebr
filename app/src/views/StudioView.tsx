@@ -1,33 +1,14 @@
 import { useMemo, useState } from 'react'
-import { useConnection, useGasPrice } from 'wagmi'
-import { useQueryClient } from '@tanstack/react-query'
 import { CATALOG, canonicalNeuron, getCircuit, type NeuronSpec, type OutputMode } from '@cerebr/sdk'
-import { LATCH_ID, NAND_ID } from '@cerebr/sdk/tapeout'
-import { useBalances, useCircuits, useCpu, useNet, type CpuState } from '../hooks/useCpu.ts'
-import { useTx } from '../hooks/useTx.ts'
-import { useToasts } from '../hooks/useToasts.tsx'
-import { href } from '../hooks/useRoute.ts'
-import {
-  addToIndex,
-  compileDesign,
-  flatGates,
-  labelOfCatalog,
-  labelOfNeuron,
-  mintTx,
-  planDesign,
-  tapedOutId,
-  tapeoutTx,
-  type CircuitLabel,
-  type Compiled,
-  type Design,
-} from '../lib/cerebr.ts'
-import { MAX_LABEL_NAME, byteLength, fitLabel, setLabelTx, type OnchainLabel } from '../lib/scope.ts'
-import { fmt } from '../lib/format.ts'
+import { useCircuits, useCpu, useNet, type CpuState } from '../hooks/useCpu.ts'
+import { compileDesign, flatGates, type Compiled, type Design } from '../lib/cerebr.ts'
 import { DieShot } from '../components/DieShot.tsx'
+import { TapeoutFlow } from '../components/TapeoutFlow.tsx'
 import { SequenceTrace, TruthTable } from '../components/TruthTable.tsx'
 import { Row, Seg } from '../components/ui.tsx'
 import { useI18n, type Key } from '../i18n/index.tsx'
 import { useCircuitText } from '../i18n/circuits.ts'
+import { parseNeuronArg } from '../lib/drop.ts' // GENESIS DROP
 
 type Tab = 'catalog' | 'neuron' | 'network'
 type NetState = { nIn: number; hidden: NeuronSpec[]; out: NeuronSpec; compose: 'ref' | 'inline' }
@@ -56,9 +37,12 @@ export function StudioView({ initial }: { initial?: string }) {
   const { cfg } = useNet()
   const { index, circuits } = useCircuits()
   const start = initial
-  const [tab, setTab] = useState<Tab>('catalog')
+  // GENESIS DROP: '#studio/neuron:<w,..>:<theta>' opens the neuron tab with that spec (lib/drop.ts).
+  const preset = parseNeuronArg(start)
+  const [tab, setTab] = useState<Tab>(preset ? 'neuron' : 'catalog')
   const [catalogId, setCatalogId] = useState(start && CATALOG.some((c) => c.id === start) ? start : 'xor-net')
-  const [neuron, setNeuron] = useState<NeuronSpec>({ weights: [1, 1, 1, -1], theta: 2 })
+  const [neuron, setNeuron] = useState<NeuronSpec>(preset ?? { weights: [1, 1, 1, -1], theta: 2 })
+  // /GENESIS DROP
   const [net, setNet] = useState<NetState>({ ...NET_PRESETS.xor.net, compose: 'ref' })
   const [mode, setMode] = useState<OutputMode>('direct')
   const { t, rich } = useI18n()
@@ -373,82 +357,12 @@ function MiniNeuron({ name, spec, inputs, onChange }: { name: string; spec: Neur
   )
 }
 
-type Naming = 'pending' | 'done' | 'failed' | 'skipped'
-
 function CompiledPanel({ c, cpu, design, mode }: { c: Compiled; cpu: CpuState; design: Design; mode: OutputMode }) {
-  const { chainId, cfg } = useNet()
-  const { index, circuits } = useCircuits()
-  const { isConnected } = useConnection()
-  const { balances } = useBalances()
-  const { send, busy } = useTx()
-  const { push } = useToasts()
-  const qc = useQueryClient()
-  const { data: gasPrice } = useGasPrice({ chainId })
-  const { t, rich } = useI18n()
+  const { circuits } = useCircuits()
+  const { t } = useI18n()
   const ct = useCircuitText()
-  const [progress, setProgress] = useState<{ step: number; of: number; done?: bigint } | undefined>()
-  // The name written onchain (CerebrScope.setLabel) right after the tape-out. Editable before it.
-  const [name, setName] = useState(c.label.name)
-  const [naming, setNaming] = useState<{ state: Naming; label: OnchainLabel } | undefined>()
-  const scope = cfg?.scope
-  const nameBytes = byteLength(name.trim())
-  const nameError = nameBytes > MAX_LABEL_NAME ? t('st.nameTooLong', { n: nameBytes, max: MAX_LABEL_NAME }) : undefined
-  const have = balances ?? { nand: 0n, latch: 0n }
-  const plan = planDesign(c, have, cpu)
   const flat = flatGates(c.program)
-  const steps = [
-    ...plan.mints.map((m) => t('st.stepMint', { n: m.amount, label: m.label })),
-    ...plan.tapeouts.map((x) => t(x.dep ? 'st.stepTapeDep' : 'st.stepTape', { name: ct.name(x.label) })),
-    ...(scope ? [t('st.stepName')] : []),
-  ]
   const nameOf = (id: bigint) => circuits?.find((x) => x.id === id)?.label.name
-
-  // Every exit refetches balances and the circuit index (awaited), so a retry plans from chain
-  // state: no second mint for transistors already bought, no second tapeout of a landed dependency.
-  async function stop() {
-    await qc.invalidateQueries()
-    setProgress(undefined)
-  }
-
-  /** CerebrScope.setLabel for the circuit just taped out. A rejection keeps the circuit: it can be retried or skipped. */
-  async function nameIt(id: bigint, label: OnchainLabel) {
-    if (!scope) return
-    setNaming({ state: 'pending', label })
-    const r = await send(t('st.nameTx', { id }), setLabelTx(scope, cpu.circuits, id, label))
-    setNaming({ state: r ? 'done' : 'failed', label })
-    if (r) setProgress((p) => (p ? { ...p, step: p.of } : p))
-  }
-
-  async function run() {
-    if (!index || !balances || nameError) return
-    const idx = new Map(index)
-    let step = 0
-    setProgress({ step, of: steps.length })
-    for (const m of plan.mints) {
-      const r = await send(t('st.stepMint', { n: m.amount, label: m.label }), mintTx(cpu.transistors, m.id === NAND_ID ? NAND_ID : LATCH_ID, m.amount, cpu.mintPrice, cpu.protocolFee), { refresh: false })
-      if (!r) return stop()
-      setProgress({ step: ++step, of: steps.length })
-    }
-    // Dependencies first; each one's id goes into the index so the next compile REFs it.
-    for (const d of c.deps.filter((x) => x.circuitId === undefined)) {
-      const r = await send(t('st.stepTape', { name: ct.name(d.label.name) }), tapeoutTx(cpu.circuits, d.hex, d.netlist.nIn, d.netlist.nOut, cpu.tapeoutFee), { refresh: false })
-      if (!r) return stop()
-      addToIndex(idx, d.netlist, d.hex, tapedOutId(r, cpu.circuits))
-      setProgress({ step: ++step, of: steps.length })
-    }
-    const final = compileDesign(design, { mode, cpu: cpu.circuits, index: idx })
-    if (!final.hex) {
-      push({ kind: 'error', title: t('st.depMissing') })
-      return stop()
-    }
-    const r = await send(t('st.stepTape', { name: ct.name(final.label.name) }), tapeoutTx(cpu.circuits, final.hex, final.netlist.nIn, final.netlist.nOut, cpu.tapeoutFee), { refresh: false })
-    if (!r) return stop()
-    const id = tapedOutId(r, cpu.circuits)
-    setProgress({ step: ++step, of: steps.length, done: id })
-    await qc.invalidateQueries()
-    const base = labelFor(design, final.label)
-    await nameIt(id, fitLabel({ ...base, name: name.trim() || base.name }, final.netlist.nIn, final.netlist.nOut))
-  }
 
   return (
     <div className="compiled">
@@ -492,91 +406,7 @@ function CompiledPanel({ c, cpu, design, mode }: { c: Compiled; cpu: CpuState; d
           )}
         </div>
       </div>
-      <dl className="quote">
-        <Row k={t('st.burned')} v={`${plan.burn.nand} NAND${plan.burn.latch ? ` + ${plan.burn.latch} LATCH` : ''}`} />
-        <Row k={t('st.youHold')} v={isConnected ? `${have.nand} NAND · ${have.latch} LATCH` : t('common.connectWallet')} />
-        {plan.mints.map((m) => (
-          <Row key={m.label} k={t('st.stepMint', { n: m.amount, label: m.label })} v={`${fmt(m.value, 6)} OKB`} />
-        ))}
-        <Row k={t('st.feeTimes', { n: plan.tapeouts.length })} v={`${fmt(plan.tapeoutValue, 6)} OKB`} />
-        <Row k={t('st.total')} v={`${fmt(plan.total, 6)} OKB`} strong />
-        <Row
-          k={t('st.gas')}
-          v={gasPrice ? `~${fmt(plan.gas * gasPrice, 3)} OKB · ${t('st.gasK', { k: (Number(plan.gas) / 1000).toFixed(0) })}` : t('st.gasK', { k: (Number(plan.gas) / 1000).toFixed(0) })}
-        />
-      </dl>
-      {c.existing !== undefined && (
-        <div className="banner info small">
-          {rich('st.existing', { id: c.existing.toString(), a: (x) => <a href={href('playground', c.existing!)}>{x}</a> })}
-        </div>
-      )}
-      {plan.blocked && <div className="error small">{plan.blockedBy ? t('st.blocked', { need: plan.blockedBy.need, remaining: plan.blockedBy.remaining }) : plan.blocked}</div>}
-      {scope && progress?.done === undefined && (
-        <label className="name-field">
-          <span className="small muted">{t('st.nameLabel')}</span>
-          <input className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder={c.label.name} disabled={!!progress} spellCheck={false} />
-          <span className={`tiny mono ${nameError ? 'error' : 'muted'}`}>
-            {nameError ?? t('st.nameHint', { n: nameBytes, max: MAX_LABEL_NAME })}
-          </span>
-        </label>
-      )}
-      {progress && (
-        <ol className="steps small">
-          {steps.map((s, i) => {
-            const isNameStep = scope && i === steps.length - 1
-            const skipped = isNameStep && naming?.state === 'skipped'
-            const active = i === progress.step && (progress.done === undefined || (isNameStep && naming?.state !== 'done' && !skipped))
-            return (
-              <li key={s} className={i < progress.step ? 'done' : skipped ? 'skipped' : active ? 'active' : ''}>
-                {s}
-                {skipped ? t('st.skipped') : ''}
-              </li>
-            )
-          })}
-        </ol>
-      )}
-      {progress?.done !== undefined ? (
-        <>
-          <div className="done-row">
-            <span className="ok">{t('st.done', { id: progress.done.toString() })}</span>
-            <a className="btn primary small" href={href('playground', progress.done)}>
-              {t('st.runIt')}
-            </a>
-          </div>
-          {naming && <NamingStatus id={progress.done} naming={naming} busy={!!busy} onRetry={() => nameIt(progress.done!, naming.label)} onSkip={() => setNaming({ ...naming, state: 'skipped' })} />}
-        </>
-      ) : (
-        <button className="btn primary big" disabled={!!busy || !!plan.blocked || !!nameError || !index || !balances || (!!progress && !progress.done)} onClick={run}>
-          {busy ? busy + '…' : steps.length > 1 ? t('st.tapeN', { n: steps.length }) : t('st.tape1')}
-        </button>
-      )}
+      <TapeoutFlow c={c} cpu={cpu} design={design} mode={mode} />
     </div>
   )
-}
-
-function NamingStatus({ id, naming, busy, onRetry, onSkip }: { id: bigint; naming: { state: Naming; label: OnchainLabel }; busy: boolean; onRetry: () => void; onSkip: () => void }) {
-  const { t, rich } = useI18n()
-  if (naming.state === 'pending') return <div className="banner info small">{t('st.namingPending', { id: id.toString(), name: naming.label.name })}</div>
-  if (naming.state === 'done') return <div className="banner info small ok">{t('st.namingDone', { name: naming.label.name })}</div>
-  if (naming.state === 'skipped')
-    return <div className="banner info small muted">{rich('st.namingSkipped', { a: (x) => <a href={href('gallery')}>{x}</a> })}</div>
-  return (
-    <div className="banner info small naming-retry">
-      <span>{t('st.namingFailed', { id: id.toString() })}</span>
-      <span className="naming-actions">
-        <button className="btn small primary" disabled={busy} onClick={onRetry}>
-          {t('st.nameIt')}
-        </button>
-        <button className="btn small ghost" disabled={busy} onClick={onSkip}>
-          {t('st.skip')}
-        </button>
-      </span>
-    </div>
-  )
-}
-
-function labelFor(design: Design, compiled: CircuitLabel): CircuitLabel {
-  if (design.kind === 'catalog') return labelOfCatalog(getCircuit(design.id))
-  if (design.kind === 'neuron') return labelOfNeuron({ weights: design.weights, theta: design.theta })
-  return compiled
 }
