@@ -33,7 +33,7 @@ export const XLAYER: TapeoutConfig = {
   bem: '0x60e62Efa9405d6873C5deaBD4E6CC91c25363952',
   multicall3: '0xcA11bde05977b3631167028862bE2a173976CA11',
   fromBlock: 70995047n,
-  explorer: 'https://www.oklink.com/xlayer',
+  explorer: 'https://www.okx.com/web3/explorer/xlayer',
 };
 
 /** ERC-1155 token ids on every CPU's transistors contract (`NAND()` / `LATCH()` constants). */
@@ -50,7 +50,7 @@ export const xLayer: Chain = defineChain({
   name: 'X Layer',
   nativeCurrency: { name: 'OKB', symbol: 'OKB', decimals: 18 },
   rpcUrls: { default: { http: [XLAYER_RPC] } },
-  blockExplorers: { default: { name: 'OKLink', url: XLAYER.explorer } },
+  blockExplorers: { default: { name: 'OKX Explorer', url: XLAYER.explorer } },
   contracts: { multicall3: { address: XLAYER.multicall3, blockCreated: 47416 } },
 });
 

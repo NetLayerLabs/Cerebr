@@ -4,7 +4,7 @@
   "chainId": 196,
   "generatedAt": "2026-10-05T21:37:31.786Z",
   "block": "72467194",
-  "explorer": "https://www.oklink.com/xlayer",
+  "explorer": "https://www.okx.com/web3/explorer/xlayer",
   "deployer": "0xc742AdA2872a042dD36D2E706907b4036968960C",
   "tapeout": {
     "factory": "0x1f09daefa827f02cbb40967cc91b259763760761",
@@ -43,9 +43,9 @@
     "createTx": "0x3295efc1ceec4aba0f918f89e5316fd62f1f705abdc52d483715e4fcada86815",
     "createBlock": "72461494",
     "links": {
-      "circuits": "https://www.oklink.com/xlayer/address/0xB04EB79D1A5EECaabAAfF7B77d7c27578EE693FF",
-      "transistors": "https://www.oklink.com/xlayer/address/0x84b5a5c6fE305319458113b87c09a2A241427D2D",
-      "createTx": "https://www.oklink.com/xlayer/tx/0x3295efc1ceec4aba0f918f89e5316fd62f1f705abdc52d483715e4fcada86815"
+      "circuits": "https://www.okx.com/web3/explorer/xlayer/address/0xB04EB79D1A5EECaabAAfF7B77d7c27578EE693FF",
+      "transistors": "https://www.okx.com/web3/explorer/xlayer/address/0x84b5a5c6fE305319458113b87c09a2A241427D2D",
+      "createTx": "https://www.okx.com/web3/explorer/xlayer/tx/0x3295efc1ceec4aba0f918f89e5316fd62f1f705abdc52d483715e4fcada86815"
     }
   },
   "scope": "0x2640F8E89b2B107919568FFd42dFb46A1866e528",
@@ -108,8 +108,8 @@
         ]
       },
       "links": {
-        "tx": "https://www.oklink.com/xlayer/tx/0xeb5e9cedb905ad98209f04a40b2a93e7caaadce88f031b2bcb07f21d78d18254",
-        "account": "https://www.oklink.com/xlayer/address/0x2A44cFe7e4E515e32452f42079323944621AD36C"
+        "tx": "https://www.okx.com/web3/explorer/xlayer/tx/0xeb5e9cedb905ad98209f04a40b2a93e7caaadce88f031b2bcb07f21d78d18254",
+        "account": "https://www.okx.com/web3/explorer/xlayer/address/0x2A44cFe7e4E515e32452f42079323944621AD36C"
       }
     },
     {
@@ -169,8 +169,8 @@
         ]
       },
       "links": {
-        "tx": "https://www.oklink.com/xlayer/tx/0x9dbcfd1e5b9a00083bd1058a83108778cb5f242a19e60f425bd782d8d7770895",
-        "account": "https://www.oklink.com/xlayer/address/0x1a092254daf0fFeFB0922B2469aC32FaaeAf23CF"
+        "tx": "https://www.okx.com/web3/explorer/xlayer/tx/0x9dbcfd1e5b9a00083bd1058a83108778cb5f242a19e60f425bd782d8d7770895",
+        "account": "https://www.okx.com/web3/explorer/xlayer/address/0x1a092254daf0fFeFB0922B2469aC32FaaeAf23CF"
       }
     },
     {
@@ -230,8 +230,8 @@
         ]
       },
       "links": {
-        "tx": "https://www.oklink.com/xlayer/tx/0xab5badaeb079e3274b02a1642f4f345e4879f6f17373af732e6449dcc2168a81",
-        "account": "https://www.oklink.com/xlayer/address/0x02A354D5c46444a57178C7c01BA4116098dF104f"
+        "tx": "https://www.okx.com/web3/explorer/xlayer/tx/0xab5badaeb079e3274b02a1642f4f345e4879f6f17373af732e6449dcc2168a81",
+        "account": "https://www.okx.com/web3/explorer/xlayer/address/0x02A354D5c46444a57178C7c01BA4116098dF104f"
       }
     },
     {
@@ -309,8 +309,8 @@
         ]
       },
       "links": {
-        "tx": "https://www.oklink.com/xlayer/tx/0x4ace108c8ecb85f8ea47d6a13cc9e96c7e3013a4618ed086401cbce6519930a8",
-        "account": "https://www.oklink.com/xlayer/address/0x20891A4B653Cc5A297A0071999E832731a7A3d58"
+        "tx": "https://www.okx.com/web3/explorer/xlayer/tx/0x4ace108c8ecb85f8ea47d6a13cc9e96c7e3013a4618ed086401cbce6519930a8",
+        "account": "https://www.okx.com/web3/explorer/xlayer/address/0x20891A4B653Cc5A297A0071999E832731a7A3d58"
       }
     },
     {
@@ -402,8 +402,8 @@
         ]
       },
       "links": {
-        "tx": "https://www.oklink.com/xlayer/tx/0xc3e10087944a57070a3f4acf618992085d06d6af5e381b4675d9fd482976b66e",
-        "account": "https://www.oklink.com/xlayer/address/0x9E1d3eC3B3D0fe84997df0E065a96a7c93c13166"
+        "tx": "https://www.okx.com/web3/explorer/xlayer/tx/0xc3e10087944a57070a3f4acf618992085d06d6af5e381b4675d9fd482976b66e",
+        "account": "https://www.okx.com/web3/explorer/xlayer/address/0x9E1d3eC3B3D0fe84997df0E065a96a7c93c13166"
       }
     },
     {
@@ -465,8 +465,8 @@
         ]
       },
       "links": {
-        "tx": "https://www.oklink.com/xlayer/tx/0x2418f266c2f0ba0b728813c8cf07999ec0fb41efdb81d42b7d1f2b941d3315ca",
-        "account": "https://www.oklink.com/xlayer/address/0x7Ee673259E0174Cc9d3c6968E81f240A31A3e375"
+        "tx": "https://www.okx.com/web3/explorer/xlayer/tx/0x2418f266c2f0ba0b728813c8cf07999ec0fb41efdb81d42b7d1f2b941d3315ca",
+        "account": "https://www.okx.com/web3/explorer/xlayer/address/0x7Ee673259E0174Cc9d3c6968E81f240A31A3e375"
       }
     },
     {
@@ -532,8 +532,8 @@
         ]
       },
       "links": {
-        "tx": "https://www.oklink.com/xlayer/tx/0xb25b7f1822c3aa229ec7931ba8728cdb656e8b56f11d430913f87ae095c95558",
-        "account": "https://www.oklink.com/xlayer/address/0xaA4AE5038b6e717FDf5c981d45CD1Da1D00Ac402"
+        "tx": "https://www.okx.com/web3/explorer/xlayer/tx/0xb25b7f1822c3aa229ec7931ba8728cdb656e8b56f11d430913f87ae095c95558",
+        "account": "https://www.okx.com/web3/explorer/xlayer/address/0xaA4AE5038b6e717FDf5c981d45CD1Da1D00Ac402"
       }
     },
     {
@@ -598,8 +598,8 @@
         ]
       },
       "links": {
-        "tx": "https://www.oklink.com/xlayer/tx/0xc58e60186673067a51e6606901a65195267599730f716180b95ba4ef95d3fd3d",
-        "account": "https://www.oklink.com/xlayer/address/0x550500EF28b4Ebe39a7431E2A86A45f97F6db141"
+        "tx": "https://www.okx.com/web3/explorer/xlayer/tx/0xc58e60186673067a51e6606901a65195267599730f716180b95ba4ef95d3fd3d",
+        "account": "https://www.okx.com/web3/explorer/xlayer/address/0x550500EF28b4Ebe39a7431E2A86A45f97F6db141"
       }
     },
     {
@@ -661,8 +661,8 @@
         ]
       },
       "links": {
-        "tx": "https://www.oklink.com/xlayer/tx/0xdcdf8f9a4bbb13b57b30f3a8f437499f68e8d0b9fd2e9f41d955043fb9233819",
-        "account": "https://www.oklink.com/xlayer/address/0xF074589A6232B24F6Fb19c432166B473236Cc870"
+        "tx": "https://www.okx.com/web3/explorer/xlayer/tx/0xdcdf8f9a4bbb13b57b30f3a8f437499f68e8d0b9fd2e9f41d955043fb9233819",
+        "account": "https://www.okx.com/web3/explorer/xlayer/address/0xF074589A6232B24F6Fb19c432166B473236Cc870"
       }
     },
     {
@@ -724,8 +724,8 @@
         ]
       },
       "links": {
-        "tx": "https://www.oklink.com/xlayer/tx/0x57a1e3547687a8ff7ef97cb01b9366768b295f7c73a1120c4f4461b44e7cb37a",
-        "account": "https://www.oklink.com/xlayer/address/0x9c960f794abD831c0d7Eb3A782F8a60031B2a324"
+        "tx": "https://www.okx.com/web3/explorer/xlayer/tx/0x57a1e3547687a8ff7ef97cb01b9366768b295f7c73a1120c4f4461b44e7cb37a",
+        "account": "https://www.okx.com/web3/explorer/xlayer/address/0x9c960f794abD831c0d7Eb3A782F8a60031B2a324"
       }
     },
     {
@@ -950,8 +950,8 @@
         ]
       },
       "links": {
-        "tx": "https://www.oklink.com/xlayer/tx/0x69a23927d56107894ba2b62a4c73829d5770c1db4194d8105a2ed8bb6319dce5",
-        "account": "https://www.oklink.com/xlayer/address/0xc1eA2A67C705FCDC8f7002bDC9B9861333f8F31B"
+        "tx": "https://www.okx.com/web3/explorer/xlayer/tx/0x69a23927d56107894ba2b62a4c73829d5770c1db4194d8105a2ed8bb6319dce5",
+        "account": "https://www.okx.com/web3/explorer/xlayer/address/0xc1eA2A67C705FCDC8f7002bDC9B9861333f8F31B"
       }
     },
     {
@@ -1189,8 +1189,8 @@
         ]
       },
       "links": {
-        "tx": "https://www.oklink.com/xlayer/tx/0x65fa37ad39f3d62ff4088ef352904ec9ee8520ec7ada0326652f13cccc2648ea",
-        "account": "https://www.oklink.com/xlayer/address/0xE687E29c1b4B94bCD3F4F45EDc84E4678E3Ec0eD"
+        "tx": "https://www.okx.com/web3/explorer/xlayer/tx/0x65fa37ad39f3d62ff4088ef352904ec9ee8520ec7ada0326652f13cccc2648ea",
+        "account": "https://www.okx.com/web3/explorer/xlayer/address/0xE687E29c1b4B94bCD3F4F45EDc84E4678E3Ec0eD"
       }
     },
     {
@@ -1242,8 +1242,8 @@
         ]
       },
       "links": {
-        "tx": "https://www.oklink.com/xlayer/tx/0xdbbec9cd6b0909f3e505e3927f6f9e8e3f60e63039fd2aaae9ac01a141dbf3f3",
-        "account": "https://www.oklink.com/xlayer/address/0x213fd75c2ad5330bAE28ef34B6D461890287F2D7"
+        "tx": "https://www.okx.com/web3/explorer/xlayer/tx/0xdbbec9cd6b0909f3e505e3927f6f9e8e3f60e63039fd2aaae9ac01a141dbf3f3",
+        "account": "https://www.okx.com/web3/explorer/xlayer/address/0x213fd75c2ad5330bAE28ef34B6D461890287F2D7"
       }
     },
     {
@@ -1295,8 +1295,8 @@
         ]
       },
       "links": {
-        "tx": "https://www.oklink.com/xlayer/tx/0x91e5a6585576e608318a33d7d616b0e6fe769bce3aa3510b9e08782ca11d7016",
-        "account": "https://www.oklink.com/xlayer/address/0x358bbf1E1850E3b0c3a18b896Adc2f1CAa95a7e3"
+        "tx": "https://www.okx.com/web3/explorer/xlayer/tx/0x91e5a6585576e608318a33d7d616b0e6fe769bce3aa3510b9e08782ca11d7016",
+        "account": "https://www.okx.com/web3/explorer/xlayer/address/0x358bbf1E1850E3b0c3a18b896Adc2f1CAa95a7e3"
       }
     }
   ],

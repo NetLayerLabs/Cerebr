@@ -8,13 +8,13 @@ IGNIX X Layer "TapeOut Genesis Transistor" hackathon. Deadline: **2026-10-09 06:
 |---|---|
 | Project name | Cerebr |
 | One-liner | A neural processor, taped out on X Layer: neurons compiled to NAND netlists, composed with REF and run onchain with `eval()`. |
-| Processor contract address (circuits) | [`0xB04EB79D1A5EECaabAAfF7B77d7c27578EE693FF`](https://www.oklink.com/xlayer/address/0xB04EB79D1A5EECaabAAfF7B77d7c27578EE693FF) (created 2026-10-05, [tx](https://www.oklink.com/xlayer/tx/0x3295efc1ceec4aba0f918f89e5316fd62f1f705abdc52d483715e4fcada86815)) |
-| Transistors contract address | [`0x84b5a5c6fE305319458113b87c09a2A241427D2D`](https://www.oklink.com/xlayer/address/0x84b5a5c6fE305319458113b87c09a2A241427D2D) |
-| Deployment wallet | [`0xc742AdA2872a042dD36D2E706907b4036968960C`](https://www.oklink.com/xlayer/address/0xc742AdA2872a042dD36D2E706907b4036968960C) (= `creator`) |
+| Processor contract address (circuits) | [`0xB04EB79D1A5EECaabAAfF7B77d7c27578EE693FF`](https://www.okx.com/web3/explorer/xlayer/address/0xB04EB79D1A5EECaabAAfF7B77d7c27578EE693FF) (created 2026-10-05, [tx](https://www.okx.com/web3/explorer/xlayer/tx/0x3295efc1ceec4aba0f918f89e5316fd62f1f705abdc52d483715e4fcada86815)) |
+| Transistors contract address | [`0x84b5a5c6fE305319458113b87c09a2A241427D2D`](https://www.okx.com/web3/explorer/xlayer/address/0x84b5a5c6fE305319458113b87c09a2A241427D2D) |
+| Deployment wallet | [`0xc742AdA2872a042dD36D2E706907b4036968960C`](https://www.okx.com/web3/explorer/xlayer/address/0xc742AdA2872a042dD36D2E706907b4036968960C) (= `creator`) |
 | Transistor supply cap / unit price | 1,000,000 at 0.00001 OKB per transistor; 1,251 minted to date (1,241 at launch + 10 on 2026-10-06), all by the deployment wallet ([ISSUANCE.md](ISSUANCE.md)) |
 | Circuits taped out | 15: #1-#14 catalog (2026-10-05) and #15 "Studio test neuron" via the live app (2026-10-06), all verified onchain and named in CerebrScope (table below) |
-| Flagship brain wallet | Open: `xor-net-ref` (#5) native account [`0x9E1d3eC3B3D0fe84997df0E065a96a7c93c13166`](https://www.oklink.com/xlayer/address/0x9E1d3eC3B3D0fe84997df0E065a96a7c93c13166) (open tx [0x8781…dad3](https://www.oklink.com/xlayer/tx/0x8781ed8467f4cef1d10dce3ec48cf1da99cfea615b250da8a352eda7a538dad3), 0.08 OKB) |
-| CerebrScope | [`0x2640F8E89b2B107919568FFd42dFb46A1866e528`](https://www.oklink.com/xlayer/address/0x2640F8E89b2B107919568FFd42dFb46A1866e528) (deploy tx [0x17d0…9cfd](https://www.oklink.com/xlayer/tx/0x17d01f5dbdc49a9dc88d6fc2f7b347dd55bc903e17fa70cfd2d34ea036359cfd); source verified on [Sourcify](https://repo.sourcify.dev/contracts/full_match/196/0x2640F8E89b2B107919568FFd42dFb46A1866e528/), exact match) |
+| Flagship brain wallet | Open: `xor-net-ref` (#5) native account [`0x9E1d3eC3B3D0fe84997df0E065a96a7c93c13166`](https://www.okx.com/web3/explorer/xlayer/address/0x9E1d3eC3B3D0fe84997df0E065a96a7c93c13166) (open tx [0x8781…dad3](https://www.okx.com/web3/explorer/xlayer/tx/0x8781ed8467f4cef1d10dce3ec48cf1da99cfea615b250da8a352eda7a538dad3), 0.08 OKB) |
+| CerebrScope | [`0x2640F8E89b2B107919568FFd42dFb46A1866e528`](https://www.okx.com/web3/explorer/xlayer/address/0x2640F8E89b2B107919568FFd42dFb46A1866e528) (deploy tx [0x17d0…9cfd](https://www.okx.com/web3/explorer/xlayer/tx/0x17d01f5dbdc49a9dc88d6fc2f7b347dd55bc903e17fa70cfd2d34ea036359cfd); source verified on [Sourcify](https://repo.sourcify.dev/contracts/full_match/196/0x2640F8E89b2B107919568FFd42dFb46A1866e528/), exact match) |
 | Demo video | **TODO_USER** (2 minutes; script below) |
 | dApp / landing page | https://usecerebr.vercel.app (landing) and https://usecerebr.vercel.app/app (dApp); verify in a browser before submitting |
 | Repository | https://github.com/NetLayerLabs/Cerebr (**currently private: make it public before submitting**) |
@@ -22,25 +22,25 @@ IGNIX X Layer "TapeOut Genesis Transistor" hackathon. Deadline: **2026-10-09 06:
 
 ### Circuits taped out (X Layer mainnet)
 
-Processor [`0xB04E…93FF`](https://www.oklink.com/xlayer/address/0xB04EB79D1A5EECaabAAfF7B77d7c27578EE693FF). #1-#14 were taped out by the launch script on 2026-10-05, which checked every circuit's `eval` (or `step`) against the simulator on every input. #15 was taped out through the live app's Circuit Studio during a real-wallet test on 2026-10-06. Flagships in bold.
+Processor [`0xB04E…93FF`](https://www.okx.com/web3/explorer/xlayer/address/0xB04EB79D1A5EECaabAAfF7B77d7c27578EE693FF). #1-#14 were taped out by the launch script on 2026-10-05, which checked every circuit's `eval` (or `step`) against the simulator on every input. #15 was taped out through the live app's Circuit Studio during a real-wallet test on 2026-10-06. Flagships in bold.
 
 | Id | Circuit | Elements | Tapeout tx |
 |---|---|---|---|
-| #1 | AND Neuron | 2 NAND | [0xeb5e…8254](https://www.oklink.com/xlayer/tx/0xeb5e9cedb905ad98209f04a40b2a93e7caaadce88f031b2bcb07f21d78d18254) |
-| #2 | OR Neuron | 3 NAND | [0x9dbc…0895](https://www.oklink.com/xlayer/tx/0x9dbcfd1e5b9a00083bd1058a83108778cb5f242a19e60f425bd782d8d7770895) |
-| #3 | Inhibitory Neuron (NAND) | 1 NAND | [0xab5b…8a81](https://www.oklink.com/xlayer/tx/0xab5badaeb079e3274b02a1642f4f345e4879f6f17373af732e6449dcc2168a81) |
-| #4 | The XOR Problem | 6 NAND | [0x4ace…30a8](https://www.oklink.com/xlayer/tx/0x4ace108c8ecb85f8ea47d6a13cc9e96c7e3013a4618ed086401cbce6519930a8) |
-| #5 | **The XOR Problem (REF-composed)** | 3 REF | [0xc3e1…b66e](https://www.oklink.com/xlayer/tx/0xc3e10087944a57070a3f4acf618992085d06d6af5e381b4675d9fd482976b66e) |
-| #6 | Majority-3 | 6 NAND | [0x2418…15ca](https://www.oklink.com/xlayer/tx/0x2418f266c2f0ba0b728813c8cf07999ec0fb41efdb81d42b7d1f2b941d3315ca) |
-| #7 | Majority-5 | 24 NAND | [0xb25b…5558](https://www.oklink.com/xlayer/tx/0xb25b7f1822c3aa229ec7931ba8728cdb656e8b56f11d430913f87ae095c95558) |
-| #8 | Go/No-Go Neuron | 19 NAND | [0xc58e…fd3d](https://www.oklink.com/xlayer/tx/0xc58e60186673067a51e6606901a65195267599730f716180b95ba4ef95d3fd3d) |
-| #9 | Line Cell | 4 NAND | [0xdcdf…3819](https://www.oklink.com/xlayer/tx/0xdcdf8f9a4bbb13b57b30f3a8f437499f68e8d0b9fd2e9f41d955043fb9233819) |
-| #10 | Any-of-3 Neuron | 6 NAND | [0x57a1…b37a](https://www.oklink.com/xlayer/tx/0x57a1e3547687a8ff7ef97cb01b9366768b295f7c73a1120c4f4461b44e7cb37a) |
-| #11 | Line Detector | 37 NAND | [0x69a2…dce5](https://www.oklink.com/xlayer/tx/0x69a23927d56107894ba2b62a4c73829d5770c1db4194d8105a2ed8bb6319dce5) |
-| #12 | **Line Detector (REF-composed)** | 11 REF | [0x65fa…48ea](https://www.oklink.com/xlayer/tx/0x65fa37ad39f3d62ff4088ef352904ec9ee8520ec7ada0326652f13cccc2648ea) |
-| #13 | 2-bit Adder | 14 NAND | [0xdbbe…f3f3](https://www.oklink.com/xlayer/tx/0xdbbec9cd6b0909f3e505e3927f6f9e8e3f60e63039fd2aaae9ac01a141dbf3f3) |
-| #14 | Integrate-and-Fire Neuron | 17 NAND + 2 LATCH | [0x91e5…7016](https://www.oklink.com/xlayer/tx/0x91e5a6585576e608318a33d7d616b0e6fe769bce3aa3510b9e08782ca11d7016) |
-| #15 | Studio test neuron, y = [x0 + x1 + x2 - x3 ≥ 2] | 16 NAND | [0x4133…1c15](https://www.oklink.com/xlayer/tx/0x413387037233847f2d2dd24c2bfa0733a5300d93e4e4f195d3ac9bd4ca1f1c15) |
+| #1 | AND Neuron | 2 NAND | [0xeb5e…8254](https://www.okx.com/web3/explorer/xlayer/tx/0xeb5e9cedb905ad98209f04a40b2a93e7caaadce88f031b2bcb07f21d78d18254) |
+| #2 | OR Neuron | 3 NAND | [0x9dbc…0895](https://www.okx.com/web3/explorer/xlayer/tx/0x9dbcfd1e5b9a00083bd1058a83108778cb5f242a19e60f425bd782d8d7770895) |
+| #3 | Inhibitory Neuron (NAND) | 1 NAND | [0xab5b…8a81](https://www.okx.com/web3/explorer/xlayer/tx/0xab5badaeb079e3274b02a1642f4f345e4879f6f17373af732e6449dcc2168a81) |
+| #4 | The XOR Problem | 6 NAND | [0x4ace…30a8](https://www.okx.com/web3/explorer/xlayer/tx/0x4ace108c8ecb85f8ea47d6a13cc9e96c7e3013a4618ed086401cbce6519930a8) |
+| #5 | **The XOR Problem (REF-composed)** | 3 REF | [0xc3e1…b66e](https://www.okx.com/web3/explorer/xlayer/tx/0xc3e10087944a57070a3f4acf618992085d06d6af5e381b4675d9fd482976b66e) |
+| #6 | Majority-3 | 6 NAND | [0x2418…15ca](https://www.okx.com/web3/explorer/xlayer/tx/0x2418f266c2f0ba0b728813c8cf07999ec0fb41efdb81d42b7d1f2b941d3315ca) |
+| #7 | Majority-5 | 24 NAND | [0xb25b…5558](https://www.okx.com/web3/explorer/xlayer/tx/0xb25b7f1822c3aa229ec7931ba8728cdb656e8b56f11d430913f87ae095c95558) |
+| #8 | Go/No-Go Neuron | 19 NAND | [0xc58e…fd3d](https://www.okx.com/web3/explorer/xlayer/tx/0xc58e60186673067a51e6606901a65195267599730f716180b95ba4ef95d3fd3d) |
+| #9 | Line Cell | 4 NAND | [0xdcdf…3819](https://www.okx.com/web3/explorer/xlayer/tx/0xdcdf8f9a4bbb13b57b30f3a8f437499f68e8d0b9fd2e9f41d955043fb9233819) |
+| #10 | Any-of-3 Neuron | 6 NAND | [0x57a1…b37a](https://www.okx.com/web3/explorer/xlayer/tx/0x57a1e3547687a8ff7ef97cb01b9366768b295f7c73a1120c4f4461b44e7cb37a) |
+| #11 | Line Detector | 37 NAND | [0x69a2…dce5](https://www.okx.com/web3/explorer/xlayer/tx/0x69a23927d56107894ba2b62a4c73829d5770c1db4194d8105a2ed8bb6319dce5) |
+| #12 | **Line Detector (REF-composed)** | 11 REF | [0x65fa…48ea](https://www.okx.com/web3/explorer/xlayer/tx/0x65fa37ad39f3d62ff4088ef352904ec9ee8520ec7ada0326652f13cccc2648ea) |
+| #13 | 2-bit Adder | 14 NAND | [0xdbbe…f3f3](https://www.okx.com/web3/explorer/xlayer/tx/0xdbbec9cd6b0909f3e505e3927f6f9e8e3f60e63039fd2aaae9ac01a141dbf3f3) |
+| #14 | Integrate-and-Fire Neuron | 17 NAND + 2 LATCH | [0x91e5…7016](https://www.okx.com/web3/explorer/xlayer/tx/0x91e5a6585576e608318a33d7d616b0e6fe769bce3aa3510b9e08782ca11d7016) |
+| #15 | Studio test neuron, y = [x0 + x1 + x2 - x3 ≥ 2] | 16 NAND | [0x4133…1c15](https://www.okx.com/web3/explorer/xlayer/tx/0x413387037233847f2d2dd24c2bfa0733a5300d93e4e4f195d3ac9bd4ca1f1c15) |
 
 ## Project description (about 330 words)
 
@@ -75,7 +75,7 @@ Small, verifiable intelligence that lives entirely onchain. A game, a DAO or an 
 | Depth of TapeOut integration | `createCPU`, `mint` (NAND and LATCH), `tapeout`, REF composition, `eval`, `step`, circuit NFTs, `opener.open` and `accountOf`. Every behaviour was verified on a mainnet fork and then on mainnet itself, and is documented in TAPEOUT.md. |
 | Product completeness and UX | Landing page, a dApp with Studio, Playground and Gallery, live fee quotes, guards against fund-locking mistakes, an SDK and a resumable launch script. |
 | Asset issuance design | A single transistor asset with a disclosed cap and price, burned by use, no allocation, and REF-driven reuse. The options and reasoning are in ISSUANCE.md. |
-| X Layer integration quality | Native OKB, OKX Wallet, OKLink links, and fast blocks that make tape-out-then-test feel live. |
+| X Layer integration quality | Native OKB, OKX Wallet, OKX Explorer links, and fast blocks that make tape-out-then-test feel live. |
 | Growth potential | Composable public neurons, plus an SDK and compiler other teams can use to build their own neural circuits. |
 | Contract security and economic model | No custody, exact-fee sends, CerebrScope with no admin and no payable functions, TapeOut's upgradeability and fees disclosed, and no wash trading (ISSUANCE.md §6). |
 
@@ -87,7 +87,7 @@ Record at 1440p in the dApp on X Layer mainnet, after launch, with OKX Wallet. K
 |---|---|---|
 | 0:00-0:10 | Landing hero with the live processor pinout, then a slow scroll to the Electrical characteristics table (minted / cap, circuits taped out, fees). | "This is Cerebr, a neural processor taped out on X Layer through TapeOut. These numbers are read live from our processor." |
 | 0:10-0:25 | XOR section: the network diagram, the input-plane plot and the truth table. | "A single neuron can't compute XOR, because no straight line separates the cases. Two layers can. Cerebr compiles each neuron to NAND gates and tapes it out." |
-| 0:25-0:40 | dApp, Processor view: the supply cap, unit price and fees. Mint 10 NAND and confirm in OKX Wallet. OKLink tx link appears. | "Transistors are the asset. The cap and price were fixed at deployment. I mint ten NAND, paying the unit price plus TapeOut's per-call fee, sent exactly." |
+| 0:25-0:40 | dApp, Processor view: the supply cap, unit price and fees. Mint 10 NAND and confirm in OKX Wallet. OKX Explorer tx link appears. | "Transistors are the asset. The cap and price were fixed at deployment. I mint ten NAND, paying the unit price plus TapeOut's per-call fee, sent exactly." |
 | 0:40-1:05 | Studio: choose "Threshold neuron" and set a **new** design that is not already on chain (for example weights +1 +1 +1 +1 -1, threshold 3; check it against #1-#15 first). The compiler shows the gate count and the truth table. Tap "Tape out", confirm, and name it onchain. The new circuit id appears. | "In the Studio I build a new neuron: four excitatory inputs, one inhibitory, threshold three. The compiler picks the smallest of four constructions and checks every input before tape-out." |
 | 1:05-1:25 | Playground: open the XOR (REF) circuit. Toggle x0 and x1 and the output lights up live through `eval`. Show "0 NAND + 3 REF". | "This XOR network is built from three neurons that were already taped out, linked with REF. It burned no new transistors. Every result here is a free eval call onchain." |
 | 1:25-1:40 | Playground: the integrate-and-fire neuron. Send spikes 1, 1, 1 and it fires on the third. Then send inhibit and the state resets. | "Neurons can have memory. This spiking neuron uses two latches and fires on every third spike, using TapeOut's step function." |

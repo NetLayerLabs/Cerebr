@@ -12,7 +12,7 @@ The terms below are live on X Layer mainnet since 2026-10-05. They were passed t
 |---|---|---|
 | Name / symbol | Cerebr / CRBR | `createCPU` |
 | Token standard | ERC-1155-style, two ids: `NAND` = 0, `LATCH` = 1 | TapeOut |
-| Transistors contract | [`0x84b5a5c6fE305319458113b87c09a2A241427D2D`](https://www.oklink.com/xlayer/address/0x84b5a5c6fE305319458113b87c09a2A241427D2D) | `createCPU` |
+| Transistors contract | [`0x84b5a5c6fE305319458113b87c09a2A241427D2D`](https://www.okx.com/web3/explorer/xlayer/address/0x84b5a5c6fE305319458113b87c09a2A241427D2D) | `createCPU` |
 | Supply cap | **1,000,000** | `createCPU(..., transistorSupply, ...)` |
 | Unit price | **0.00001 OKB** per transistor | `createCPU(..., mintPrice)` |
 | Who can mint | Anyone, at the same price, until the cap is reached | TapeOut |
@@ -84,7 +84,7 @@ The "buffered" output mode, which matches TapeOut's own compiler, adds 2 NAND pe
 | Creator revenue returned via `withdraw()` (1,241 × 0.00001) | −0.01241 |
 | **Net** | **0.02621748** |
 
-Brain wallet #5 was opened afterwards in 1 more transaction (0.08 OKB fee + 0.0000033 OKB gas, tx [0x8781…dad3](https://www.oklink.com/xlayer/tx/0x8781ed8467f4cef1d10dce3ec48cf1da99cfea615b250da8a352eda7a538dad3)). With it, `costs.net` in [`launch/out/196.json`](launch/out/196.json) is 0.10622082 OKB over 19 transactions.
+Brain wallet #5 was opened afterwards in 1 more transaction (0.08 OKB fee + 0.0000033 OKB gas, tx [0x8781…dad3](https://www.okx.com/web3/explorer/xlayer/tx/0x8781ed8467f4cef1d10dce3ec48cf1da99cfea615b250da8a352eda7a538dad3)). With it, `costs.net` in [`launch/out/196.json`](launch/out/196.json) is 0.10622082 OKB over 19 transactions.
 
 The 2026-10-06 real-wallet test (mint 10 NAND, tape out #15, name it) is outside these figures; see section 6.
 
@@ -115,7 +115,7 @@ Cerebr's only revenue is the unit price of transistors minted by others. Cerebr 
 Wash trading or self-trading disqualifies a hackathon entry, and we would not do it anyway.
 
 - **We disclose our own activity exactly.** At launch the deployment wallet minted 1,241 transistors in two public `mint()` calls at the public price: 141 were burned into the 14 catalog circuits, each taped out **once**. Launch transactions are listed in `launch/out/196.json` and linked from SUBMISSION.md and LAUNCH.md.
-- **The 2026-10-06 real-wallet test.** The owner tested the live app with the deployment wallet: one public `mint()` of 10 NAND ([0x1fb9…3f2a](https://www.oklink.com/xlayer/tx/0x1fb9dc0eb048bd2d88f985694dc7d7005235dfd7ff27790d44fd4d474af53f2a)), one tape-out of a new design, circuit #15 "Studio test neuron" (y = [x0 + x1 + x2 - x3 ≥ 2], 16 NAND, [0x4133…1c15](https://www.oklink.com/xlayer/tx/0x413387037233847f2d2dd24c2bfa0733a5300d93e4e4f195d3ac9bd4ca1f1c15)), and one CerebrScope label ([0xc5ff…95fb](https://www.oklink.com/xlayer/tx/0xc5ffa319abb3f5dd0202c4b194efaab71ab6f22d677074050d1403d0f33f95fb)). The 14 catalog circuits were also named onchain that day by `sdk/scripts/label-catalog.ts` (14 `setLabel` transactions, no OKB value).
+- **The 2026-10-06 real-wallet test.** The owner tested the live app with the deployment wallet: one public `mint()` of 10 NAND ([0x1fb9…3f2a](https://www.okx.com/web3/explorer/xlayer/tx/0x1fb9dc0eb048bd2d88f985694dc7d7005235dfd7ff27790d44fd4d474af53f2a)), one tape-out of a new design, circuit #15 "Studio test neuron" (y = [x0 + x1 + x2 - x3 ≥ 2], 16 NAND, [0x4133…1c15](https://www.okx.com/web3/explorer/xlayer/tx/0x413387037233847f2d2dd24c2bfa0733a5300d93e4e4f195d3ac9bd4ca1f1c15)), and one CerebrScope label ([0xc5ff…95fb](https://www.okx.com/web3/explorer/xlayer/tx/0xc5ffa319abb3f5dd0202c4b194efaab71ab6f22d677074050d1403d0f33f95fb)). The 14 catalog circuits were also named onchain that day by `sdk/scripts/label-catalog.ts` (14 `setLabel` transactions, no OKB value).
 - **Totals as of 2026-10-06.** `minted()` = 1,251, all minted by the deployment wallet; 157 burned (141 into #1-#14, 16 into #15); the creator holds **994 NAND + 100 LATCH** (0.11% of the cap) for building circuits later. Circuits #1-#15 are all owned by the creator and all labelled in CerebrScope. Only #5's brain wallet is opened.
 - **No transfers, no other wallets yet.** Every transistor and circuit transfer event since launch is a mint or burn by the creator. Nothing has moved between wallets, and no other wallet has minted or taped out yet.
 - **Shared deployment wallet.** The deployment wallet is also used by other NetLayer Labs projects; none of those transactions touch Cerebr's contracts.

@@ -27,13 +27,13 @@ The run is **idempotent and resumable**. `launch/state.196.json` is rewritten af
 
 | What | Value |
 |---|---|
-| Processor (circuits) | [`0xB04EB79D1A5EECaabAAfF7B77d7c27578EE693FF`](https://www.oklink.com/xlayer/address/0xB04EB79D1A5EECaabAAfF7B77d7c27578EE693FF) |
-| Transistors | [`0x84b5a5c6fE305319458113b87c09a2A241427D2D`](https://www.oklink.com/xlayer/address/0x84b5a5c6fE305319458113b87c09a2A241427D2D) |
-| Deployment wallet (creator) | [`0xc742AdA2872a042dD36D2E706907b4036968960C`](https://www.oklink.com/xlayer/address/0xc742AdA2872a042dD36D2E706907b4036968960C) |
-| `createCPU` | [0x3295…6815](https://www.oklink.com/xlayer/tx/0x3295efc1ceec4aba0f918f89e5316fd62f1f705abdc52d483715e4fcada86815): Cerebr / CRBR, cap 1,000,000, 0.00001 OKB |
-| Mint NAND | [0x8cd6…62e1](https://www.oklink.com/xlayer/tx/0x8cd6b747194cba30aafce82b85546b013daa9f314a878e9a04d5ae47b84f62e1): 1,139 (139 burned + 1,000 kept) |
-| Mint LATCH | [0xeaf3…563c](https://www.oklink.com/xlayer/tx/0xeaf30d1f02cf16dec19c77c229a1e62f38e259a7d9da1285cbeb4c3edd6e563c): 102 (2 burned + 100 kept) |
-| `withdraw()` | [0xcbda…f1f5](https://www.oklink.com/xlayer/tx/0xcbda8ac5f69e2c62077a10b4a3094f318682ae114d6c0d659e241c873052f1f5): 0.01241 OKB creator revenue returned |
+| Processor (circuits) | [`0xB04EB79D1A5EECaabAAfF7B77d7c27578EE693FF`](https://www.okx.com/web3/explorer/xlayer/address/0xB04EB79D1A5EECaabAAfF7B77d7c27578EE693FF) |
+| Transistors | [`0x84b5a5c6fE305319458113b87c09a2A241427D2D`](https://www.okx.com/web3/explorer/xlayer/address/0x84b5a5c6fE305319458113b87c09a2A241427D2D) |
+| Deployment wallet (creator) | [`0xc742AdA2872a042dD36D2E706907b4036968960C`](https://www.okx.com/web3/explorer/xlayer/address/0xc742AdA2872a042dD36D2E706907b4036968960C) |
+| `createCPU` | [0x3295…6815](https://www.okx.com/web3/explorer/xlayer/tx/0x3295efc1ceec4aba0f918f89e5316fd62f1f705abdc52d483715e4fcada86815): Cerebr / CRBR, cap 1,000,000, 0.00001 OKB |
+| Mint NAND | [0x8cd6…62e1](https://www.okx.com/web3/explorer/xlayer/tx/0x8cd6b747194cba30aafce82b85546b013daa9f314a878e9a04d5ae47b84f62e1): 1,139 (139 burned + 1,000 kept) |
+| Mint LATCH | [0xeaf3…563c](https://www.okx.com/web3/explorer/xlayer/tx/0xeaf30d1f02cf16dec19c77c229a1e62f38e259a7d9da1285cbeb4c3edd6e563c): 102 (2 burned + 100 kept) |
+| `withdraw()` | [0xcbda…f1f5](https://www.okx.com/web3/explorer/xlayer/tx/0xcbda8ac5f69e2c62077a10b4a3094f318682ae114d6c0d659e241c873052f1f5): 0.01241 OKB creator revenue returned |
 | Minted / listed | 1,241 minted at launch (1,251 to date, see below); `listedInTapeoutApp: true` |
 | Net cost | **0.02621748 OKB** for the 18-transaction run (0.03853 sent + 0.00009748 gas − 0.01241 withdrawn); the brain-wallet open below is 1 more transaction |
 
@@ -41,28 +41,28 @@ All 14 circuits were taped out once each and every one passed the onchain checks
 
 | Id | Circuit | Elements | Flat gates | Checked | Tapeout tx |
 |---|---|---|---|---|---|
-| #1 | and-neuron | 2 NAND | 2 | 4 inputs | [0xeb5e…8254](https://www.oklink.com/xlayer/tx/0xeb5e9cedb905ad98209f04a40b2a93e7caaadce88f031b2bcb07f21d78d18254) |
-| #2 | or-neuron | 3 NAND | 3 | 4 inputs | [0x9dbc…0895](https://www.oklink.com/xlayer/tx/0x9dbcfd1e5b9a00083bd1058a83108778cb5f242a19e60f425bd782d8d7770895) |
-| #3 | nand-neuron | 1 NAND | 1 | 4 inputs | [0xab5b…8a81](https://www.oklink.com/xlayer/tx/0xab5badaeb079e3274b02a1642f4f345e4879f6f17373af732e6449dcc2168a81) |
-| #4 | xor-net | 6 NAND | 6 | 4 inputs | [0x4ace…30a8](https://www.oklink.com/xlayer/tx/0x4ace108c8ecb85f8ea47d6a13cc9e96c7e3013a4618ed086401cbce6519930a8) |
-| #5 | **xor-net-ref** | 3 REF → #2, #3, #1 | 6 | 4 inputs | [0xc3e1…b66e](https://www.oklink.com/xlayer/tx/0xc3e10087944a57070a3f4acf618992085d06d6af5e381b4675d9fd482976b66e) |
-| #6 | majority-3 | 6 NAND | 6 | 8 inputs | [0x2418…15ca](https://www.oklink.com/xlayer/tx/0x2418f266c2f0ba0b728813c8cf07999ec0fb41efdb81d42b7d1f2b941d3315ca) |
-| #7 | majority-5 | 24 NAND | 24 | 32 inputs | [0xb25b…5558](https://www.oklink.com/xlayer/tx/0xb25b7f1822c3aa229ec7931ba8728cdb656e8b56f11d430913f87ae095c95558) |
-| #8 | threshold-neuron | 19 NAND | 19 | 32 inputs | [0xc58e…fd3d](https://www.oklink.com/xlayer/tx/0xc58e60186673067a51e6606901a65195267599730f716180b95ba4ef95d3fd3d) |
-| #9 | line-cell | 4 NAND | 4 | 8 inputs | [0xdcdf…3819](https://www.oklink.com/xlayer/tx/0xdcdf8f9a4bbb13b57b30f3a8f437499f68e8d0b9fd2e9f41d955043fb9233819) |
-| #10 | any-of-3 | 6 NAND | 6 | 8 inputs | [0x57a1…b37a](https://www.oklink.com/xlayer/tx/0x57a1e3547687a8ff7ef97cb01b9366768b295f7c73a1120c4f4461b44e7cb37a) |
-| #11 | line-detector | 37 NAND | 37 | 512 inputs | [0x69a2…dce5](https://www.oklink.com/xlayer/tx/0x69a23927d56107894ba2b62a4c73829d5770c1db4194d8105a2ed8bb6319dce5) |
-| #12 | **line-detector-ref** | 11 REF → #9 ×8, #10 ×2, #2 | 47 | 512 inputs | [0x65fa…48ea](https://www.oklink.com/xlayer/tx/0x65fa37ad39f3d62ff4088ef352904ec9ee8520ec7ada0326652f13cccc2648ea) |
-| #13 | adder-2bit | 14 NAND | 14 | 16 inputs | [0xdbbe…f3f3](https://www.oklink.com/xlayer/tx/0xdbbec9cd6b0909f3e505e3927f6f9e8e3f60e63039fd2aaae9ac01a141dbf3f3) |
-| #14 | spiking-neuron | 17 NAND + 2 LATCH | 19 | 16 state × input | [0x91e5…7016](https://www.oklink.com/xlayer/tx/0x91e5a6585576e608318a33d7d616b0e6fe769bce3aa3510b9e08782ca11d7016) |
+| #1 | and-neuron | 2 NAND | 2 | 4 inputs | [0xeb5e…8254](https://www.okx.com/web3/explorer/xlayer/tx/0xeb5e9cedb905ad98209f04a40b2a93e7caaadce88f031b2bcb07f21d78d18254) |
+| #2 | or-neuron | 3 NAND | 3 | 4 inputs | [0x9dbc…0895](https://www.okx.com/web3/explorer/xlayer/tx/0x9dbcfd1e5b9a00083bd1058a83108778cb5f242a19e60f425bd782d8d7770895) |
+| #3 | nand-neuron | 1 NAND | 1 | 4 inputs | [0xab5b…8a81](https://www.okx.com/web3/explorer/xlayer/tx/0xab5badaeb079e3274b02a1642f4f345e4879f6f17373af732e6449dcc2168a81) |
+| #4 | xor-net | 6 NAND | 6 | 4 inputs | [0x4ace…30a8](https://www.okx.com/web3/explorer/xlayer/tx/0x4ace108c8ecb85f8ea47d6a13cc9e96c7e3013a4618ed086401cbce6519930a8) |
+| #5 | **xor-net-ref** | 3 REF → #2, #3, #1 | 6 | 4 inputs | [0xc3e1…b66e](https://www.okx.com/web3/explorer/xlayer/tx/0xc3e10087944a57070a3f4acf618992085d06d6af5e381b4675d9fd482976b66e) |
+| #6 | majority-3 | 6 NAND | 6 | 8 inputs | [0x2418…15ca](https://www.okx.com/web3/explorer/xlayer/tx/0x2418f266c2f0ba0b728813c8cf07999ec0fb41efdb81d42b7d1f2b941d3315ca) |
+| #7 | majority-5 | 24 NAND | 24 | 32 inputs | [0xb25b…5558](https://www.okx.com/web3/explorer/xlayer/tx/0xb25b7f1822c3aa229ec7931ba8728cdb656e8b56f11d430913f87ae095c95558) |
+| #8 | threshold-neuron | 19 NAND | 19 | 32 inputs | [0xc58e…fd3d](https://www.okx.com/web3/explorer/xlayer/tx/0xc58e60186673067a51e6606901a65195267599730f716180b95ba4ef95d3fd3d) |
+| #9 | line-cell | 4 NAND | 4 | 8 inputs | [0xdcdf…3819](https://www.okx.com/web3/explorer/xlayer/tx/0xdcdf8f9a4bbb13b57b30f3a8f437499f68e8d0b9fd2e9f41d955043fb9233819) |
+| #10 | any-of-3 | 6 NAND | 6 | 8 inputs | [0x57a1…b37a](https://www.okx.com/web3/explorer/xlayer/tx/0x57a1e3547687a8ff7ef97cb01b9366768b295f7c73a1120c4f4461b44e7cb37a) |
+| #11 | line-detector | 37 NAND | 37 | 512 inputs | [0x69a2…dce5](https://www.okx.com/web3/explorer/xlayer/tx/0x69a23927d56107894ba2b62a4c73829d5770c1db4194d8105a2ed8bb6319dce5) |
+| #12 | **line-detector-ref** | 11 REF → #9 ×8, #10 ×2, #2 | 47 | 512 inputs | [0x65fa…48ea](https://www.okx.com/web3/explorer/xlayer/tx/0x65fa37ad39f3d62ff4088ef352904ec9ee8520ec7ada0326652f13cccc2648ea) |
+| #13 | adder-2bit | 14 NAND | 14 | 16 inputs | [0xdbbe…f3f3](https://www.okx.com/web3/explorer/xlayer/tx/0xdbbec9cd6b0909f3e505e3927f6f9e8e3f60e63039fd2aaae9ac01a141dbf3f3) |
+| #14 | spiking-neuron | 17 NAND + 2 LATCH | 19 | 16 state × input | [0x91e5…7016](https://www.okx.com/web3/explorer/xlayer/tx/0x91e5a6585576e608318a33d7d616b0e6fe769bce3aa3510b9e08782ca11d7016) |
 
 **Completed after the initial run (2026-10-05):**
-- Flagship brain wallet opened: Open: `xor-net-ref` (#5) native account [`0x9E1d3eC3B3D0fe84997df0E065a96a7c93c13166`](https://www.oklink.com/xlayer/address/0x9E1d3eC3B3D0fe84997df0E065a96a7c93c13166) (open tx [0x8781…dad3](https://www.oklink.com/xlayer/tx/0x8781ed8467f4cef1d10dce3ec48cf1da99cfea615b250da8a352eda7a538dad3), 0.08 OKB).
-- CerebrScope deployed: [`0x2640F8E89b2B107919568FFd42dFb46A1866e528`](https://www.oklink.com/xlayer/address/0x2640F8E89b2B107919568FFd42dFb46A1866e528) (deploy tx [0x17d0…9cfd](https://www.oklink.com/xlayer/tx/0x17d01f5dbdc49a9dc88d6fc2f7b347dd55bc903e17fa70cfd2d34ea036359cfd); source verified on [Sourcify](https://repo.sourcify.dev/contracts/full_match/196/0x2640F8E89b2B107919568FFd42dFb46A1866e528/), exact match).
+- Flagship brain wallet opened: Open: `xor-net-ref` (#5) native account [`0x9E1d3eC3B3D0fe84997df0E065a96a7c93c13166`](https://www.okx.com/web3/explorer/xlayer/address/0x9E1d3eC3B3D0fe84997df0E065a96a7c93c13166) (open tx [0x8781…dad3](https://www.okx.com/web3/explorer/xlayer/tx/0x8781ed8467f4cef1d10dce3ec48cf1da99cfea615b250da8a352eda7a538dad3), 0.08 OKB).
+- CerebrScope deployed: [`0x2640F8E89b2B107919568FFd42dFb46A1866e528`](https://www.okx.com/web3/explorer/xlayer/address/0x2640F8E89b2B107919568FFd42dFb46A1866e528) (deploy tx [0x17d0…9cfd](https://www.okx.com/web3/explorer/xlayer/tx/0x17d01f5dbdc49a9dc88d6fc2f7b347dd55bc903e17fa70cfd2d34ea036359cfd); source verified on [Sourcify](https://repo.sourcify.dev/contracts/full_match/196/0x2640F8E89b2B107919568FFd42dFb46A1866e528/), exact match).
 
 **After launch (2026-10-06):**
 - Catalog circuits #1-#14 named onchain in CerebrScope by `sdk/scripts/label-catalog.ts` (14 `setLabel` transactions).
-- Real-wallet test of the live app's Circuit Studio by the deployment wallet: mint 10 NAND ([0x1fb9…3f2a](https://www.oklink.com/xlayer/tx/0x1fb9dc0eb048bd2d88f985694dc7d7005235dfd7ff27790d44fd4d474af53f2a)), tape out a new design as **#15** "Studio test neuron", y = [x0 + x1 + x2 - x3 ≥ 2], 4 → 1, 16 NAND ([0x4133…1c15](https://www.oklink.com/xlayer/tx/0x413387037233847f2d2dd24c2bfa0733a5300d93e4e4f195d3ac9bd4ca1f1c15)), and name it onchain ([0xc5ff…95fb](https://www.oklink.com/xlayer/tx/0xc5ffa319abb3f5dd0202c4b194efaab71ab6f22d677074050d1403d0f33f95fb)).
+- Real-wallet test of the live app's Circuit Studio by the deployment wallet: mint 10 NAND ([0x1fb9…3f2a](https://www.okx.com/web3/explorer/xlayer/tx/0x1fb9dc0eb048bd2d88f985694dc7d7005235dfd7ff27790d44fd4d474af53f2a)), tape out a new design as **#15** "Studio test neuron", y = [x0 + x1 + x2 - x3 ≥ 2], 4 → 1, 16 NAND ([0x4133…1c15](https://www.okx.com/web3/explorer/xlayer/tx/0x413387037233847f2d2dd24c2bfa0733a5300d93e4e4f195d3ac9bd4ca1f1c15)), and name it onchain ([0xc5ff…95fb](https://www.okx.com/web3/explorer/xlayer/tx/0xc5ffa319abb3f5dd0202c4b194efaab71ab6f22d677074050d1403d0f33f95fb)).
 - State after that: `minted()` 1,251, 157 burned (141 into #1-#14, 16 into #15), creator holds 994 NAND + 100 LATCH, `owed()` 0.0001 OKB (not withdrawn), circuits #1-#15 all owned by the creator and all labelled. These transactions are not in `launch/out/196.json`, which records the launch run only. Disclosed in [ISSUANCE.md](ISSUANCE.md) §6.
 
 ## Issuance terms (disclosed on chain at `createCPU`)
@@ -143,7 +143,7 @@ node --env-file=.env scripts/launch.ts --network xlayer --yes
 
 Mainnet needs all three of `--network xlayer`, `PRIVATE_KEY` and `--yes`, and the RPC must not be local. The run takes about a minute on X Layer (18 transactions, plus 1 for the brain-wallet open). If it stops for any reason, run **the same command** again.
 
-### 6b. Deploy CerebrScope (done: [`0x2640…e528`](https://www.oklink.com/xlayer/address/0x2640F8E89b2B107919568FFd42dFb46A1866e528), Sourcify-verified)
+### 6b. Deploy CerebrScope (done: [`0x2640…e528`](https://www.okx.com/web3/explorer/xlayer/address/0x2640F8E89b2B107919568FFd42dFb46A1866e528), Sourcify-verified)
 
 CerebrScope is a separate, no-admin lens contract (4.60M gas on mainnet, about 0.00009 OKB). It is not part of the hackathon's required deployment, but the demo shows its onchain images. From the repo root, rehearse on a fork first, then sign on mainnet yourself:
 
@@ -156,9 +156,9 @@ CEREBR_CIRCUITS=<processor.circuits> forge script script/DeployScope.s.sol --rpc
 
 Then put the printed address in `launch/config.json` as `"scope": "0x..."` and run `node scripts/launch.ts --network xlayer --verify-only --as 0xYOUR_WALLET`. The launcher checks that the address is a CerebrScope bound to the TapeOut factory and writes `scope` into `out/196.json`; `cd app && npm run sync` then turns on the Scope images. (Alternatively set `VITE_SCOPE_196` at build time.) Without it, the dApp draws the same die shots client-side from the netlists; reword the demo line about onchain rendering in that case.
 
-### 7. Verify on OKLink and re-check (done: all 14 launch circuits verified; meets the TapeOut app listing rule)
+### 7. Verify on OKX Explorer and re-check (done: all 14 launch circuits verified; meets the TapeOut app listing rule)
 
-- The processor is at `https://www.oklink.com/xlayer/address/<processor.circuits>`. All links are in `launch/out/196.json`.
+- The processor is at `https://www.okx.com/web3/explorer/xlayer/address/<processor.circuits>`. All links are in `launch/out/196.json`.
 - Find the `CPUCreated` event in the `createCPU` transaction (`processor.links.createTx`), and one `TapedOut` event per circuit transaction.
 - Run `node scripts/launch.ts --network xlayer --verify-only --as 0xYOUR_WALLET` to re-run every onchain check without a key and refresh `out/196.json`.
 - `listedInTapeoutApp: true` means the processor meets the TapeOut app's listing rule (supply cap ≥ 10,000 and minted ≥ 1). Check that it shows up at tapeout.net.
@@ -216,7 +216,7 @@ interface LaunchOut {
   chainId: number;                // 196 (mainnet; a fork may also report 31337)
   generatedAt: string;            // ISO time
   block: string;                  // block height when the file was written
-  explorer: 'https://www.oklink.com/xlayer';
+  explorer: 'https://www.okx.com/web3/explorer/xlayer';
   deployer: Address;              // the deployment wallet (= processor.creator)
   tapeout: {
     factory: Address; opener: Address; registry: Address; accountImpl: Address; multicall3: Address;
