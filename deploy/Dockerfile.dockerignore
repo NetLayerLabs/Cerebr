@@ -1,0 +1,19 @@
+# BuildKit reads deploy/Dockerfile.dockerignore for deploy/Dockerfile. Keeps the context small and secret-free.
+.git
+**/node_modules
+**/dist
+**/.env
+**/.env.*
+!app/.env.example
+lib
+out
+cache
+broadcast
+media
+test
+script
+agent
+sdk/test
+sdk/scripts
+sdk/reference
+launch/state.*
