@@ -97,7 +97,7 @@ export const andNeuron = neuronCircuit({
   id: 'and-neuron',
   name: 'AND Neuron',
   description: 'Two excitatory synapses (w=+1,+1), threshold 2: fires only when both inputs spike.',
-  story: 'A coincidence detector — the neuron that only believes two witnesses at once.',
+  story: 'A coincidence detector - the neuron that only believes two witnesses at once.',
   inputs: ['x0', 'x1'],
   outputs: ['y'],
 }, AND2);
@@ -115,7 +115,7 @@ export const nandNeuron = neuronCircuit({
   id: 'nand-neuron',
   name: 'Inhibitory Neuron (NAND)',
   description: 'Two inhibitory synapses (w=-1,-1), threshold -1: silent only when both inputs spike.',
-  story: 'Built from the very gate the processor mints — one NAND, one neuron.',
+  story: 'Built from the very gate the processor mints - one NAND, one neuron.',
   inputs: ['x0', 'x1'],
   outputs: ['y'],
 }, NAND2);
@@ -163,7 +163,7 @@ export const lineCell = neuronCircuit({
   id: 'line-cell',
   name: 'Line Cell',
   description: 'Three excitatory synapses, threshold 3: fires when all three pixels of a stroke are lit.',
-  story: 'A receptive field three pixels long — the first stage of the line detector.',
+  story: 'A receptive field three pixels long - the first stage of the line detector.',
   inputs: ['p0', 'p1', 'p2'],
   outputs: ['y'],
 }, LINE3);
@@ -195,7 +195,7 @@ const XOR_LAYERS: NeuronSpec[][] = [[OR2, NAND2], [AND2]];
 const xorMeta = {
   name: 'The XOR Problem',
   description: 'Two-layer network: hidden OR-neuron and NAND-neuron, output AND-neuron. y = x0 XOR x1.',
-  story: 'Minsky & Papert showed a single perceptron cannot learn XOR. Two layers can — here, in NAND gates, on chain.',
+  story: 'Minsky & Papert showed a single perceptron cannot learn XOR. Two layers can - here, in NAND gates, on chain.',
   inputs: ['x0', 'x1'],
   outputs: ['y'],
 };
@@ -223,7 +223,7 @@ const LINE_LAYERS: NeuronSpec[][] = [LINE_HIDDEN, [pool([0, 1, 2], 'horizontal')
 const lineMeta = {
   name: 'Line Detector',
   description: '3×3 binarized network: 8 line cells (3 rows, 3 columns, 2 diagonals; w=+1 on the stroke, θ=3) pooled by any-of neurons (θ=1). Outputs are multi-hot [horizontal, vertical, diagonal]; all zero means no line.',
-  story: 'A miniature visual cortex: simple cells tuned to orientation, complex cells pooling them — 512 images, every answer on chain.',
+  story: 'A miniature visual cortex: simple cells tuned to orientation, complex cells pooling them - 512 images, every answer on chain.',
   inputs: PIXELS,
   outputs: ['horizontal', 'vertical', 'diagonal'],
 };
@@ -271,7 +271,7 @@ export const spikingNeuron: NeuralCircuit = {
   id: 'spiking-neuron',
   name: 'Integrate-and-Fire Neuron',
   description: 'Sequential neuron with a 2-bit membrane potential in two LATCHes: integrates input spikes, fires on the third and resets; `inhibit` clears it. Run with step().',
-  story: 'The neuron remembers. Its potential lives in latches between calls — a heartbeat of state on chain.',
+  story: 'The neuron remembers. Its potential lives in latches between calls - a heartbeat of state on chain.',
   inputs: ['spike', 'inhibit'],
   outputs: ['fire'],
   state: ['p0', 'p1'],

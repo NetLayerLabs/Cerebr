@@ -71,7 +71,7 @@ export interface GateCounts {
 export interface Netlist {
   nIn: number;
   nOut: number;
-  /** Number of state bits (one per LATCH, plus the state of REF'd sequential sub-circuits — unknown here, so LATCH only). */
+  /** Number of state bits (one per LATCH, plus the state of REF'd sequential sub-circuits - unknown here, so LATCH only). */
   nLatch: number;
   elements: Element[];
   counts: GateCounts;

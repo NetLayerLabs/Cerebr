@@ -1,4 +1,4 @@
-// @cerebr/sdk — neural-circuit compiler (neuro) + TapeOut X Layer client (tapeout).
+// @cerebr/sdk - neural-circuit compiler (neuro) + TapeOut X Layer client (tapeout).
 
 export * from './neuro/index.ts';
 export * as neuro from './neuro/index.ts';
