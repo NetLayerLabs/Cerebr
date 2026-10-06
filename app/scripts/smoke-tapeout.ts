@@ -7,6 +7,8 @@
 //   FORK_RPC=http://127.0.0.1:8564 node --import ./scripts/sdk-alias.mjs scripts/smoke-tapeout.ts
 //
 // Env: CPU=0x<circuits>  reuse an existing CPU on the fork instead of creating one
+//      CHAIN_ID=<id>     the fork's --chain-id (default 31337)
+//      SCOPE=0x<scope>   CerebrScope to test labels against (default: the mainnet deployment)
 //      OUT=<file>        write a launch-style record ({chainId, fork, cpu, catalog}) for sync-cpu.mjs
 
 import { writeFileSync } from 'node:fs'
@@ -24,13 +26,17 @@ import {
   circuitsAbi,
   type Wallet,
 } from '@cerebr/sdk/tapeout'
-import { makeXLayerFork } from '../src/config/chains.ts'
+import { FORK_CHAIN_ID, makeXLayerFork } from './fork-chain.ts'
+import { generatedCpus } from '../src/generated/cpus.ts'
+import { fitLabel, readLabels, scopeAbi, setLabelTx } from '../src/lib/scope.ts'
 import {
   TAPEOUT,
   addToIndex,
   compileDesign,
+  fallbackLabel,
   identifyCircuits,
   indexByNetlist,
+  resolveLabel,
   loadProgram,
   mintTx,
   openTx,
@@ -44,10 +50,8 @@ import {
 import { dieShotSvg } from '../src/lib/dieShot.ts'
 
 const rpc = process.env.FORK_RPC ?? 'http://127.0.0.1:8564'
-const host = new URL(rpc).hostname
-if (host !== '127.0.0.1' && host !== 'localhost') throw new Error(`refusing non-local RPC ${rpc}: forks only`)
-
-const chain = makeXLayerFork(rpc)
+const chain = makeXLayerFork(rpc, Number(process.env.CHAIN_ID ?? FORK_CHAIN_ID))
+const SCOPE = (process.env.SCOPE ?? generatedCpus[196]?.scope) as Address | undefined
 const pc = createPublicClient({ chain, transport: http(rpc) }) as PublicClient
 // Anvil dev account #2 (unlocked). #0, #1 and #5 carry EIP-7702 delegations on X Layer mainnet, so
 // on a fork they are contracts that reject ERC-1155 transistors (ERC1155InvalidReceiver).
@@ -87,7 +91,7 @@ async function main() {
     const created = await createCpu(wc, pc, {
       name: 'Cerebr',
       symbol: 'CRBR',
-      story: 'A neural processor: threshold neurons, majority votes and a line detector, compiled to NAND and run on-chain.',
+      story: 'A neural processor: threshold neurons, majority votes and a line detector, compiled to NAND and run onchain.',
       supply: 100_000n,
       mintPrice: parseEther('0.000066'),
     })
@@ -164,7 +168,37 @@ async function main() {
     check(`identify #${catalog[id]} as ${id}`, got === id, got ?? 'unrecognised')
   }
 
-  // 4. the playground's view: on-chain eval / step against the local simulator loaded from chain
+  // 3b. CerebrScope labels: the studio's "Name it onchain" step and the gallery's "Name onchain"
+  //     (setLabelTx, as useTx sends it), then the multicall read every view uses (readLabels).
+  if (SCOPE && (await pc.getCode({ address: SCOPE }))) {
+    const target = [...list].reverse().find((c) => c.owner.toLowerCase() === me.toLowerCase())
+    if (target) {
+      const label = fitLabel(labels.get(target.id) ?? { ...fallbackLabel(target), name: `Smoke test #${target.id}` }, target.nIn, target.nOut)
+      await send('setLabel', setLabelTx(SCOPE, circuits, target.id, label))
+      const got = (await readLabels(pc, SCOPE, circuits, [target.id], TAPEOUT.multicall3)).get(target.id)
+      const shown = resolveLabel(target, got, labels.get(target.id))
+      check(
+        `CerebrScope label #${target.id}`,
+        got?.name === label.name && got.inputs.join() === label.inputs.join() && shown.name === label.name,
+        `"${got?.name}" in [${got?.inputs.join(' ')}] out [${got?.outputs.join(' ')}]`,
+      )
+      const tooLong = { ...label, name: 'x'.repeat(65) }
+      const reverted = await pc
+        .simulateContract({ ...setLabelTx(SCOPE, circuits, target.id, tooLong), account: me } as never)
+        .then(() => '')
+        .catch((e: Error) => e.message)
+      check('setLabel rejects a 65-byte name', /LabelTooLong/.test(reverted))
+      const notOwner = await pc
+        .simulateContract({ address: SCOPE, abi: scopeAbi, functionName: 'setLabel', args: [circuits, target.id, label], account: '0x000000000000000000000000000000000000dEaD' })
+        .then(() => '')
+        .catch((e: Error) => e.message)
+      check('setLabel rejects a non-owner', /NotCircuitOwner/.test(notOwner))
+    }
+  } else {
+    console.log('skip  CerebrScope labels (no scope on this fork)')
+  }
+
+  // 4. the playground's view: onchain eval / step against the local simulator loaded from chain
   const cache = new Map()
   for (const c of list) {
     const prog = await loadProgram(pc, circuits, c.id, cache, c)

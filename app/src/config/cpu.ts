@@ -13,7 +13,7 @@ export type CpuConfig = {
   circuits: Address
   /** The CPU's transistors contract (ERC-1155 NAND / LATCH). */
   transistors?: Address
-  /** CerebrScope (on-chain die shots + metadata), when deployed. */
+  /** CerebrScope (onchain die shots + metadata), when deployed. */
   scope?: Address
   /** Block of createCPU, if known. */
   block?: number

@@ -8,8 +8,8 @@
 // Also accepted (extra fields are ignored):
 //   {
 //     "chainId": 196,                       // or the file name: 196.json
-//     "fork": false,                        // true (or a file named fork*.json / *-fork.json / *.fork.json)
-//                                           //   -> the local X Layer fork, chain 31337 in the app
+//     "fork": false,                        // true (or a file named fork*.json / *-fork.json / *.fork.json):
+//                                           //   a fork rehearsal, always skipped (the app is X Layer mainnet only)
 //     "cpu": { "circuits": "0x..", "transistors": "0x..", "block": 123 },
 //                                           //   (or "circuits" / "transistors" at the top level)
 //     "scope": "0x..",                      // CerebrScope, optional (also "cerebrScope")
@@ -21,7 +21,6 @@ import { readdirSync, readFileSync, writeFileSync, existsSync, mkdirSync } from 
 import { dirname, join, resolve, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-const FORK_CHAIN_ID = 31337
 const here = dirname(fileURLToPath(import.meta.url))
 const appRoot = resolve(here, '..')
 const dir = resolve(appRoot, process.argv[2] ?? '../launch/out')
@@ -49,13 +48,17 @@ if (existsSync(dir)) {
     if (!f.endsWith('.json') || f.endsWith('.dry-run.json')) continue
     const j = JSON.parse(readFileSync(join(dir, f), 'utf8'))
     const fork = j.fork === true || j.network === 'fork' || /(^fork|[-.]fork\.json$)/.test(f)
-    // Fork rehearsals are left out unless asked for (npm run sync -- --fork): the app ships mainnet only.
-    if (fork && !process.argv.includes('--fork')) {
-      console.log(`skip: ${f} (fork record; pass --fork to include it)`)
+    // Fork rehearsals are never shipped: the app runs on X Layer mainnet only.
+    if (fork) {
+      console.log(`skip: ${f} (fork record)`)
       continue
     }
-    const chainId = fork ? FORK_CHAIN_ID : Number(j.chainId ?? /^(\d+)\.json$/.exec(f)?.[1])
+    const chainId = Number(j.chainId ?? /^(\d+)\.json$/.exec(f)?.[1])
     if (!Number.isInteger(chainId)) throw new Error(`${f}: no chainId`)
+    if (chainId !== 196) {
+      console.log(`skip: ${f} (chain ${chainId}: the app runs on X Layer mainnet, 196, only)`)
+      continue
+    }
     const cpu = j.processor ?? j.cpu ?? j
     const circuits = cpu.circuits
     if (!isAddr(circuits)) throw new Error(`${f}: missing CPU circuits address`)
@@ -69,7 +72,7 @@ if (existsSync(dir)) {
       ...(block ? { block } : {}),
       catalog: catalogOf(j),
     }
-    console.log(`cpu: chain ${chainId}${fork ? ' (fork)' : ''} circuits ${circuits}${scope ? ` scope ${scope}` : ''} (${f})`)
+    console.log(`cpu: chain ${chainId} circuits ${circuits}${scope ? ` scope ${scope}` : ''} (${f})`)
   }
 } else {
   console.log(`no ${dir}: writing an empty config`)

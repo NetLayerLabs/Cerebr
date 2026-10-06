@@ -10,7 +10,7 @@ import { GalleryView } from './views/GalleryView.tsx'
 
 export function App() {
   const route = useRoute()
-  const { chain, isFork } = useNet()
+  const { chain } = useNet()
   const { cfg, cpu, error } = useCpu()
 
   return (
@@ -28,16 +28,7 @@ export function App() {
         {!cfg ? (
           <div className="card notice">
             <h2>No Cerebr processor on {chain?.name ?? 'this network'} yet</h2>
-            <p className="muted">
-              {isFork ? (
-                <>
-                  Start a fork (<code>anvil --fork-url https://rpc.xlayer.tech --chain-id 31337</code>), run the launch
-                  script against it, then <code>npm run sync</code>. Or open any TapeOut CPU with <code>?cpu=0x…</code>.
-                </>
-              ) : (
-                <>The processor is created through the TapeOut factory at launch.</>
-              )}
-            </p>
+            <p className="muted">The processor is created through the TapeOut factory at launch.</p>
           </div>
         ) : error && !cpu ? (
           <div className="card notice">
