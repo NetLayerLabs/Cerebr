@@ -5,6 +5,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { wagmiConfig } from './wagmi.ts'
 import { ToastProvider } from './hooks/useToasts.tsx'
 import { Landing } from './landing/Landing.tsx'
+import { I18nProvider } from './i18n/index.tsx'
+import './theme.ts'
 import './styles.css'
 
 // Landing page at '/', the dApp at '/app' (code-split so the landing page loads fast).
@@ -19,15 +21,17 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
-        <ToastProvider>
-          {isApp ? (
-            <Suspense fallback={null}>
-              <App />
-            </Suspense>
-          ) : (
-            <Landing />
-          )}
-        </ToastProvider>
+        <I18nProvider>
+          <ToastProvider>
+            {isApp ? (
+              <Suspense fallback={null}>
+                <App />
+              </Suspense>
+            ) : (
+              <Landing />
+            )}
+          </ToastProvider>
+        </I18nProvider>
       </QueryClientProvider>
     </WagmiProvider>
   </StrictMode>,

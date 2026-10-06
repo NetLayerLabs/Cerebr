@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "sync": "node scripts/sync-cpu.mjs",
-    "smoke": "node --import ./scripts/sdk-alias.mjs scripts/smoke-tapeout.ts"
+    "smoke": "node --import ./scripts/sdk-alias.mjs scripts/smoke-tapeout.ts",
+    "i18n:check": "node --import ./scripts/sdk-alias.mjs scripts/i18n-check.ts"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.104.1",
