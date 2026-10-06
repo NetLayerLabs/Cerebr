@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-/** Tab order = §01..§07 numbering (a CSS counter). Labels are i18n keys `nav.<id>` (core namespace). */
+/** Tab order (each tab has a glyph in components/NavIcons.tsx). Labels are i18n keys `nav.<id>` (core namespace). */
 export const VIEWS = [
   ['processor', 'Processor'],
   ['studio', 'Circuit Studio'],

@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { useCpu, useNet } from './hooks/useCpu.ts'
+import { NavIcon } from './components/NavIcons.tsx'
 import { VIEWS, href, useRoute } from './hooks/useRoute.ts'
 import { Header } from './components/Header.tsx'
 import { SiteFooter } from './components/SiteFooter.tsx'
@@ -35,6 +36,7 @@ export function App() {
       <nav className="nav" ref={navRef} aria-label={t('nav.aria')}>
         {VIEWS.map(([id]) => (
           <a key={id} href={href(id)} className={route.view === id ? 'on' : ''} aria-current={route.view === id ? 'page' : undefined}>
+            <NavIcon view={id} />
             {t(`nav.${id}`)}
           </a>
         ))}
