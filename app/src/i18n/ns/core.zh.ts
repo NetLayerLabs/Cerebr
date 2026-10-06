@@ -312,6 +312,12 @@ export const zh: CoreDict = {
   'hdr.openMm': '在 MetaMask 中打开',
   'hdr.noWalletMobile': '当前浏览器中没有钱包。请在钱包 App 中打开 Cerebr，然后连接：',
   'hdr.noWalletDesktop': '或在钱包 App 中打开此页面：',
+  'hdr.menuTitle': '选择钱包',
+  'hdr.tagDetected': '已检测',
+  'hdr.tagInjected': '注入',
+  'hdr.tagInstall': '安装',
+  'hdr.tagApp': 'App',
+  'hdr.menuFoot': 'Cerebr 绝不会索要你的助记词。每笔交易都由你在钱包中确认。',
 
   // site footer (components/SiteFooter.tsx)
   'sf.tagline': 'X Layer 上的神经网络处理器。神经元被编译为 NAND，在 TapeOut 上流片，并在链上运行。',

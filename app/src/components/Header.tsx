@@ -29,6 +29,69 @@ function useWalletOptions(t: T) {
     .sort((a, b) => Number(b.okx) - Number(a.okx))
 }
 
+type MenuRow = {
+  key: string
+  label: string
+  /** Wallet icon (EIP-6963 data URI); the glyph tile is the fallback. */
+  icon?: string
+  glyph: string
+  tag: string
+  accent?: boolean
+  href?: string
+  /** Deep links on mobile hand over to the wallet app in the same tab. */
+  sameTab?: boolean
+  /** Note shown as a divider above this row. */
+  section?: string
+  onClick?: () => void
+}
+
+/** Wallet picker in the datasheet style: caption bar, numbered rows with a status tag, safety note. */
+function WalletMenu({ t, netName, live, rows }: { t: T; netName: string; live: boolean; rows: MenuRow[] }) {
+  return (
+    <div className="menu wm" role="menu">
+      <div className="wm-head">
+        <span>{t('hdr.menuTitle')}</span>
+        <span className="wm-net">
+          <span className={`dot ${live ? 'live' : ''}`} />
+          {netName}
+        </span>
+      </div>
+      <ul className="wm-list">
+        {rows.map((r, i) => {
+          const body = (
+            <>
+              <span className="wm-idx">{String(i + 1).padStart(2, '0')}</span>
+              <span className="wm-icon" aria-hidden>
+                {r.icon ? <img src={r.icon} alt="" width={20} height={20} /> : <span className="wm-glyph">{r.glyph}</span>}
+              </span>
+              <span className="wm-name">{r.label}</span>
+              <span className={`wm-tag ${r.accent ? 'acc' : ''}`}>{r.tag}</span>
+              <span className="wm-go" aria-hidden>
+                {r.href ? '↗' : '→'}
+              </span>
+            </>
+          )
+          return (
+            <li key={r.key}>
+              {r.section && <p className="wm-note">{r.section}</p>}
+              {r.href ? (
+                <a className="wm-row" role="menuitem" href={r.href} rel="noopener noreferrer" {...(r.sameTab ? {} : { target: '_blank' })}>
+                  {body}
+                </a>
+              ) : (
+                <button className="wm-row" role="menuitem" onClick={r.onClick}>
+                  {body}
+                </button>
+              )}
+            </li>
+          )
+        })}
+      </ul>
+      <p className="wm-foot">{t('hdr.menuFoot')}</p>
+    </div>
+  )
+}
+
 export function Header() {
   const { chainId, chain, blockNumber } = useNet()
   const t = useT()
@@ -100,48 +163,33 @@ export function Header() {
               {isPending ? t('hdr.connecting') : t('hdr.connect')}
             </button>
             {open && (
-              <div className="menu">
-                {noWallet && mobile && (
-                  <>
-                    <p className="menu-note">{t('hdr.noWalletMobile')}</p>
-                    {deepLinks.map((d) => (
-                      <a key={d.key} className="menu-item okx" href={d.href} rel="noopener noreferrer">
-                        {d.label} <span className="muted small">↗</span>
-                      </a>
-                    ))}
-                  </>
-                )}
-                {!(noWallet && mobile) && options.filter((o) => !(noWallet && o.connector.id === 'injected')).map((o) =>
-                  o.unavailable ? (
-                    <a key={o.connector.uid} className="menu-item" href="https://www.okx.com/web3" target="_blank" rel="noreferrer">
-                      {t('hdr.installOkx')} <span className="muted small">↗</span>
-                    </a>
-                  ) : (
-                    <button
-                      key={o.connector.uid}
-                      className={`menu-item ${o.okx ? 'okx' : ''}`}
-                      onClick={() => {
-                        setOpen(false)
-                        connect({ connector: o.connector, chainId })
-                      }}
-                    >
-                      {o.connector.icon && <img src={o.connector.icon} alt="" width={18} height={18} />}
-                      {o.label}
-                      {o.okx && <span className="tag">{t('hdr.recommended')}</span>}
-                    </button>
+              <WalletMenu
+                t={t}
+                netName={chain?.name ?? ''}
+                live={blockNumber !== undefined}
+                rows={[
+                  ...(noWallet && mobile ? [] : options.filter((o) => !(noWallet && o.connector.id === 'injected'))).map(
+                    (o): MenuRow =>
+                      o.unavailable
+                        ? { key: o.connector.uid, label: t('hdr.installOkx'), glyph: 'OKX', tag: t('hdr.tagInstall'), href: 'https://www.okx.com/web3' }
+                        : {
+                            key: o.connector.uid,
+                            label: o.label,
+                            icon: o.connector.icon,
+                            glyph: o.connector.id === 'injected' ? '◇' : o.label.slice(0, 2).toUpperCase(),
+                            tag: o.okx ? t('hdr.recommended') : o.connector.id === 'injected' ? t('hdr.tagInjected') : t('hdr.tagDetected'),
+                            accent: o.okx,
+                            onClick: () => {
+                              setOpen(false)
+                              connect({ connector: o.connector, chainId })
+                            },
+                          },
                   ),
-                )}
-                {noWallet && !mobile && (
-                  <>
-                    <p className="menu-note">{t('hdr.noWalletDesktop')}</p>
-                    {deepLinks.map((d) => (
-                      <a key={d.key} className="menu-item" href={d.href} target="_blank" rel="noopener noreferrer">
-                        {d.label} <span className="muted small">↗</span>
-                      </a>
-                    ))}
-                  </>
-                )}
-              </div>
+                  ...(noWallet
+                    ? deepLinks.map((d, i): MenuRow => ({ section: i === 0 ? t(mobile ? 'hdr.noWalletMobile' : 'hdr.noWalletDesktop') : undefined, key: d.key, label: d.label, glyph: d.key === 'okx' ? 'OKX' : 'MM', tag: t('hdr.tagApp'), href: d.href, accent: d.key === 'okx' && mobile, sameTab: mobile }))
+                    : []),
+                ]}
+              />
             )}
             {connectError && <div className="error small">{errorMessage(connectError)}</div>}
           </div>

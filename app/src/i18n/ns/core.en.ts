@@ -326,6 +326,12 @@ export const en = {
   'hdr.openMm': 'Open in MetaMask',
   'hdr.noWalletMobile': 'No wallet in this browser. Open Cerebr inside a wallet app, then connect:',
   'hdr.noWalletDesktop': 'Or open this page in a wallet app:',
+  'hdr.menuTitle': 'Select wallet',
+  'hdr.tagDetected': 'detected',
+  'hdr.tagInjected': 'injected',
+  'hdr.tagInstall': 'install',
+  'hdr.tagApp': 'app',
+  'hdr.menuFoot': 'Cerebr never asks for your seed phrase. You approve every transaction in your wallet.',
 
   // site footer (components/SiteFooter.tsx)
   'sf.tagline': 'A neural processor on X Layer. Neurons compiled to NAND, taped out on TapeOut, run onchain.',
