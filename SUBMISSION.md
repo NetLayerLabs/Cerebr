@@ -102,9 +102,14 @@ Before recording, check that:
 
 After recording, disclose the demo's mint, tape-out and label transactions in [ISSUANCE.md](ISSUANCE.md) §6.
 
-## In progress
+## Also built (in the app, on X Layer mainnet)
 
-More features are being added and are not part of this submission's claims: Genesis Drop, an in-browser Trainer, a Neural Arena game and a TapeOut marketplace.
+- **Genesis Drop**: drop #1 on TapeOut's ownerless drops contract [`0xf037a5543f19619a2291009ae1542b71d50ff9b9`](https://www.okx.com/web3/explorer/xlayer/address/0xf037a5543f19619a2291009ae1542b71d50ff9b9), 400 NAND at 16 per address. The Processor view shows it live, simulates the claim, then opens the Studio on a 16-NAND neuron that is not onchain yet.
+- **Train** (`/app#train`): in-browser training of threshold networks from drawn examples (SDK `trainNetwork` / `compileTrained`), verified on every input, then taped out and named onchain like any Studio design.
+- **Arena** (`/app#arena`): tic-tac-toe against bot circuit #16 through NeuralArena [`0xD984b3D13603AB51af02ddFFaa1FD86bE8c162BD`](https://www.okx.com/web3/explorer/xlayer/address/0xD984b3D13603AB51af02ddFFaa1FD86bE8c162BD); each move's inference receipt is decoded and replayable with `eval()`.
+- **Marketplace** (Gallery cards): list, reprice, delist and buy circuits on TapeOut's circuit market [`0xd89f358c48a7B632c9845af2a02A32eB90DD75DB`](https://www.okx.com/web3/explorer/xlayer/address/0xd89f358c48a7B632c9845af2a02A32eB90DD75DB) (1% fee fixed per listing, brain wallet moves with the NFT). Cerebr wallets never buy.
+
+Each was tested end to end through the real UI on a local fork of X Layer mainnet.
 
 ## Final checklist before submitting
 

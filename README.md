@@ -178,6 +178,14 @@ The app at [`/app`](https://usecerebr.vercel.app/app) talks only to X Layer main
 
 ![Gallery](media/gallery.png)
 
+**Genesis Drop**: drop #1 on TapeOut's ownerless drops contract [`0xf037…f9b9`](https://www.okx.com/web3/explorer/xlayer/address/0xf037a5543f19619a2291009ae1542b71d50ff9b9) hands out 400 NAND, 16 per address, one claim each. The Processor view shows its live state and a simulated claim, then sends the claimer to the Studio with a 16-NAND neuron that is not onchain yet, so a first tape-out costs only the tape-out fee.
+
+**Train**: draw examples on a pixel grid (or pick a preset), train a threshold network in the browser, see its weights and held-out score, and when no single neuron fits, the hidden layer it needs. The trained model is compiled to NAND, checked against the model on every input, then taped out and named onchain through the same flow as the Studio.
+
+**Arena**: play tic-tac-toe against circuit #16, a 590-gate neural network, through NeuralArena [`0xD984…62BD`](https://www.okx.com/web3/explorer/xlayer/address/0xD984b3D13603AB51af02ddFFaa1FD86bE8c162BD). Every bot move is an `eval()` of #16 inside your `play()` transaction; the app decodes each move's inference receipt and replays it with `eval()`. A draw is the best a human can get.
+
+**Marketplace**: every Gallery card can list, reprice, delist or buy its circuit on TapeOut's circuit market [`0xd89f…75DB`](https://www.okx.com/web3/explorer/xlayer/address/0xd89f358c48a7B632c9845af2a02A32eB90DD75DB) (single-token approval, 1% fee fixed per listing, the brain wallet moves with the NFT, buys pass the expected price). Cerebr's own wallets never buy.
+
 The landing page at [`/`](https://usecerebr.vercel.app) is styled as a chip datasheet. Its electrical-characteristics table, fees, catalog gate counts, XOR truth table (live `eval()` on #5) and spiking-neuron timing diagram (computed from #14's onchain netlist and checked tick by tick with `step()`) are all read from X Layer at runtime.
 
 ## Architecture
