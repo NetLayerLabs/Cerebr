@@ -55,21 +55,19 @@ export async function readFactory(pc: PublicClient, cfg: TapeoutConfig = XLAYER)
 }
 
 /** Reads every fee a Cerebr flow pays. `cpu` is any registered CPU (fees are protocol-wide). */
-export async function readFees(pc: PublicClient, cpu: { transistors: Address; circuits: Address } | undefined, cfg: TapeoutConfig = XLAYER): Promise<TapeoutFees> {
-  const [deployFee, protocolFee, openFee, accountImpl] = await Promise.all([
+export async function readFees(pc: PublicClient, cpu: { circuits: Address } | undefined, cfg: TapeoutConfig = XLAYER): Promise<TapeoutFees> {
+  // TAPEOUT_FEE / EXEC_FEE / BATCH_FEE are compile-time constants of the beacon implementations;
+  // the account implementation proxy (cfg.accountImpl, what opener.implementation() returns)
+  // answers them directly. Everything is independent, so it is one round trip.
+  const circuits = cpu?.circuits ?? (await pc.readContract({ address: cfg.factory, abi: factoryAbi, functionName: 'cpus', args: [0n] }));
+  const [deployFee, protocolFee, openFee, execFee, batchFee, tapeoutFee] = await Promise.all([
     pc.readContract({ address: cfg.factory, abi: factoryAbi, functionName: 'deployFee' }),
     pc.readContract({ address: cfg.factory, abi: factoryAbi, functionName: 'protocolFee' }),
     pc.readContract({ address: cfg.opener, abi: openerAbi, functionName: 'FEE' }),
-    pc.readContract({ address: cfg.opener, abi: openerAbi, functionName: 'implementation' }),
+    pc.readContract({ address: cfg.accountImpl, abi: accountAbi, functionName: 'EXEC_FEE' }),
+    pc.readContract({ address: cfg.accountImpl, abi: accountAbi, functionName: 'BATCH_FEE' }),
+    pc.readContract({ address: circuits, abi: circuitsAbi, functionName: 'TAPEOUT_FEE' }),
   ]);
-  // TAPEOUT_FEE / EXEC_FEE / BATCH_FEE are compile-time constants of the beacon implementations;
-  // the account implementation proxy answers them directly.
-  const [execFee, batchFee] = await Promise.all([
-    pc.readContract({ address: accountImpl, abi: accountAbi, functionName: 'EXEC_FEE' }),
-    pc.readContract({ address: accountImpl, abi: accountAbi, functionName: 'BATCH_FEE' }),
-  ]);
-  const circuits = cpu?.circuits ?? (await pc.readContract({ address: cfg.factory, abi: factoryAbi, functionName: 'cpus', args: [0n] }));
-  const tapeoutFee = await pc.readContract({ address: circuits, abi: circuitsAbi, functionName: 'TAPEOUT_FEE' });
   return { deployFee, protocolFee, tapeoutFee, openFee, execFee, batchFee };
 }
 
@@ -126,14 +124,48 @@ export interface CpuInfo extends CpuAddresses {
 }
 
 /** Reads a CPU by either of its addresses (circuits or transistors). */
-export async function readCpu(pc: PublicClient, address: Address, cfg: TapeoutConfig = XLAYER): Promise<CpuInfo> {
-  let circuits = address;
-  let registered = await pc.readContract({ address: cfg.factory, abi: factoryAbi, functionName: 'isCPU', args: [address] });
-  if (!registered) {
-    circuits = await pc.readContract({ address, abi: transistorsAbi, functionName: 'circuits' });
-    registered = await pc.readContract({ address: cfg.factory, abi: factoryAbi, functionName: 'isCPU', args: [circuits] });
+export async function readCpu(
+  pc: PublicClient,
+  address: Address,
+  cfg: TapeoutConfig = XLAYER,
+  /** Known circuits/transistors pair (e.g. from a launch record): everything is read in one round trip. */
+  known?: { transistors?: Address },
+): Promise<CpuInfo> {
+  if (known?.transistors) {
+    const t = { address: known.transistors, abi: transistorsAbi } as const;
+    const [registered, transistors, name, symbol, story, creator, supplyCap, minted, mintPrice, protocolFee, tapeoutFee, circuitCount] = await Promise.all([
+      pc.readContract({ address: cfg.factory, abi: factoryAbi, functionName: 'isCPU', args: [address] }),
+      pc.readContract({ address, abi: circuitsAbi, functionName: 'transistors' }),
+      pc.readContract({ ...t, functionName: 'cpuName' }),
+      pc.readContract({ ...t, functionName: 'cpuSymbol' }),
+      pc.readContract({ ...t, functionName: 'story' }),
+      pc.readContract({ ...t, functionName: 'creator' }),
+      pc.readContract({ ...t, functionName: 'supplyCap' }),
+      pc.readContract({ ...t, functionName: 'minted' }),
+      pc.readContract({ ...t, functionName: 'mintPrice' }),
+      pc.readContract({ ...t, functionName: 'protocolFee' }),
+      pc.readContract({ address, abi: circuitsAbi, functionName: 'TAPEOUT_FEE' }),
+      pc.readContract({ address, abi: circuitsAbi, functionName: 'nextId' }),
+    ]);
+    // The hint is only a shortcut: if the chain disagrees, fall back to resolving from scratch.
+    if (transistors.toLowerCase() === known.transistors.toLowerCase()) {
+      return { circuits: address, transistors, name, symbol, story, creator, supplyCap, minted, remaining: supplyCap - minted, mintPrice, protocolFee, tapeoutFee, circuitCount, registered };
+    }
   }
-  const transistors = await pc.readContract({ address: circuits, abi: circuitsAbi, functionName: 'transistors' });
+  // Usually `address` is the circuits contract: ask both questions in one round trip.
+  let circuits = address;
+  let [registered, transistors] = await Promise.all([
+    pc.readContract({ address: cfg.factory, abi: factoryAbi, functionName: 'isCPU', args: [address] }),
+    pc.readContract({ address, abi: circuitsAbi, functionName: 'transistors' }).catch(() => undefined),
+  ]);
+  if (!registered || !transistors) {
+    // A transistors address (or an unregistered contract): resolve its circuits contract first.
+    if (!registered) {
+      circuits = await pc.readContract({ address, abi: transistorsAbi, functionName: 'circuits' });
+      registered = await pc.readContract({ address: cfg.factory, abi: factoryAbi, functionName: 'isCPU', args: [circuits] });
+    }
+    transistors = await pc.readContract({ address: circuits, abi: circuitsAbi, functionName: 'transistors' });
+  }
   const t = { address: transistors, abi: transistorsAbi } as const;
   const [name, symbol, story, creator, supplyCap, minted, mintPrice, protocolFee, tapeoutFee, circuitCount] = await Promise.all([
     pc.readContract({ ...t, functionName: 'cpuName' }),
