@@ -138,4 +138,4 @@ Each write flow was tested end to end through the real UI on a local fork of X L
 - [ ] Make the repo public.
 - [x] dApp hosting URL filled in above: https://cerebr.xyz, live over HTTPS (Let's Encrypt), every view checked in a browser on 2026-10-06 with 0 errors.
 - [x] Contact filled in above.
-- [ ] Demo transactions disclosed in ISSUANCE.md §6.
+- [ ] Demo transactions disclosed in ISSUANCE.md §6 (the 2026-10-06 Arena and market UI test is disclosed; add any made while recording the video).
