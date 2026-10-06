@@ -1,6 +1,6 @@
 // Client-side "die shot" of a TapeOut netlist: the chip package with its input / output pins, and
 // every element of the netlist placed by logic depth (column = longest path from the inputs) with
-// its real wiring. Same visual language as CerebrScope's on-chain SVG: NAND = mint, LATCH = violet,
+// its real wiring. Same visual language as CerebrScope's onchain SVG: NAND = accent, LATCH = violet,
 // REF = cyan sub-die, pins = amber. Pure (string in, string out), so Node scripts can use it too.
 
 import type { Element } from '@cerebr/sdk'
@@ -13,16 +13,16 @@ export type DieShotOptions = {
 }
 
 const C = {
-  bg: '#070a10',
-  pkg: '#0d131e',
-  die: '#0a0f18',
-  line: '#26324a',
-  text: '#e6edf3',
-  muted: '#8b98a9',
-  nand: '#3ddc97',
-  latch: '#b26bff',
-  ref: '#2bb3ff',
-  pin: '#ffb000',
+  bg: '#0a0b0d',
+  pkg: '#15181c',
+  die: '#0f1114',
+  line: '#2b2f35',
+  text: '#ecedee',
+  muted: '#9ba1a9',
+  nand: '#d4ff3f',
+  latch: '#b8a2ff',
+  ref: '#7cc8ff',
+  pin: '#ff9a4a',
 }
 
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`)
@@ -115,7 +115,7 @@ export function dieShotSvg(elements: Element[], nIn: number, nOut: number, opts:
     if (c.el.op === 2) {
       const id = c.el.target && 'circuitId' in c.el.target ? `#${c.el.target.circuitId}` : 'REF'
       const fs = Math.max(5, Math.min(10, c.w / 4))
-      return `<g><rect x="${x}" y="${y}" width="${f(c.w)}" height="${f(c.h)}" rx="3" fill="#0f2233" stroke="${C.ref}" stroke-width="1.2"/>` +
+      return `<g><rect x="${x}" y="${y}" width="${f(c.w)}" height="${f(c.h)}" rx="3" fill="#101a22" stroke="${C.ref}" stroke-width="1.2"/>` +
         `<text x="${f(c.x)}" y="${f(c.y + fs / 3)}" font-size="${f(fs)}" fill="${C.ref}" text-anchor="middle">${esc(id)}</text></g>`
     }
     const color = c.el.op === 1 ? C.latch : C.nand
@@ -146,12 +146,12 @@ export function dieShotSvg(elements: Element[], nIn: number, nOut: number, opts:
     `<pattern id="p" width="12" height="12" patternUnits="userSpaceOnUse"><path d="M12 0H0V12" fill="none" stroke="#ffffff" stroke-opacity="0.035"/></pattern></defs>` +
     `<rect width="${S}" height="${S}" fill="${C.bg}"/>` +
     pins.join('') +
-    `<rect x="48" y="48" width="${S - 96}" height="${S - 96}" rx="18" fill="${C.pkg}" stroke="url(#g)" stroke-width="2"/>` +
-    `<rect x="${die.x - 10}" y="${die.y - 10}" width="${die.w + 20}" height="${die.h + 20}" rx="8" fill="${C.die}" stroke="${C.line}"/>` +
-    `<rect x="${die.x - 10}" y="${die.y - 10}" width="${die.w + 20}" height="${die.h + 20}" rx="8" fill="url(#p)"/>` +
+    `<rect x="48" y="48" width="${S - 96}" height="${S - 96}" rx="4" fill="${C.pkg}" stroke="${C.line}" stroke-width="1.5"/>` +
+    `<rect x="${die.x - 10}" y="${die.y - 10}" width="${die.w + 20}" height="${die.h + 20}" rx="2" fill="${C.die}" stroke="${C.line}"/>` +
+    `<rect x="${die.x - 10}" y="${die.y - 10}" width="${die.w + 20}" height="${die.h + 20}" rx="2" fill="url(#p)"/>` +
     `<g fill="none" stroke-width="0.8" stroke-opacity="${wiresDrawn ? 0.42 : 0}">${wires.join('')}</g>` +
     `<g>${glyphs.join('')}</g>` +
-    `<circle cx="66" cy="66" r="3.5" fill="${C.muted}"/>` +
+    `<circle cx="66" cy="66" r="3.5" fill="none" stroke="${C.muted}"/>` +
     `<text x="${S / 2}" y="${S - 60}" font-size="9" fill="${C.muted}" text-anchor="middle" letter-spacing="1.5">${esc(spec.toUpperCase())}</text>` +
     `<text x="${S / 2}" y="73" font-size="10" fill="${C.text}" text-anchor="middle" letter-spacing="2" font-weight="700">${esc((opts.title ?? 'CEREBR').toUpperCase().slice(0, 34))}</text>` +
     (opts.subtitle ? `<text x="${S / 2}" y="${S - 6}" font-size="9" fill="${C.muted}" text-anchor="middle" letter-spacing="1">${esc(opts.subtitle.slice(0, 60))}</text>` : '') +

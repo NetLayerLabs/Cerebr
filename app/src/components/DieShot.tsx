@@ -10,10 +10,10 @@ type Props = {
   nOut: number
   title?: string
   subtitle?: string
-  /** Either decoded elements, or the on-chain netlist bytes. */
+  /** Either decoded elements, or the onchain netlist bytes. */
   elements?: Element[]
   netlist?: `0x${string}`
-  /** On-chain circuit id: CerebrScope's image is preferred when a scope is configured. */
+  /** Onchain circuit id: CerebrScope's image is preferred when a scope is configured. */
   circuitId?: bigint
 }
 
@@ -34,10 +34,13 @@ export function DieShot(p: Props) {
       return undefined
     }
   }, [p.elements, p.netlist, p.nIn, p.nOut, p.title, p.subtitle])
-  // An on-chain image that fails to render (an owner can write labels that make the SVG invalid XML)
-  // falls back to the die shot drawn locally from the same netlist.
+  // The app draws every die shot in its own palette; CerebrScope's onchain SVG (same netlist,
+  // rendered by the contract) is one click away. A broken onchain image (an owner can write labels
+  // that make the SVG invalid XML) falls back to the local drawing.
+  const [preferChain, setPreferChain] = useState(false)
   const [badOnchain, setBadOnchain] = useState<string | undefined>()
-  const showOnchain = !!onchain.data && onchain.data !== badOnchain
+  const chainOk = !!onchain.data && onchain.data !== badOnchain
+  const showOnchain = preferChain && chainOk
   const src = showOnchain ? onchain.data! : local
   return (
     <div className="art">
@@ -46,7 +49,16 @@ export function DieShot(p: Props) {
       ) : (
         <div className="art-ph" />
       )}
-      {showOnchain && <span className="art-tag">on-chain SVG</span>}
+      {chainOk && (
+        <button
+          type="button"
+          className={`art-tag${showOnchain ? ' on' : ''}`}
+          onClick={() => setPreferChain((v) => !v)}
+          title={showOnchain ? 'Showing the SVG rendered onchain by CerebrScope' : 'Show the SVG rendered onchain by CerebrScope'}
+        >
+          {showOnchain ? '● Scope SVG' : '○ Scope SVG'}
+        </button>
+      )}
     </div>
   )
 }
