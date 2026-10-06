@@ -69,17 +69,27 @@ The product around it:
 
 Small, verifiable intelligence that lives entirely onchain. A game, a DAO or an agent can call a Cerebr circuit to decide something: whether a pattern contains a line, whether a majority voted yes, whether enough excitatory signals beat the inhibitory ones. Anyone can recompute the same decision with a free `eval()` call. There is no oracle, model server or trust assumption beyond the X Layer chain and TapeOut's contracts. Because circuits are public and REF-able, every Cerebr neuron is a building block other teams can wire into their own TapeOut processors.
 
+## Eligibility
+
+| Requirement | How Cerebr meets it | Evidence |
+|---|---|---|
+| Processor deployed on X Layer **through the TapeOut factory** | `createCPU` on the TapeOut factory; `factory.isCPU(processor) = true` | [create tx](https://www.okx.com/web3/explorer/xlayer/tx/0x3295efc1ceec4aba0f918f89e5316fd62f1f705abdc52d483715e4fcada86815), [`sdk/scripts/launch.ts`](sdk/scripts/launch.ts) |
+| Transistor supply, unit price and cap set and disclosed at deployment | **1,000,000 transistors at 0.00001 OKB**, the parameters of `createCPU`, recorded in its `CPUCreated` event and shown live on the landing page | [ISSUANCE.md](ISSUANCE.md), [`launch/config.json`](launch/config.json) |
+| At least one circuit taped out | **16 circuits**, each checked onchain against the simulator or a reference model on every input | [catalog](README.md#the-circuit-catalog) |
+| A clear use case | Verifiable onchain inference: an autonomous agent that decides with a neuron, a game AI, user-trained classifiers, and public neurons other teams can `REF` | [Product tour](README.md#product-tour) |
+| Mainnet launch | X Layer mainnet, chain 196 | [addresses](README.md#live-on-x-layer-mainnet) |
+
 ## Judging criteria
 
 | Criterion | What we show |
 |---|---|
-| Innovation | A neural compiler for TapeOut: neurons become NAND netlists, synapses become REF, inference becomes `eval`. A spiking neuron uses LATCH and `step()`. |
-| Depth of TapeOut integration | `createCPU`, `mint` (NAND and LATCH), `tapeout`, REF composition, `eval`, `step`, circuit NFTs, `opener.open` and `accountOf`. Every behaviour was verified on a mainnet fork and then on mainnet itself, and is documented in TAPEOUT.md. |
-| Product completeness and UX | Landing page, a dApp with seven views (Processor, Circuit Studio, Train, Inference, Arena, Gallery, Agent), live fee quotes, guards against fund-locking mistakes, an SDK and a resumable launch script. |
-| Asset issuance design | A single transistor asset with a disclosed cap and price, burned by use, no allocation, and REF-driven reuse. The options and reasoning are in ISSUANCE.md. |
-| X Layer integration quality | Native OKB, OKX Wallet, OKX Explorer links, and fast blocks that make tape-out-then-test feel live. |
-| Growth potential | Composable public neurons, plus an SDK and compiler other teams can use to build their own neural circuits. |
-| Contract security and economic model | No custody, exact-fee sends, CerebrScope with no admin and no payable functions, TapeOut's upgradeability and fees disclosed, and no wash trading (ISSUANCE.md §6). |
+| **Application innovation** | A neural compiler for TapeOut: gates become neurons, `REF` becomes the connections between them, `eval` becomes inference. A spiking neuron runs on LATCH state with `step()`. In-browser training that finds the hidden layer when one neuron is not enough. An autonomous agent whose policy is a taped-out circuit, and a game opponent that is a 590-gate network. |
+| **Depth of TapeOut integration** | Uses every TapeOut primitive: `createCPU`, `mint` (NAND and LATCH), `tapeout`, `REF`, `eval`, `step`, the circuit NFTs, native brain wallets (`opener.open`, `accountOf`), the drops contract (an ownerless instance of TapeOut's published bytecode, deployed by Cerebr) and the circuit marketplace. Two of our contracts call `eval()` from inside a transaction. Every behaviour was verified on a mainnet fork, then on mainnet ([TAPEOUT.md](TAPEOUT.md)). |
+| **Product completeness and UX** | A landing page whose every figure is read live from X Layer and a 7-view dApp (Processor, Circuit Studio, Train, Inference, Arena, Gallery, Agent). Two languages, two themes, mobile wallet deep links, simulated writes and exact fee quotes. Plus an SDK, three verified contracts, a launch runbook and a production keeper service. |
+| **Asset issuance design** | One asset, the transistor: fixed supply and price, burned by use, reuse through `REF` is free. No curve, no presale, no reserved allocation; the creator's mints are disclosed. A Genesis Drop of 400 NAND hands new builders 16 each; the one claim so far is our own disclosed test. See [Asset issuance](README.md#asset-issuance). |
+| **Quality of X Layer integration** | Native OKB fees, OKX Wallet first (with deep links into the OKX and MetaMask apps on mobile), OKX Explorer links throughout, batched reads against the public X Layer RPC, gas from `eth_estimateGas`, and ~1-second blocks that make a live tape-out-and-test loop and a 10-minute agent practical. Handles X Layer specifics such as `eth_call` seeing a basefee of 0. |
+| **User growth potential** | A first neuron costs two transactions; the Genesis Drop pays the transistors. Every taped-out neuron is a public building block that any team on any TapeOut processor can `REF` for free. Circuits can be listed and bought on the TapeOut market. The Arena and Agent give non-builders a reason to visit. |
+| **Contract security and economic model** | No custody. Our three contracts have no admin and no payable functions, and their source is verified. Gas-capped inference with strict decoding, so a bad circuit can never block a game or the agent. The keeper is permissionless and holds only gas money. Internal review rounds, fuzzing and fork tests ([AUDIT.md](AUDIT.md), an internal review, not a third-party audit). |
 
 ## Demo video script (2:00)
 
