@@ -28,6 +28,22 @@ export function App() {
     const left = on.offsetLeft - nav.offsetLeft
     if (left < nav.scrollLeft || left + on.offsetWidth > nav.scrollLeft + nav.clientWidth) nav.scrollLeft = Math.max(0, left - 16)
   }, [route.view])
+  // While more tabs are hidden to the right, fade the right edge (data-more, see styles.css).
+  useEffect(() => {
+    const nav = navRef.current
+    if (!nav) return
+    const update = () => {
+      nav.dataset.more = String(nav.scrollLeft + nav.clientWidth < nav.scrollWidth - 1)
+    }
+    update()
+    nav.addEventListener('scroll', update, { passive: true })
+    const ro = new ResizeObserver(update)
+    ro.observe(nav)
+    return () => {
+      nav.removeEventListener('scroll', update)
+      ro.disconnect()
+    }
+  }, [])
 
   return (
     <div className="shell">

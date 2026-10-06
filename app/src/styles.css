@@ -303,6 +303,7 @@ body:has(.shell) { overflow-x: clip; }
 /* ---------- section nav: datasheet tabs with line-glyph marks (components/NavIcons.tsx) ---------- */
 .nav { display: flex; gap: 0; margin: 28px 0 0; padding: 0; border: 0; border-bottom: 1px solid var(--line-2); overflow-x: auto; scrollbar-width: none; }
 .nav::-webkit-scrollbar { display: none; }
+.nav[data-more='true'] { -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 48px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 48px), transparent); }
 .nav a { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 9px; padding: 13px 22px 12px 0; margin-right: 22px; border: 0; border-bottom: 2px solid transparent; margin-bottom: -1px; color: var(--muted); font: 500 14px/1 var(--sans); white-space: nowrap; transition: color 0.15s, border-color 0.15s; }
 .nav-ico { flex: none; display: block; color: var(--faint); transition: color 0.15s, transform 0.2s; }
 .nav a:hover { color: var(--text); }
