@@ -172,7 +172,7 @@ Commit `launch/out/196.json` and `launch/state.196.json`. Neither contains a sec
 | Processor address | `processor.circuits` in `launch/out/196.json` (the address the factory registers with `isCPU`). Also give `processor.transistors` as the transistor token. |
 | Deployment wallet | `deployer` (equal to `processor.creator`) |
 | Creation tx | `processor.links.createTx` |
-| Circuits taped out | 15: the 14 catalog circuits taped out at launch (ids and transactions in `circuits[]`) and #15, taped out through the app on 2026-10-06 (above). The flagship circuits are `xor-net-ref` (the XOR problem built by REF from three taped-out neurons) and `line-detector-ref` (a 3×3 vision network with 11 REFs) |
+| Circuits taped out | 16: the 14 catalog circuits taped out at launch (ids and transactions in `circuits[]`), #15, taped out through the app on 2026-10-06 (above), and #16, the NeuralArena bot (590 NAND, [ARENA.md](ARENA.md)). The flagship circuits are `xor-net-ref` (the XOR problem built by REF from three taped-out neurons) and `line-detector-ref` (a 3×3 vision network with 11 REFs) |
 | Issuance terms | 1,000,000 transistors at 0.00001 OKB (table above) |
 | Demo video / description | the dApp flow: mint transistors → build a neural circuit → tape it out → run `eval` live → browse the gallery |
 
