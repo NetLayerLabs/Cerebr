@@ -1,5 +1,6 @@
 import { XLAYER } from '@cerebr/sdk/tapeout'
 import { EXPLORER, ISSUANCE } from '../landing/issuance.ts'
+import { XLAYER_CONTRACTS } from '../config/contracts.ts'
 import { useI18n, type Key } from '../i18n/index.tsx'
 import { shortAddr } from '../lib/format.ts'
 import { BuiltBy } from './BuiltBy.tsx'
@@ -17,9 +18,10 @@ type FooterLink = { label: Key; href: string; external?: boolean; address?: stri
 const PRODUCT: FooterLink[] = [
   { label: 'nav.processor', href: '/app#processor' },
   { label: 'nav.studio', href: '/app#studio' },
+  { label: 'nav.train', href: '/app#train' },
   { label: 'nav.playground', href: '/app#playground' },
+  { label: 'nav.arena', href: '/app#arena' },
   { label: 'nav.gallery', href: '/app#gallery' },
-  // next views: { label: 'nav.train', href: '/app#train' }, …
 ]
 
 const onchain = (label: Key, address: string | undefined): FooterLink[] =>
@@ -30,6 +32,8 @@ const ONCHAIN: FooterLink[] = [
   ...onchain('sf.transistors', ISSUANCE.transistors),
   ...onchain('sf.scope', ISSUANCE.scope),
   ...onchain('sf.factory', XLAYER.factory),
+  ...onchain('sf.arena', XLAYER_CONTRACTS.arena),
+  ...onchain('sf.drops', XLAYER_CONTRACTS.drops),
 ]
 
 const RESOURCES: FooterLink[] = [

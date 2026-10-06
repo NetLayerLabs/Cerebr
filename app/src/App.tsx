@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { useCpu, useNet } from './hooks/useCpu.ts'
 import { VIEWS, href, useRoute } from './hooks/useRoute.ts'
 import { Header } from './components/Header.tsx'
@@ -7,6 +8,8 @@ import { ProcessorView } from './views/ProcessorView.tsx'
 import { StudioView } from './views/StudioView.tsx'
 import { PlaygroundView } from './views/PlaygroundView.tsx'
 import { GalleryView } from './views/GalleryView.tsx'
+import { TrainView } from './views/TrainView.tsx'
+import { ArenaView } from './views/ArenaView.tsx'
 import { useT } from './i18n/index.tsx'
 
 export function App() {
@@ -14,12 +17,21 @@ export function App() {
   const { chain } = useNet()
   const { cfg, cpu, error } = useCpu()
   const t = useT()
+  const navRef = useRef<HTMLElement>(null)
+  // Narrow screens scroll the tab bar sideways: keep the current tab in view.
+  useEffect(() => {
+    const nav = navRef.current
+    const on = nav?.querySelector<HTMLElement>('a.on')
+    if (!nav || !on || nav.scrollWidth <= nav.clientWidth) return
+    const left = on.offsetLeft - nav.offsetLeft
+    if (left < nav.scrollLeft || left + on.offsetWidth > nav.scrollLeft + nav.clientWidth) nav.scrollLeft = Math.max(0, left - 16)
+  }, [route.view])
 
   return (
     <div className="shell">
       <div className="bg-grid" aria-hidden />
       <Header />
-      <nav className="nav" aria-label={t('nav.aria')}>
+      <nav className="nav" ref={navRef} aria-label={t('nav.aria')}>
         {VIEWS.map(([id]) => (
           <a key={id} href={href(id)} className={route.view === id ? 'on' : ''} aria-current={route.view === id ? 'page' : undefined}>
             {t(`nav.${id}`)}
@@ -41,6 +53,10 @@ export function App() {
           <StudioView key={route.arg} initial={route.arg} />
         ) : route.view === 'playground' ? (
           <PlaygroundView key={route.arg} circuitId={route.arg} />
+        ) : route.view === 'train' ? (
+          <TrainView key={route.arg} arg={route.arg} />
+        ) : route.view === 'arena' ? (
+          <ArenaView key={route.arg} arg={route.arg} />
         ) : route.view === 'gallery' ? (
           <GalleryView />
         ) : (

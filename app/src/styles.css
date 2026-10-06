@@ -19,6 +19,15 @@
   --violet: #b8a2ff; /* LATCH / state */
   --amber: #ff9a4a; /* inputs / warnings */
   --red: #ff6159;
+  /* status colours shared by the feature stylesheets (views/train.css, arena.css, drop.css, market.css):
+     --good = success / win / claimed / listed, --bad = failure / loss / error, --warn = pending / caution.
+     The -dim variants are tinted backgrounds for pills, cells and banners. */
+  --good: #4fd88a;
+  --good-dim: rgba(79, 216, 138, 0.12);
+  --bad: #ff6159;
+  --bad-dim: rgba(255, 97, 89, 0.12);
+  --warn: #ff9a4a;
+  --warn-dim: rgba(255, 154, 74, 0.12);
   /* accent as a FILL (buttons, lit cells) vs. --mint as text / strokes; equal in dark, split in light */
   --acc-fill: #d4ff3f;
   --acc-fill-hover: #e4ff7a;
@@ -60,6 +69,12 @@
   --violet: #6343c4;
   --amber: #a84c06;
   --red: #c0261d;
+  --good: #17733d;
+  --good-dim: rgba(23, 115, 61, 0.1);
+  --bad: #c0261d;
+  --bad-dim: rgba(192, 38, 29, 0.09);
+  --warn: #a84c06;
+  --warn-dim: rgba(168, 76, 6, 0.1);
   --acc-fill: #d4ff3f;
   --acc-fill-hover: #c8f532;
   --acc-edge: #a6cc12;
@@ -414,7 +429,8 @@ button.pin:hover { border-color: var(--text); }
 .grid-2.bench { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
 .bench-top { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 16px; align-items: start; }
 .bench-art .art { border-radius: 0; overflow: hidden; border: 1px solid var(--line); }
-.bench-info p { margin: 8px 0 0; line-height: 1.5; }
+.bench-info { min-width: 0; }
+.bench-info p { margin: 8px 0 0; line-height: 1.5; overflow-wrap: anywhere; }
 .pixels-wrap { display: flex; gap: 18px; align-items: center; flex-wrap: wrap; margin-top: 8px; }
 .pixels { display: grid; grid-template-columns: repeat(3, 56px); gap: 4px; padding: 8px; border-radius: 2px; background: var(--bg); border: 1px solid var(--line-2); }
 .px { width: 56px; height: 56px; border-radius: 1px; border: 1px solid var(--line-2); background: var(--panel-solid); cursor: pointer; transition: background 0.12s, box-shadow 0.12s, border-color 0.12s; }

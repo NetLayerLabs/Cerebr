@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { useConfig, useConnection } from 'wagmi'
 import { writeContract, waitForTransactionReceipt, simulateContract } from 'wagmi/actions'
 import { useQueryClient } from '@tanstack/react-query'
@@ -56,4 +56,26 @@ export function useTx() {
   )
 
   return { send, busy }
+}
+
+/**
+ * A synchronous in-flight lock for flows that await something (a pre-simulation, a fresh read)
+ * before useTx().send sets `busy`. `guard(fn)` drops a second call while the first is running,
+ * so a double click can never open two wallet prompts; `inFlight` disables the button meanwhile.
+ */
+export function useInFlight() {
+  const lock = useRef(false)
+  const [inFlight, setInFlight] = useState(false)
+  const guard = useCallback(async <T,>(fn: () => Promise<T>): Promise<T | undefined> => {
+    if (lock.current) return undefined
+    lock.current = true
+    setInFlight(true)
+    try {
+      return await fn()
+    } finally {
+      lock.current = false
+      setInFlight(false)
+    }
+  }, [])
+  return { inFlight, guard }
 }

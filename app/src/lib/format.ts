@@ -19,6 +19,13 @@ export function fmt(wei: bigint | undefined, sig = 4, decimals = 18): string {
   return (neg ? '-' : '') + out
 }
 
+/** The exact amount (every digit, trailing zeros trimmed): for prices a wallet will be charged. */
+export function okb(wei: bigint, decimals = 18): string {
+  const s = formatUnits(wei, decimals)
+  const [int, frac] = s.split('.')
+  return BigInt(int).toLocaleString('en-US') + (frac ? '.' + frac : '')
+}
+
 /** Compact amount: 1.25M, 950k, 12.5. */
 export function compact(wei: bigint | undefined, decimals = 18): string {
   if (wei === undefined) return '-'

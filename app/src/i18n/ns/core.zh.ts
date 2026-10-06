@@ -286,7 +286,9 @@ export const zh: CoreDict = {
   // ---------------------------------------------------------------- app shell
   'nav.processor': '处理器',
   'nav.studio': '电路工作室',
+  'nav.train': '训练',
   'nav.playground': '推理',
+  'nav.arena': '竞技场',
   'nav.gallery': '画廊',
   'nav.aria': '版块',
   'app.noCpu': '{chain} 上还没有 Cerebr 处理器',
@@ -320,6 +322,8 @@ export const zh: CoreDict = {
   'sf.transistors': '晶体管',
   'sf.scope': 'CerebrScope',
   'sf.factory': 'TapeOut 工厂',
+  'sf.arena': 'NeuralArena',
+  'sf.drops': '创世空投（drops）',
   'sf.github': 'GitHub',
   'sf.docs': '文档',
   'sf.spec': 'TapeOut 规范',

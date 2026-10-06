@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import type { Address, PublicClient } from 'viem'
 import { listCircuits, readCpu, readFees, transistorBalances, type CpuInfo } from '@cerebr/sdk/tapeout'
 import type { TapeoutFees } from '@cerebr/sdk/tapeout'
-import { cpuFor } from '../config/env.ts'
+import { contractsFor, cpuFor } from '../config/env.ts'
 import { TAPEOUT, identifyCircuits, indexByNetlist, resolveLabel, type ChainCircuit, type CircuitLabel } from '../lib/cerebr.ts'
 import { hasLabel, readLabels, type OnchainLabel } from '../lib/scope.ts'
 
@@ -14,6 +14,8 @@ export function useNet() {
   const chains = useChains()
   const chain = chains.find((c) => c.id === chainId)
   const cfg = useMemo(() => cpuFor(chainId), [chainId])
+  /** Drops, marketplace, NeuralArena (config/contracts.ts). */
+  const contracts = useMemo(() => contractsFor(chainId), [chainId])
   const pc = usePublicClient({ chainId }) as PublicClient | undefined
   const { data: blockNumber } = useBlockNumber({ chainId, watch: { pollingInterval: 4_000 } })
   const explorer = chain?.blockExplorers?.default.url
@@ -21,6 +23,7 @@ export function useNet() {
     chainId,
     chain,
     cfg,
+    contracts,
     pc,
     blockNumber,
     explorerAddr: (a: string) => (explorer ? `${explorer}/address/${a}` : undefined),

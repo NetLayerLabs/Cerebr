@@ -300,7 +300,9 @@ export const en = {
   // ---------------------------------------------------------------- app shell
   'nav.processor': 'Processor',
   'nav.studio': 'Circuit Studio',
+  'nav.train': 'Train',
   'nav.playground': 'Inference',
+  'nav.arena': 'Arena',
   'nav.gallery': 'Gallery',
   'nav.aria': 'Sections',
   'app.noCpu': 'No Cerebr processor on {chain} yet',
@@ -334,6 +336,8 @@ export const en = {
   'sf.transistors': 'Transistors',
   'sf.scope': 'CerebrScope',
   'sf.factory': 'TapeOut factory',
+  'sf.arena': 'NeuralArena',
+  'sf.drops': 'Genesis Drop (drops)',
   'sf.github': 'GitHub',
   'sf.docs': 'Docs',
   'sf.spec': 'TapeOut spec',
