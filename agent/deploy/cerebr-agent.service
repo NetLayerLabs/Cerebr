@@ -1,0 +1,43 @@
+# systemd unit for the Cerebr Agent keeper (native Node 26, no Docker).
+#   sudo cp agent/deploy/cerebr-agent.service /etc/systemd/system/
+#   sudo systemctl daemon-reload && sudo systemctl enable --now cerebr-agent
+#   journalctl -u cerebr-agent -f
+# Expects the repo (at least agent/ and sdk/src/neuro/) at /opt/cerebr, `npm ci --omit=dev` run in
+# /opt/cerebr/agent, and the configuration in /etc/cerebr-agent.env (chmod 600, owner root).
+[Unit]
+Description=Cerebr Agent keeper (CerebrAgent.act on X Layer)
+After=network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=600
+StartLimitBurst=5
+
+[Service]
+Type=simple
+User=cerebr
+Group=cerebr
+WorkingDirectory=/opt/cerebr/agent
+EnvironmentFile=/etc/cerebr-agent.env
+Environment=NODE_ENV=production
+Environment=STATE_FILE=/var/lib/cerebr-agent/state.json
+Environment=HEALTH_HOST=127.0.0.1
+ExecStart=/usr/bin/node src/main.ts
+KillSignal=SIGTERM
+TimeoutStopSec=45
+Restart=on-failure
+RestartSec=30
+StateDirectory=cerebr-agent
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+CapabilityBoundingSet=
+ReadWritePaths=/var/lib/cerebr-agent
+
+[Install]
+WantedBy=multi-user.target

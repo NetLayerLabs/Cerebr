@@ -1,0 +1,38 @@
+# Cerebr Agent keeper. From this directory:
+#   cp .env.example .env && chmod 600 .env   # then fill in AGENT_ADDRESS / AGENT_PRIVATE_KEY
+#   docker compose up -d --build
+#   docker compose logs -f
+#   curl -s 127.0.0.1:8787/status
+#   docker compose down                       # graceful stop (SIGTERM, waits for an in-flight tx)
+services:
+  cerebr-agent:
+    build:
+      context: ..
+      dockerfile: agent/Dockerfile
+    image: cerebr-agent:latest
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      STATE_FILE: /data/state.json
+      HEALTH_HOST: 0.0.0.0
+      HEALTH_PORT: "8787"
+    volumes:
+      - agent-data:/data
+    ports:
+      - "127.0.0.1:8787:8787" # status endpoint on the VPS loopback only
+    stop_grace_period: 45s
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+volumes:
+  agent-data:
