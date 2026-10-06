@@ -21,6 +21,39 @@ A keeper daemon (`agent/`, see [agent/README.md](agent/README.md)) calls `act()`
 | SDK (viem-free: ABI, input mapping, netlist mirror, replay check, cost math) | `sdk/src/neuro/agent.ts`, `sdk/test/agent.test.ts` |
 | Keeper daemon, Docker, systemd, fork e2e | `agent/` |
 
+## Live on mainnet
+
+Deployed on X Layer mainnet (chain 196) on 2026-10-06 and acting since. Every figure below was read onchain.
+
+| What | Value |
+|---|---|
+| CerebrAgent | [`0x3d736c6419dCa667a351907578b68717Cd6e3340`](https://www.okx.com/web3/explorer/xlayer/address/0x3d736c6419dCa667a351907578b68717Cd6e3340), source verified on Sourcify (exact match) |
+| Deploy tx | [0xa9aa…a31f](https://www.okx.com/web3/explorer/xlayer/tx/0xa9aaacef0f3af99dc0046a67d5e3132879c65301415fca4b10202d617e15a31f), block 72,520,892, from the creator `0xc742…960C` |
+| Policy circuit | #8 Go/No-Go Neuron (19 NAND) on the Cerebr processor [`0xB04E…93FF`](https://www.okx.com/web3/explorer/xlayer/address/0xB04EB79D1A5EECaabAAfF7B77d7c27578EE693FF) |
+| Brain wallet | [`0x550500EF28b4Ebe39a7431E2A86A45f97F6db141`](https://www.okx.com/web3/explorer/xlayer/address/0x550500EF28b4Ebe39a7431E2A86A45f97F6db141), **not opened** (no code yet) |
+| Keeper hot wallet | [`0x09a00521Ff00407f81963FcE5D4D20917289902A`](https://www.okx.com/web3/explorer/xlayer/address/0x09a00521Ff00407f81963FcE5D4D20917289902A), run by the VPS daemon (`agent/`), one `act()` every **10 minutes** |
+| First decision | seq 1, **Go**, [0xb738…c4ed](https://www.okx.com/web3/explorer/xlayer/tx/0xb738dac247760db5bad17709b019a953384132cf5e9c558698a69e7925e2c4ed), block 72,525,341 (inputs `0x07`: CALM, ACTIVE, RESTED; output 1), verified by replay |
+| App | the read-only **Agent** tab (`/app#agent`): live pins, decision feed, 24 h strip and a replay button per decision |
+
+**Measured cost on mainnet** (gas price 0.020000001 gwei, `l1Fee = 0`):
+
+| Transaction | Gas used | OKB |
+|---|---|---|
+| Deploy | 3,670,007 | 0.0000734 |
+| `act()` #1 (first decision, Go) | 179,741 | 0.0000036 |
+| `act()` #2 (ring buffer filling, No-Go) | 159,598 | 0.0000032 |
+
+That matches the fork measurements below: about 0.00047 OKB a day while the ring buffer fills, about 0.00037 once it wraps. After its first two decisions the keeper wallet held 0.01999 OKB of its 0.02 OKB float.
+
+**Verify any decision yourself.** Read `decisions(fromSeq, count)` (the ring buffer; X Layer's public RPC caps `eth_getLogs` at about 100 blocks), then for each record:
+
+```sh
+cast call 0xB04EB79D1A5EECaabAAfF7B77d7c27578EE693FF "eval(uint256,bytes)(bytes)" 8 0x07 -r https://rpc.xlayer.tech   # = 0x01, the output recorded for seq 1
+cast call 0x3d736c6419dCa667a351907578b68717Cd6e3340 "replay(uint256)(uint8,bool)" 1 -r https://rpc.xlayer.tech      # (1, true)
+```
+
+and re-derive the inputs offline with `checkRecord(record, config)` (see [Verifiability](#verifiability)). The app's Agent tab does both for every stored decision.
+
 ## Why circuit #8
 
 It already exists on mainnet, so the brain costs nothing new. The creator wallet holds only 4 NAND, and a fresh tape-out would need minting.
@@ -162,7 +195,7 @@ It prints PASS/FAIL. Because anvil mines slowly in fork mode, the e2e agent uses
 
 ## Mainnet rollout
 
-**Not executed: only the owner signs.** Total spend is about **0.020 OKB** from the creator wallet, which holds about 0.057. The deploy uses about 0.0001 and the hot wallet takes 0.02. Steps 6 and 7 are optional.
+**Executed on 2026-10-06** (see [Live on mainnet](#live-on-mainnet)): deploy, hot wallet funded with 0.02 OKB, keeper daemon running. The first decision was sent by the keeper, not by hand (step 2 skipped). The optional steps 6 and 7 (opening the brain wallet, checkpoints) have not been done. Only the owner signs. The plan budgeted about **0.020 OKB** from the creator wallet, which then held about 0.057: about 0.0001 for the deploy and 0.02 for the hot wallet.
 
 ```sh
 # 0. Build and test (above), then rehearse the deployment on the fork - nothing leaves the machine:
@@ -203,7 +236,7 @@ cast send 0x550500EF28b4Ebe39a7431E2A86A45f97F6db141 "execute(address,uint256,by
 
 To stop: stop the daemon (`docker compose down` / `systemctl stop cerebr-agent`) and sweep the hot wallet. The contract needs no shutdown.
 
-## For the app ("Agent" panel)
+## For the app ("Agent" panel, built: `app/src/views/AgentView.tsx`)
 
 * **Header:** the policy circuit (#8 Go/No-Go Neuron, 19 NAND, with a link to the circuit), the agent address, the brain wallet (opened or not), and `stats()` as counters (Go, No-Go, Abstain, via brain wallet).
 * **Current observation:** `observeAt(latest block baseFeePerGas)`.
