@@ -11,7 +11,7 @@ function b64decodeUtf8(b64: string): string {
   return new TextDecoder().decode(bytes)
 }
 
-/** Decode the on-chain `data:application/json;base64,...` tokenURI. */
+/** Decode the onchain `data:application/json;base64,...` tokenURI. */
 export function decodeTokenUri(uri: string): CircuitMetadata | undefined {
   const prefix = 'data:application/json;base64,'
   if (!uri.startsWith(prefix)) return undefined

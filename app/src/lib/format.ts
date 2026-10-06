@@ -2,7 +2,7 @@ import { formatUnits } from 'viem'
 
 /** Format an 18-decimal amount with up to `sig` significant digits (no scientific notation). */
 export function fmt(wei: bigint | undefined, sig = 4, decimals = 18): string {
-  if (wei === undefined) return '—'
+  if (wei === undefined) return '-'
   const neg = wei < 0n
   const s = formatUnits(neg ? -wei : wei, decimals)
   const [int, frac = ''] = s.split('.')
@@ -21,7 +21,7 @@ export function fmt(wei: bigint | undefined, sig = 4, decimals = 18): string {
 
 /** Compact amount: 1.25M, 950k, 12.5. */
 export function compact(wei: bigint | undefined, decimals = 18): string {
-  if (wei === undefined) return '—'
+  if (wei === undefined) return '-'
   const n = Number(formatUnits(wei, decimals))
   return new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 2 }).format(n)
 }

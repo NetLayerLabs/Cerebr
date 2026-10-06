@@ -13,9 +13,10 @@ const FRIENDLY: Record<string, string> = {
     'Your wallet cannot receive transistors (ERC-1155). Smart-account / EIP-7702 wallets must implement onERC1155Received: use a plain EOA account.',
   ERC721NonexistentToken: 'That circuit does not exist.',
   // CerebrScope label registry
-  NotCircuitOwner: 'Only the circuit owner can label it.',
-  LabelTooLong: 'Label too long (name 64, description 512, pins 32 bytes).',
-  TooManyPinLabels: 'More pin labels than the circuit has pins.',
+  NotCircuitOwner: 'Only the circuit owner can name it onchain.',
+  LabelTooLong: 'Label too long: name up to 64 bytes, description 512, each pin name 32.',
+  TooManyPinLabels: 'More pin names than the circuit has pins.',
+  NotCPU: 'That address is not a processor registered in the TapeOut factory.',
 }
 
 export function errorMessage(e: unknown): string {

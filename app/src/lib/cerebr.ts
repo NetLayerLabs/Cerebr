@@ -1,6 +1,6 @@
 // Pure Cerebr x TapeOut logic shared by the dApp and scripts/smoke-tapeout.ts (no React, no
 // import.meta.env): transaction builders, tape-out planning, design compilation, recognising the
-// catalog circuits already on chain, and loading on-chain circuits into the local simulator.
+// catalog circuits already on chain, and loading onchain circuits into the local simulator.
 
 import { parseEventLogs, type Abi, type Address, type Hex, type PublicClient, type TransactionReceipt } from 'viem'
 import {
@@ -110,7 +110,7 @@ export function planTapeout(stats: Pick<NetlistStats, 'nand' | 'latch' | 'refs'>
   return { burn, have, mints, mintValue, tapeoutValue: p.tapeoutFee, total: mintValue + p.tapeoutFee, gas: tapeoutGas(stats), blocked }
 }
 
-// ------------------------------------------------------------------ on-chain circuits
+// ------------------------------------------------------------------ onchain circuits
 
 export type ChainCircuit = {
   id: bigint
@@ -122,15 +122,17 @@ export type ChainCircuit = {
   netlist: Hex
 }
 
-/** What the app knows about a circuit: its catalog entry, or a label saved when it was taped out here. */
+/**
+ * What the app shows for a circuit: its CerebrScope label (onchain, set by the owner) first, then its
+ * catalog entry recognised from the netlist bytes, then 'Circuit #N'. `catalogId` only ever comes
+ * from the bytes match.
+ */
 export type CircuitLabel = {
   name: string
   description?: string
   inputs: string[]
   outputs: string[]
   catalogId?: string
-  /** Set for threshold neurons designed in the studio. */
-  neuron?: NeuronSpec
 }
 
 export const pinLabels = (prefix: string, n: number) => Array.from({ length: n }, (_, i) => `${prefix}${i}`)
@@ -146,7 +148,6 @@ export function labelOfNeuron(spec: NeuronSpec, name?: string): CircuitLabel {
     description: `y = [ ${terms || '0'} ≥ ${spec.theta} ]`,
     inputs: pinLabels('x', spec.weights.length),
     outputs: ['y'],
-    neuron: { weights: spec.weights, theta: spec.theta },
   }
 }
 
@@ -155,6 +156,28 @@ export const fallbackLabel = (c: Pick<ChainCircuit, 'id' | 'nIn' | 'nOut'>): Cir
   inputs: pinLabels('x', c.nIn),
   outputs: pinLabels('y', c.nOut),
 })
+
+/**
+ * The label shown for a circuit. Order: the onchain CerebrScope label (when it has a name), then the
+ * catalog identification, then 'Circuit #N'. Pin names fall back per pin the same way.
+ */
+export function resolveLabel(
+  c: Pick<ChainCircuit, 'id' | 'nIn' | 'nOut'>,
+  onchain: { name: string; description: string; inputs: readonly string[]; outputs: readonly string[] } | undefined,
+  catalog: CircuitLabel | undefined,
+): CircuitLabel {
+  const base = catalog ?? fallbackLabel(c)
+  if (!onchain || !onchain.name.trim()) return base
+  const pins = (own: readonly string[], fb: string[], prefix: string, n: number) =>
+    Array.from({ length: n }, (_, i) => own[i]?.trim() || fb[i] || `${prefix}${i}`)
+  return {
+    name: onchain.name,
+    description: onchain.description || catalog?.description,
+    inputs: pins(onchain.inputs, base.inputs, 'x', c.nIn),
+    outputs: pins(onchain.outputs, base.outputs, 'y', c.nOut),
+    catalogId: catalog?.catalogId,
+  }
+}
 
 const MODES: OutputMode[] = ['direct', 'buffered']
 const pinKey = (nIn: number, nOut: number, hex: string) => `${nIn}:${nOut}:${hex.toLowerCase()}`
@@ -179,14 +202,9 @@ function catalogHexes(): Map<string, string> {
  * Recognises catalog circuits among a CPU's circuits by their exact netlist bytes. REF-composed
  * catalog circuits match when every REF points at a circuit of this CPU recognised as the right
  * dependency (so a REF variant built on any copy of its neurons is still recognised).
- * `known` (catalog id -> circuit id from the launch record) and `saved` labels take precedence.
+ * `known` (catalog id -> circuit id from the launch record) takes precedence.
  */
-export function identifyCircuits(
-  cpu: Address,
-  circuits: ChainCircuit[],
-  known: Record<string, string> = {},
-  saved: Record<string, CircuitLabel> = {},
-): Map<bigint, CircuitLabel> {
+export function identifyCircuits(cpu: Address, circuits: ChainCircuit[], known: Record<string, string> = {}): Map<bigint, CircuitLabel> {
   const out = new Map<bigint, CircuitLabel>()
   const byId = new Map<string, string>()
   for (const [catalogId, cid] of Object.entries(known)) {
@@ -199,7 +217,6 @@ export function identifyCircuits(
     let catalogId = byId.get(c.id.toString()) ?? flat.get(pinKey(c.nIn, c.nOut, c.netlist))
     if (!catalogId) catalogId = matchRefVariant(cpu, c, refVariants, out)
     if (catalogId) out.set(c.id, labelOfCatalog(getCircuit(catalogId)))
-    else if (saved[c.id.toString()]) out.set(c.id, saved[c.id.toString()])
   }
   return out
 }
@@ -332,7 +349,7 @@ export function compileDesign(design: Design, opts: { mode: OutputMode; cpu?: Ad
     }
   }
 
-  // Dependencies: prefer an on-chain copy in either output mode; otherwise tape out the chosen mode.
+  // Dependencies: prefer an onchain copy in either output mode; otherwise tape out the chosen mode.
   const depStatus: DepStatus[] = deps.map((d) => {
     const [own, other] = opts.mode === 'direct' ? d.variants : [d.variants[1], d.variants[0]]
     for (const v of [own, other]) {
@@ -409,12 +426,12 @@ export function addToIndex(index: Map<string, bigint>, nl: Pick<Netlist, 'nIn' |
   if (!index.has(k)) index.set(k, id)
 }
 
-// ------------------------------------------------------------------ simulator for on-chain circuits
+// ------------------------------------------------------------------ simulator for onchain circuits
 
 type ProgramCache = Map<string, Promise<Program>>
 
 /**
- * Loads an on-chain circuit into the local simulator, fetching every circuit it REFs (on any CPU)
+ * Loads an onchain circuit into the local simulator, fetching every circuit it REFs (on any CPU)
  * recursively. Results are cached per (cpu, id), so repeated loads cost no RPC.
  */
 export function loadProgram(pc: PublicClient, circuits: Address, id: bigint, cache: ProgramCache = new Map(), known?: ChainCircuit): Promise<Program> {
