@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { useBalance, useChains, useConnect, useConnection, useConnectors, useDisconnect, useSwitchChain } from 'wagmi'
+import { useBalance, useConnect, useConnection, useConnectors, useDisconnect, useSwitchChain } from 'wagmi'
 import type { Connector } from 'wagmi'
-import { FORK_CHAIN_ID } from '../config/chains.ts'
 import { useNet } from '../hooks/useCpu.ts'
 import { fmt, shortAddr } from '../lib/format.ts'
 import { useToasts } from '../hooks/useToasts.tsx'
@@ -10,19 +9,16 @@ import { Logo } from './Logo.tsx'
 
 const isOkx = (c: Connector) => /okx/i.test(c.name) || c.id === 'okxWallet' || c.id === 'com.okex.wallet'
 
-function useWalletOptions(chainId: number) {
+/** Injected wallets (OKX Wallet first). */
+function useWalletOptions() {
   const all = useConnectors()
   const discoveredOkx = all.some((c) => c.id !== 'okxWallet' && isOkx(c))
   const okxInjected = typeof window !== 'undefined' && !!window.okxwallet
   return all
-    .filter((c) => {
-      if (c.id === 'okxWallet') return !discoveredOkx // prefer the EIP-6963 entry when present
-      if (c.type === 'mock') return chainId === FORK_CHAIN_ID
-      return true
-    })
+    .filter((c) => (c.id === 'okxWallet' ? !discoveredOkx : true)) // prefer the EIP-6963 entry when present
     .map((c) => ({
       connector: c,
-      label: c.type === 'mock' ? 'Fork dev account #2 (local)' : c.id === 'injected' ? 'Browser wallet' : c.name,
+      label: c.id === 'injected' ? 'Browser wallet' : c.name,
       okx: isOkx(c),
       unavailable: c.id === 'okxWallet' && !okxInjected,
     }))
@@ -31,7 +27,6 @@ function useWalletOptions(chainId: number) {
 
 export function Header() {
   const { chainId, chain, blockNumber } = useNet()
-  const chains = useChains()
   const { address, chainId: walletChainId, isConnected } = useConnection()
   const { mutate: switchChain } = useSwitchChain()
   const { push } = useToasts()
@@ -42,7 +37,7 @@ export function Header() {
   const { data: bal } = useBalance({ address, chainId, query: { refetchInterval: 6_000 } })
   const [open, setOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
-  const options = useWalletOptions(chainId)
+  const options = useWalletOptions()
 
   useEffect(() => {
     if (!open) return
@@ -58,27 +53,15 @@ export function Header() {
   return (
     <header className="header">
       <a className="brand" href="/" title="Cerebr home">
-        <Logo />
-        <div>
-          <div className="brand-name">CEREBR</div>
-          <div className="brand-sub">neural processor · TapeOut · X Layer</div>
-        </div>
+        <Logo size={26} />
+        <span className="brand-name">Cerebr</span>
+        <span className="brand-tag">CRB-1</span>
       </a>
 
       <div className="header-right">
         <label className="chain-select" title="Network">
           <span className={`dot ${blockNumber !== undefined ? 'live' : ''}`} />
-          {chains.length > 1 ? (
-            <select value={chainId} onChange={(e) => switchTo(Number(e.target.value))}>
-              {chains.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-          ) : (
-            <span>{chains[0]?.name}</span>
-          )}
+          <span>{chain?.name}</span>
         </label>
 
         {isConnected && address ? (
