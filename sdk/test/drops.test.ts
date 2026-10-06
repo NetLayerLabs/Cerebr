@@ -88,9 +88,10 @@ test('toDrop derives sharesLeft / live', () => {
 });
 
 test('addresses and error mapping', () => {
-  assert.equal(XLAYER_DROPS, undefined); // not deployed on X Layer: TapeOut ships drops on BSC only
+  // TapeOut ships drops on BSC only; Cerebr deployed TapeOut's contract on X Layer (2026-10-06).
+  assert.equal(XLAYER_DROPS, '0xf037a5543f19619a2291009ae1542b71d50ff9b9');
   assert.equal(BSC_DROPS, '0x7Fd055496b638aD81f58B33Fd04d6e90bbC2a672');
-  assert.throws(() => requireDrops(), /deployDrops/);
+  assert.equal(requireDrops(), XLAYER_DROPS);
   assert.equal(requireDrops(BSC_DROPS), BSC_DROPS);
   assert.match(explainDropError(new Error('execution reverted: already claimed')) ?? '', /already claimed/);
   assert.match(explainDropError(new Error('custom error 0xe237d922: ...')) ?? '', /approve/);

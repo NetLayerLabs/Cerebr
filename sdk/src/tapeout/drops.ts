@@ -52,7 +52,8 @@ import type { Wallet, WriteResult } from './client.ts';
  * Cerebr's deployment of TapeOut's drops contract on X Layer (chainId 196).
  * `undefined` until it is deployed to mainnet (see TAPEOUT.md "Drops" for the steps).
  */
-export const XLAYER_DROPS: Address | undefined = undefined;
+/** Deployed on X Layer mainnet 2026-10-06 (tx 0xd0f4367f…8e02), code hash verified; Genesis Drop #1 = dropId 1. */
+export const XLAYER_DROPS: Address | undefined = '0xf037a5543f19619a2291009ae1542b71d50ff9b9';
 
 /** TapeOut's own drops contract on BNB Chain (chainId 56), factory 0x6822…F7e2. Reference only. */
 export const BSC_DROPS: Address = '0x7Fd055496b638aD81f58B33Fd04d6e90bbC2a672';
