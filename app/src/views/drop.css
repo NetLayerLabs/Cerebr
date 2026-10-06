@@ -1,0 +1,64 @@
+/* drop feature styles, owned by the drop engineer. Imported by components/GenesisDropCard.tsx and
+   landing/Landing.tsx (the .ds-drop call-to-action). Shared tokens only, so both themes work;
+   every class is prefixed (.drop-* in the app, .ds-drop* on the landing page). */
+
+/* ---------- Processor: Genesis Drop card ---------- */
+.drop-card { position: relative; margin-bottom: 20px; overflow: hidden; }
+/* one lime hairline across the top edge marks it as the entry point */
+.drop-card::before { content: ''; position: absolute; left: 0; right: 0; top: -1px; height: 1px; background: linear-gradient(90deg, transparent, var(--acc-edge) 30%, var(--acc-edge) 70%, transparent); }
+.drop-loading { margin: 0; }
+.drop-pill.on { color: var(--mint); border-color: color-mix(in srgb, var(--mint) 45%, transparent); background: var(--acc-dim); }
+.drop-pill.claimed { color: var(--good); border-color: color-mix(in srgb, var(--good) 45%, transparent); background: var(--good-dim); }
+
+.drop-grid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 32px; align-items: start; }
+.drop-main, .drop-side { min-width: 0; }
+.drop-title { margin: 2px 0 0; font: 500 clamp(24px, 2.6vw, 34px)/1.1 var(--sans); letter-spacing: -0.03em; }
+.drop-title .grad { white-space: nowrap; }
+.drop-lede { margin: 12px 0 18px; font-size: 14px; line-height: 1.6; max-width: 620px; }
+.drop-quote { margin-top: 4px; }
+.drop-cta { gap: 8px; }
+.drop-rule { margin: 10px 0 0; line-height: 1.55; }
+
+.drop-done { display: grid; gap: 14px; }
+.drop-ok { margin: 0; padding: 10px 12px; border: 1px solid color-mix(in srgb, var(--good) 40%, transparent); background: var(--good-dim); color: var(--good); border-radius: 2px; }
+.drop-ok a { color: inherit; }
+.drop-next { border: 1px solid var(--line-2); border-radius: 2px; padding: 16px; background: var(--bg-2); }
+.drop-next-k { text-transform: uppercase; letter-spacing: 0.12em; color: var(--mint); }
+.drop-next-body { margin: 8px 0 12px; line-height: 1.55; color: var(--muted); }
+.drop-eq { white-space: nowrap; }
+
+.drop-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-top: 1px solid var(--line-2); border-left: 1px solid var(--line); }
+.drop-stat { padding: 14px 14px 16px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); min-width: 0; }
+.drop-stat-k { font: 500 10.5px/1.3 var(--mono); text-transform: uppercase; letter-spacing: 0.12em; color: var(--faint); }
+.drop-stat-v { font: 500 26px/1.1 var(--mono); letter-spacing: -0.02em; margin-top: 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.drop-stat.accent .drop-stat-v { color: var(--mint); }
+.drop-stat-u { font-size: 12px; color: var(--muted); margin-top: 4px; }
+.drop-meter { height: 3px; background: var(--line-2); margin-top: 16px; overflow: hidden; }
+.drop-meter > div { height: 100%; background: var(--acc-fill); transition: width 0.6s ease; }
+.drop-meter-k { margin: 6px 0 14px; letter-spacing: 0.06em; }
+html:lang(zh) .drop-stat-k, html:lang(zh) .drop-next-k { letter-spacing: 0.04em; }
+
+@media (max-width: 900px) {
+  .drop-grid { grid-template-columns: 1fr; gap: 22px; }
+}
+@media (max-width: 560px) {
+  .drop-card { padding: 18px 16px; }
+  .drop-stat { padding: 12px 10px 14px; }
+  .drop-stat-v { font-size: 22px; }
+  .drop-next { padding: 14px 12px; }
+  .drop-eq { white-space: normal; }
+}
+
+/* ---------- landing: compact call-to-action under the hero buttons ---------- */
+.ds-drop { display: inline-flex; align-items: center; gap: 12px; max-width: 100%; margin-top: 18px; padding: 8px 10px 8px 8px; border: 1px solid var(--rule-2); border-radius: 2px; background: var(--ink-2); color: var(--text); transition: border-color 0.15s, background 0.15s; }
+.ds-drop:hover { border-color: var(--acc); }
+.ds-drop-tag { flex: none; font: 500 10.5px/1 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--on-acc); background: var(--acc-fill); padding: 6px 8px; border-radius: 2px; }
+.ds-drop-text { min-width: 0; font: 500 14px/1.35 var(--sans); }
+.ds-drop-left { display: block; font: 400 11.5px/1.3 var(--mono); color: var(--dim); margin-top: 2px; }
+.ds-drop-go { flex: none; font: 500 12px/1 var(--mono); color: var(--acc); letter-spacing: 0.04em; white-space: nowrap; }
+html:lang(zh) .ds-drop-tag { letter-spacing: 0.04em; }
+@media (max-width: 560px) {
+  .ds-drop { display: flex; }
+  .ds-drop-go { display: none; }
+}
+.drop-hint { color: var(--text); }

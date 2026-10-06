@@ -9,6 +9,7 @@ import { href } from '../hooks/useRoute.ts'
 import { mintTx, withdrawTx } from '../lib/cerebr.ts'
 import { compact, fmt } from '../lib/format.ts'
 import { Addr, Row, Seg, Stat } from '../components/ui.tsx'
+import { GenesisDropCard } from '../components/GenesisDropCard.tsx'
 import { useI18n } from '../i18n/index.tsx'
 import { useCircuitText } from '../i18n/circuits.ts'
 
@@ -23,6 +24,8 @@ export function ProcessorView() {
         <h1>{rich('proc.title', { name: cpu.name, em: (c) => <span className="grad">{c}</span> })}</h1>
         <p className="muted">{rich('proc.lede')}</p>
       </section>
+      {/* Genesis Drop: owned by the Drop engineer (components/GenesisDropCard.tsx). */}
+      <GenesisDropCard />
       <section className="stats">
         <Stat label={t('proc.minted')} value={compact(cpu.minted, 0)} unit={t('proc.ofCap', { cap: compact(cpu.supplyCap, 0) })}>
           <div className="bar">

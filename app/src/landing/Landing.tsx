@@ -25,6 +25,9 @@ import { useCircuitText } from '../i18n/circuits.ts'
 import { CountUp, useLandingMotion } from './motion.tsx'
 import { useRef } from 'react'
 import './landing.css'
+// GENESIS DROP (drop engineer): live call-to-action under the hero buttons, styles in views/drop.css.
+import { useGenesisDrop } from '../lib/drop.ts'
+import '../views/drop.css'
 
 const APP_HREF = '/app'
 const REPO_HREF = 'https://github.com/NetLayerLabs/Cerebr'
@@ -179,6 +182,7 @@ function Hero({ live }: { live: Live }) {
             {t('l.hero.cta2')}
           </a>
         </div>
+        <GenesisDropCta />
         <dl className="ds-hero-spec">
           <div>
             <dt>{t('l.hero.gates')}</dt>
@@ -213,6 +217,30 @@ function Hero({ live }: { live: Live }) {
     </section>
   )
 }
+
+/**
+ * GENESIS DROP: compact link to the Genesis Drop card (/app#processor). Shown while the drop reads
+ * and while it is live; hidden once it is drained, cancelled or missing. Keys drop.l.* (drop namespace).
+ */
+function GenesisDropCta() {
+  const { t } = useI18n()
+  const { data } = useGenesisDrop()
+  if (data === null || (data && !data.drop.live)) return null
+  const n = data ? data.drop.perClaim : 16n
+  return (
+    <a className="ds-drop" href={`${APP_HREF}#processor`}>
+      <span className="ds-drop-tag">{t('drop.l.tag')}</span>
+      <span className="ds-drop-text">
+        {t('drop.l.text', { n })}
+        {data && <span className="ds-drop-left">{t('drop.l.left', { n: data.drop.sharesLeft })}</span>}
+      </span>
+      <span className="ds-drop-go" aria-hidden>
+        {t('drop.l.cta')} →
+      </span>
+    </a>
+  )
+}
+/* /GENESIS DROP */
 
 /** Live CPU state as a datasheet "electrical characteristics" table; config values until the read lands. */
 function Characteristics() {
