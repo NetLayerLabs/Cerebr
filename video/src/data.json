@@ -1,0 +1,85 @@
+{
+  "_source": "Live X Layer mainnet readings shown in the captured footage (video/.cache/meta.json, captured 2026-10-07 22:11-22:15 UTC against HEAD build 4e42fe9) plus the project docs (README.md, ARENA.md, AGENT.md, ISSUANCE.md).",
+  "capturedAt": "2026-10-07 22:15 UTC",
+  "processor": {
+    "address": "0xB04EB79D1A5EECaabAAfF7B77d7c27578EE693FF",
+    "short": "0xB04E…93FF",
+    "circuits": 16,
+    "supply": 1000000,
+    "unitPrice": "0.00001 OKB",
+    "minted": 1251
+  },
+  "gates": {
+    "and": 2,
+    "or": 3,
+    "goNoGo": 19,
+    "xor4": 6,
+    "xor5Refs": 3,
+    "xor5Burned": 0,
+    "trainedHvV": 96,
+    "trainedCases": 512
+  },
+  "drop": {
+    "perClaim": 16,
+    "claimsLeft": 24,
+    "of": 25,
+    "remaining": 384
+  },
+  "arena": {
+    "bot": 16,
+    "nand": 590,
+    "layers": 7,
+    "neurons": 362,
+    "boards": 19683,
+    "games": 457,
+    "humanWins": 0,
+    "botWins": 346,
+    "draws": 111
+  },
+  "agent": {
+    "address": "0x3d736c6419dCa667a351907578b68717Cd6e3340",
+    "short": "0x3d73…3340",
+    "circuit": 8,
+    "decisions": 194,
+    "go": 17,
+    "noGo": 177,
+    "replayed": 64,
+    "verified": 64,
+    "pins": [
+      {
+        "name": "CALM",
+        "w": 1,
+        "v": 1
+      },
+      {
+        "name": "ACTIVE",
+        "w": 1,
+        "v": 0
+      },
+      {
+        "name": "RESTED",
+        "w": 1,
+        "v": 0
+      },
+      {
+        "name": "SPIKE",
+        "w": -1,
+        "v": 0
+      },
+      {
+        "name": "REFRACTORY",
+        "w": -1,
+        "v": 0
+      }
+    ],
+    "sum": 1,
+    "theta": 2,
+    "verdict": "NO-GO",
+    "block": "72,642,238"
+  },
+  "contracts": [
+    "CerebrScope",
+    "NeuralArena",
+    "CerebrAgent"
+  ]
+}

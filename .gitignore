@@ -39,3 +39,4 @@ video/out/
 video/.cache/
 video/public/footage/
 video/public/stills/
+.DS_Store

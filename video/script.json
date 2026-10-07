@@ -1,0 +1,160 @@
+{
+  "title": "Cerebr: a neural processor, taped out onchain",
+  "model": "eleven_multilingual_v2",
+  "voices": {
+    "narrator": {
+      "name": "Lily (ElevenLabs premade: British, middle-aged, velvety, confident, informative)",
+      "id": "pFZP5JQG7iQjIQuC4Bku",
+      "settings": {
+        "stability": 0.55,
+        "similarity_boost": 0.8,
+        "style": 0.2,
+        "use_speaker_boost": true
+      }
+    }
+  },
+  "scenes": [
+    {
+      "id": "open",
+      "seconds": 12,
+      "lines": [
+        {
+          "voice": "narrator",
+          "text": "Nineteen sixty-nine. Two scientists, Minsky and Papert, showed that a single artificial neuron cannot learn XOR. It took a second layer to solve it."
+        }
+      ]
+    },
+    {
+      "id": "gap",
+      "seconds": 16,
+      "lines": [
+        {
+          "voice": "narrator",
+          "text": "Today, neural networks make decisions everywhere. But onchain, a game, an agent or a DAO can't run one."
+        },
+        {
+          "voice": "narrator",
+          "text": "Models live on servers, and you have to trust whatever answer they send back."
+        }
+      ]
+    },
+    {
+      "id": "idea",
+      "seconds": 11,
+      "lines": [
+        {
+          "voice": "narrator",
+          "text": "But a neuron is just a weighted vote. If enough inputs fire, it fires. That is logic. And logic is gates."
+        }
+      ]
+    },
+    {
+      "id": "turn",
+      "seconds": 6,
+      "lines": [
+        {
+          "voice": "narrator",
+          "text": "Meet Cerebr. A neural processor, taped out onchain."
+        }
+      ]
+    },
+    {
+      "id": "compile",
+      "seconds": 13,
+      "lines": [
+        {
+          "voice": "narrator",
+          "text": "Cerebr compiles a neuron into NAND gates, the only gate TapeOut has. An AND neuron is two gates. A five-input decision neuron, nineteen."
+        }
+      ]
+    },
+    {
+      "id": "tapeout",
+      "seconds": 17,
+      "lines": [
+        {
+          "voice": "narrator",
+          "text": "Each gate burns one transistor on our processor on X Layer. Sixteen circuits are live, and every one runs with a free eval call, gate by gate, onchain."
+        },
+        {
+          "voice": "narrator",
+          "text": "New builders can claim sixteen free NAND from the Genesis Drop, and tape out a first neuron of their own."
+        }
+      ]
+    },
+    {
+      "id": "compose",
+      "seconds": 12,
+      "lines": [
+        {
+          "voice": "narrator",
+          "text": "Neurons wire into networks. The XOR network from nineteen sixty-nine is three taped-out neurons, joined by REF. It burned zero new transistors."
+        }
+      ]
+    },
+    {
+      "id": "train",
+      "seconds": 16,
+      "lines": [
+        {
+          "voice": "narrator",
+          "text": "You can train your own. Draw examples, and Cerebr searches for the network. When one neuron can't fit them, it proves it, and adds the hidden layer. Then it tapes it out."
+        }
+      ]
+    },
+    {
+      "id": "arena",
+      "seconds": 15,
+      "lines": [
+        {
+          "voice": "narrator",
+          "text": "Or play one. In the Arena, every bot move is an inference of a five-hundred-ninety-gate network, inside your own transaction. We checked every possible game. Humans never win."
+        }
+      ]
+    },
+    {
+      "id": "agent",
+      "seconds": 16,
+      "lines": [
+        {
+          "voice": "narrator",
+          "text": "And one of them acts on its own. CerebrAgent's brain is a nineteen-gate neuron. Every ten minutes it reads the chain, asks the neuron, and records Go or No-Go. Anyone can replay every decision."
+        }
+      ]
+    },
+    {
+      "id": "market",
+      "seconds": 9,
+      "lines": [
+        {
+          "voice": "narrator",
+          "text": "Every circuit is an NFT with its own brain wallet, and can be listed on TapeOut's marketplace."
+        }
+      ]
+    },
+    {
+      "id": "unique",
+      "seconds": 17,
+      "lines": [
+        {
+          "voice": "narrator",
+          "text": "What makes Cerebr different?"
+        },
+        {
+          "voice": "narrator",
+          "text": "It's verifiable: every answer is an eval anyone can rerun. It's composable: every neuron is a building block other teams can REF for free. And it's live: three verified contracts, no admin, no funds held."
+        }
+      ]
+    },
+    {
+      "id": "close",
+      "seconds": 9,
+      "lines": [
+        {
+          "voice": "narrator",
+          "text": "Cerebr. Neurons, taped out onchain. Try it at cerebr dot x y z."
+        }
+      ]
+    }
+  ]
+}

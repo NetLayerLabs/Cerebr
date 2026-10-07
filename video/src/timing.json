@@ -1,0 +1,2240 @@
+{
+ "fps": 60,
+ "totalFrames": 10320,
+ "bpm": 100,
+ "beats": [
+  2,
+  38,
+  74,
+  110,
+  146,
+  182,
+  218,
+  254,
+  290,
+  326,
+  362,
+  398,
+  434,
+  470,
+  506,
+  542,
+  578,
+  614,
+  650,
+  686,
+  722,
+  758,
+  794,
+  830,
+  866,
+  902,
+  938,
+  974,
+  1010,
+  1046,
+  1082,
+  1118,
+  1154,
+  1190,
+  1226,
+  1262,
+  1298,
+  1334,
+  1370,
+  1406,
+  1442,
+  1478,
+  1514,
+  1550,
+  1586,
+  1622,
+  1658,
+  1694,
+  1730,
+  1766,
+  1802,
+  1838,
+  1874,
+  1910,
+  1946,
+  1982,
+  2018,
+  2054,
+  2090,
+  2126,
+  2162,
+  2198,
+  2234,
+  2270,
+  2306,
+  2342,
+  2378,
+  2414,
+  2450,
+  2486,
+  2522,
+  2558,
+  2594,
+  2630,
+  2666,
+  2702,
+  2738,
+  2774,
+  2810,
+  2846,
+  2882,
+  2918,
+  2954,
+  2990,
+  3026,
+  3062,
+  3098,
+  3134,
+  3170,
+  3206,
+  3242,
+  3278,
+  3314,
+  3350,
+  3386,
+  3422,
+  3458,
+  3494,
+  3530,
+  3566,
+  3602,
+  3638,
+  3674,
+  3710,
+  3746,
+  3782,
+  3818,
+  3854,
+  3890,
+  3926,
+  3962,
+  3998,
+  4034,
+  4070,
+  4106,
+  4142,
+  4178,
+  4214,
+  4250,
+  4286,
+  4322,
+  4358,
+  4394,
+  4430,
+  4466,
+  4502,
+  4538,
+  4574,
+  4610,
+  4646,
+  4682,
+  4718,
+  4754,
+  4790,
+  4826,
+  4862,
+  4898,
+  4934,
+  4970,
+  5006,
+  5042,
+  5078,
+  5114,
+  5150,
+  5186,
+  5222,
+  5258,
+  5294,
+  5330,
+  5366,
+  5402,
+  5438,
+  5474,
+  5510,
+  5546,
+  5582,
+  5618,
+  5654,
+  5690,
+  5726,
+  5762,
+  5798,
+  5834,
+  5870,
+  5906,
+  5942,
+  5978,
+  6014,
+  6050,
+  6086,
+  6122,
+  6158,
+  6194,
+  6230,
+  6266,
+  6302,
+  6338,
+  6374,
+  6410,
+  6446,
+  6482,
+  6518,
+  6554,
+  6590,
+  6626,
+  6662,
+  6698,
+  6734,
+  6770,
+  6806,
+  6842,
+  6878,
+  6914,
+  6950,
+  6986,
+  7022,
+  7058,
+  7094,
+  7130,
+  7166,
+  7202,
+  7238,
+  7274,
+  7310,
+  7346,
+  7382,
+  7418,
+  7454,
+  7490,
+  7526,
+  7562,
+  7598,
+  7634,
+  7670,
+  7706,
+  7742,
+  7778,
+  7814,
+  7850,
+  7886,
+  7922,
+  7958,
+  7994,
+  8030,
+  8066,
+  8102,
+  8138,
+  8174,
+  8210,
+  8246,
+  8282,
+  8318,
+  8354,
+  8390,
+  8426,
+  8462,
+  8498,
+  8534,
+  8570,
+  8606,
+  8642,
+  8678,
+  8714,
+  8750,
+  8786,
+  8822,
+  8858,
+  8894,
+  8930,
+  8966,
+  9002,
+  9038,
+  9074,
+  9110,
+  9146,
+  9182,
+  9218,
+  9254,
+  9290,
+  9326,
+  9362,
+  9398,
+  9434,
+  9470,
+  9506,
+  9542,
+  9578,
+  9614,
+  9650,
+  9686,
+  9722,
+  9758,
+  9794,
+  9830,
+  9866,
+  9902,
+  9938,
+  9974,
+  10010,
+  10046,
+  10082,
+  10118,
+  10154,
+  10190,
+  10226,
+  10262,
+  10298
+ ],
+ "music": {
+  "file": "audio/music.mp3",
+  "source": "elevenlabs-music"
+ },
+ "scenes": [
+  {
+   "id": "open",
+   "from": 0,
+   "durationInFrames": 720,
+   "lines": [
+    {
+     "voice": "narrator",
+     "text": "Nineteen sixty-nine. Two scientists, Minsky and Papert, showed that a single artificial neuron cannot learn XOR. It took a second layer to solve it.",
+     "file": "audio/vo/open_0.mp3",
+     "startFrame": 24,
+     "durationFrames": 588,
+     "words": [
+      {
+       "word": "Nineteen",
+       "start": 24,
+       "end": 50
+      },
+      {
+       "word": "sixty-nine.",
+       "start": 53,
+       "end": 100
+      },
+      {
+       "word": "Two",
+       "start": 113,
+       "end": 126
+      },
+      {
+       "word": "scientists,",
+       "start": 131,
+       "end": 171
+      },
+      {
+       "word": "Minsky",
+       "start": 174,
+       "end": 200
+      },
+      {
+       "word": "and",
+       "start": 203,
+       "end": 208
+      },
+      {
+       "word": "Papert,",
+       "start": 211,
+       "end": 239
+      },
+      {
+       "word": "showed",
+       "start": 241,
+       "end": 259
+      },
+      {
+       "word": "that",
+       "start": 261,
+       "end": 268
+      },
+      {
+       "word": "a",
+       "start": 270,
+       "end": 271
+      },
+      {
+       "word": "single",
+       "start": 277,
+       "end": 301
+      },
+      {
+       "word": "artificial",
+       "start": 303,
+       "end": 337
+      },
+      {
+       "word": "neuron",
+       "start": 343,
+       "end": 367
+      },
+      {
+       "word": "cannot",
+       "start": 371,
+       "end": 390
+      },
+      {
+       "word": "learn",
+       "start": 394,
+       "end": 410
+      },
+      {
+       "word": "XOR.",
+       "start": 416,
+       "end": 468
+      },
+      {
+       "word": "It",
+       "start": 487,
+       "end": 495
+      },
+      {
+       "word": "took",
+       "start": 497,
+       "end": 505
+      },
+      {
+       "word": "a",
+       "start": 507,
+       "end": 509
+      },
+      {
+       "word": "second",
+       "start": 513,
+       "end": 533
+      },
+      {
+       "word": "layer",
+       "start": 536,
+       "end": 548
+      },
+      {
+       "word": "to",
+       "start": 551,
+       "end": 555
+      },
+      {
+       "word": "solve",
+       "start": 559,
+       "end": 577
+      },
+      {
+       "word": "it.",
+       "start": 580,
+       "end": 612
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "gap",
+   "from": 720,
+   "durationInFrames": 960,
+   "lines": [
+    {
+     "voice": "narrator",
+     "text": "Today, neural networks make decisions everywhere. But onchain, a game, an agent or a DAO can't run one.",
+     "file": "audio/vo/gap_0.mp3",
+     "startFrame": 744,
+     "durationFrames": 466,
+     "words": [
+      {
+       "word": "Today,",
+       "start": 744,
+       "end": 780
+      },
+      {
+       "word": "neural",
+       "start": 791,
+       "end": 807
+      },
+      {
+       "word": "networks",
+       "start": 810,
+       "end": 838
+      },
+      {
+       "word": "make",
+       "start": 842,
+       "end": 851
+      },
+      {
+       "word": "decisions",
+       "start": 853,
+       "end": 880
+      },
+      {
+       "word": "everywhere.",
+       "start": 885,
+       "end": 928
+      },
+      {
+       "word": "But",
+       "start": 948,
+       "end": 959
+      },
+      {
+       "word": "onchain,",
+       "start": 961,
+       "end": 997
+      },
+      {
+       "word": "a",
+       "start": 999,
+       "end": 1002
+      },
+      {
+       "word": "game,",
+       "start": 1009,
+       "end": 1032
+      },
+      {
+       "word": "an",
+       "start": 1034,
+       "end": 1039
+      },
+      {
+       "word": "agent",
+       "start": 1044,
+       "end": 1071
+      },
+      {
+       "word": "or",
+       "start": 1075,
+       "end": 1082
+      },
+      {
+       "word": "a",
+       "start": 1085,
+       "end": 1087
+      },
+      {
+       "word": "DAO",
+       "start": 1092,
+       "end": 1119
+      },
+      {
+       "word": "can't",
+       "start": 1137,
+       "end": 1158
+      },
+      {
+       "word": "run",
+       "start": 1162,
+       "end": 1172
+      },
+      {
+       "word": "one.",
+       "start": 1177,
+       "end": 1209
+      }
+     ]
+    },
+    {
+     "voice": "narrator",
+     "text": "Models live on servers, and you have to trust whatever answer they send back.",
+     "file": "audio/vo/gap_1.mp3",
+     "startFrame": 1241,
+     "durationFrames": 301,
+     "words": [
+      {
+       "word": "Models",
+       "start": 1241,
+       "end": 1270
+      },
+      {
+       "word": "live",
+       "start": 1275,
+       "end": 1286
+      },
+      {
+       "word": "on",
+       "start": 1288,
+       "end": 1295
+      },
+      {
+       "word": "servers,",
+       "start": 1302,
+       "end": 1340
+      },
+      {
+       "word": "and",
+       "start": 1349,
+       "end": 1358
+      },
+      {
+       "word": "you",
+       "start": 1362,
+       "end": 1367
+      },
+      {
+       "word": "have",
+       "start": 1374,
+       "end": 1385
+      },
+      {
+       "word": "to",
+       "start": 1387,
+       "end": 1391
+      },
+      {
+       "word": "trust",
+       "start": 1395,
+       "end": 1413
+      },
+      {
+       "word": "whatever",
+       "start": 1417,
+       "end": 1444
+      },
+      {
+       "word": "answer",
+       "start": 1449,
+       "end": 1469
+      },
+      {
+       "word": "they",
+       "start": 1472,
+       "end": 1480
+      },
+      {
+       "word": "send",
+       "start": 1484,
+       "end": 1498
+      },
+      {
+       "word": "back.",
+       "start": 1502,
+       "end": 1542
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "idea",
+   "from": 1680,
+   "durationInFrames": 660,
+   "lines": [
+    {
+     "voice": "narrator",
+     "text": "But a neuron is just a weighted vote. If enough inputs fire, it fires. That is logic. And logic is gates.",
+     "file": "audio/vo/idea_0.mp3",
+     "startFrame": 1704,
+     "durationFrames": 510,
+     "words": [
+      {
+       "word": "But",
+       "start": 1704,
+       "end": 1715
+      },
+      {
+       "word": "a",
+       "start": 1718,
+       "end": 1719
+      },
+      {
+       "word": "neuron",
+       "start": 1725,
+       "end": 1753
+      },
+      {
+       "word": "is",
+       "start": 1758,
+       "end": 1762
+      },
+      {
+       "word": "just",
+       "start": 1765,
+       "end": 1775
+      },
+      {
+       "word": "a",
+       "start": 1778,
+       "end": 1779
+      },
+      {
+       "word": "weighted",
+       "start": 1785,
+       "end": 1808
+      },
+      {
+       "word": "vote.",
+       "start": 1812,
+       "end": 1843
+      },
+      {
+       "word": "If",
+       "start": 1857,
+       "end": 1866
+      },
+      {
+       "word": "enough",
+       "start": 1869,
+       "end": 1884
+      },
+      {
+       "word": "inputs",
+       "start": 1887,
+       "end": 1909
+      },
+      {
+       "word": "fire,",
+       "start": 1912,
+       "end": 1937
+      },
+      {
+       "word": "it",
+       "start": 1940,
+       "end": 1946
+      },
+      {
+       "word": "fires.",
+       "start": 1952,
+       "end": 1999
+      },
+      {
+       "word": "That",
+       "start": 2007,
+       "end": 2019
+      },
+      {
+       "word": "is",
+       "start": 2022,
+       "end": 2027
+      },
+      {
+       "word": "logic.",
+       "start": 2032,
+       "end": 2075
+      },
+      {
+       "word": "And",
+       "start": 2096,
+       "end": 2106
+      },
+      {
+       "word": "logic",
+       "start": 2112,
+       "end": 2140
+      },
+      {
+       "word": "is",
+       "start": 2146,
+       "end": 2157
+      },
+      {
+       "word": "gates.",
+       "start": 2162,
+       "end": 2214
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "turn",
+   "from": 2340,
+   "durationInFrames": 360,
+   "lines": [
+    {
+     "voice": "narrator",
+     "text": "Meet Cerebr. A neural processor, taped out onchain.",
+     "file": "audio/vo/turn_0.mp3",
+     "startFrame": 2364,
+     "durationFrames": 229,
+     "words": [
+      {
+       "word": "Meet",
+       "start": 2364,
+       "end": 2383
+      },
+      {
+       "word": "Cerebr.",
+       "start": 2387,
+       "end": 2425
+      },
+      {
+       "word": "A",
+       "start": 2437,
+       "end": 2443
+      },
+      {
+       "word": "neural",
+       "start": 2450,
+       "end": 2472
+      },
+      {
+       "word": "processor,",
+       "start": 2475,
+       "end": 2507
+      },
+      {
+       "word": "taped",
+       "start": 2508,
+       "end": 2524
+      },
+      {
+       "word": "out",
+       "start": 2526,
+       "end": 2532
+      },
+      {
+       "word": "onchain.",
+       "start": 2536,
+       "end": 2592
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "compile",
+   "from": 2700,
+   "durationInFrames": 758,
+   "lines": [
+    {
+     "voice": "narrator",
+     "text": "Cerebr compiles a neuron into NAND gates, the only gate TapeOut has. An AND neuron is two gates. A five-input decision neuron, nineteen.",
+     "file": "audio/vo/compile_0.mp3",
+     "startFrame": 2724,
+     "durationFrames": 644,
+     "words": [
+      {
+       "word": "Cerebr",
+       "start": 2724,
+       "end": 2750
+      },
+      {
+       "word": "compiles",
+       "start": 2753,
+       "end": 2780
+      },
+      {
+       "word": "a",
+       "start": 2783,
+       "end": 2785
+      },
+      {
+       "word": "neuron",
+       "start": 2788,
+       "end": 2809
+      },
+      {
+       "word": "into",
+       "start": 2812,
+       "end": 2822
+      },
+      {
+       "word": "NAND",
+       "start": 2826,
+       "end": 2842
+      },
+      {
+       "word": "gates,",
+       "start": 2847,
+       "end": 2879
+      },
+      {
+       "word": "the",
+       "start": 2890,
+       "end": 2897
+      },
+      {
+       "word": "only",
+       "start": 2902,
+       "end": 2918
+      },
+      {
+       "word": "gate",
+       "start": 2922,
+       "end": 2939
+      },
+      {
+       "word": "TapeOut",
+       "start": 2943,
+       "end": 2973
+      },
+      {
+       "word": "has.",
+       "start": 2977,
+       "end": 3009
+      },
+      {
+       "word": "An",
+       "start": 3028,
+       "end": 3037
+      },
+      {
+       "word": "AND",
+       "start": 3042,
+       "end": 3064
+      },
+      {
+       "word": "neuron",
+       "start": 3071,
+       "end": 3092
+      },
+      {
+       "word": "is",
+       "start": 3095,
+       "end": 3099
+      },
+      {
+       "word": "two",
+       "start": 3104,
+       "end": 3114
+      },
+      {
+       "word": "gates.",
+       "start": 3118,
+       "end": 3150
+      },
+      {
+       "word": "A",
+       "start": 3170,
+       "end": 3174
+      },
+      {
+       "word": "five-input",
+       "start": 3181,
+       "end": 3226
+      },
+      {
+       "word": "decision",
+       "start": 3229,
+       "end": 3254
+      },
+      {
+       "word": "neuron,",
+       "start": 3258,
+       "end": 3291
+      },
+      {
+       "word": "nineteen.",
+       "start": 3311,
+       "end": 3368
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "tapeout",
+   "from": 3458,
+   "durationInFrames": 1102,
+   "lines": [
+    {
+     "voice": "narrator",
+     "text": "Each gate burns one transistor on our processor on X Layer. Sixteen circuits are live, and every one runs with a free eval call, gate by gate, onchain.",
+     "file": "audio/vo/tapeout_0.mp3",
+     "startFrame": 3482,
+     "durationFrames": 636,
+     "words": [
+      {
+       "word": "Each",
+       "start": 3482,
+       "end": 3501
+      },
+      {
+       "word": "gate",
+       "start": 3504,
+       "end": 3520
+      },
+      {
+       "word": "burns",
+       "start": 3523,
+       "end": 3541
+      },
+      {
+       "word": "one",
+       "start": 3545,
+       "end": 3556
+      },
+      {
+       "word": "transistor",
+       "start": 3557,
+       "end": 3589
+      },
+      {
+       "word": "on",
+       "start": 3593,
+       "end": 3597
+      },
+      {
+       "word": "our",
+       "start": 3600,
+       "end": 3605
+      },
+      {
+       "word": "processor",
+       "start": 3608,
+       "end": 3637
+      },
+      {
+       "word": "on",
+       "start": 3642,
+       "end": 3646
+      },
+      {
+       "word": "X",
+       "start": 3652,
+       "end": 3661
+      },
+      {
+       "word": "Layer.",
+       "start": 3667,
+       "end": 3697
+      },
+      {
+       "word": "Sixteen",
+       "start": 3723,
+       "end": 3750
+      },
+      {
+       "word": "circuits",
+       "start": 3754,
+       "end": 3779
+      },
+      {
+       "word": "are",
+       "start": 3781,
+       "end": 3786
+      },
+      {
+       "word": "live,",
+       "start": 3788,
+       "end": 3816
+      },
+      {
+       "word": "and",
+       "start": 3823,
+       "end": 3832
+      },
+      {
+       "word": "every",
+       "start": 3837,
+       "end": 3849
+      },
+      {
+       "word": "one",
+       "start": 3853,
+       "end": 3862
+      },
+      {
+       "word": "runs",
+       "start": 3864,
+       "end": 3880
+      },
+      {
+       "word": "with",
+       "start": 3882,
+       "end": 3888
+      },
+      {
+       "word": "a",
+       "start": 3890,
+       "end": 3892
+      },
+      {
+       "word": "free",
+       "start": 3896,
+       "end": 3910
+      },
+      {
+       "word": "eval",
+       "start": 3915,
+       "end": 3942
+      },
+      {
+       "word": "call,",
+       "start": 3947,
+       "end": 3972
+      },
+      {
+       "word": "gate",
+       "start": 3982,
+       "end": 4000
+      },
+      {
+       "word": "by",
+       "start": 4002,
+       "end": 4010
+      },
+      {
+       "word": "gate,",
+       "start": 4014,
+       "end": 4045
+      },
+      {
+       "word": "onchain.",
+       "start": 4057,
+       "end": 4117
+      }
+     ]
+    },
+    {
+     "voice": "narrator",
+     "text": "New builders can claim sixteen free NAND from the Genesis Drop, and tape out a first neuron of their own.",
+     "file": "audio/vo/tapeout_1.mp3",
+     "startFrame": 4149,
+     "durationFrames": 379,
+     "words": [
+      {
+       "word": "New",
+       "start": 4149,
+       "end": 4164
+      },
+      {
+       "word": "builders",
+       "start": 4167,
+       "end": 4191
+      },
+      {
+       "word": "can",
+       "start": 4195,
+       "end": 4202
+      },
+      {
+       "word": "claim",
+       "start": 4205,
+       "end": 4222
+      },
+      {
+       "word": "sixteen",
+       "start": 4227,
+       "end": 4256
+      },
+      {
+       "word": "free",
+       "start": 4260,
+       "end": 4274
+      },
+      {
+       "word": "NAND",
+       "start": 4278,
+       "end": 4296
+      },
+      {
+       "word": "from",
+       "start": 4299,
+       "end": 4307
+      },
+      {
+       "word": "the",
+       "start": 4310,
+       "end": 4314
+      },
+      {
+       "word": "Genesis",
+       "start": 4317,
+       "end": 4343
+      },
+      {
+       "word": "Drop,",
+       "start": 4347,
+       "end": 4371
+      },
+      {
+       "word": "and",
+       "start": 4380,
+       "end": 4390
+      },
+      {
+       "word": "tape",
+       "start": 4394,
+       "end": 4411
+      },
+      {
+       "word": "out",
+       "start": 4413,
+       "end": 4423
+      },
+      {
+       "word": "a",
+       "start": 4426,
+       "end": 4427
+      },
+      {
+       "word": "first",
+       "start": 4432,
+       "end": 4449
+      },
+      {
+       "word": "neuron",
+       "start": 4453,
+       "end": 4472
+      },
+      {
+       "word": "of",
+       "start": 4474,
+       "end": 4478
+      },
+      {
+       "word": "their",
+       "start": 4480,
+       "end": 4490
+      },
+      {
+       "word": "own.",
+       "start": 4494,
+       "end": 4528
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "compose",
+   "from": 4560,
+   "durationInFrames": 720,
+   "lines": [
+    {
+     "voice": "narrator",
+     "text": "Neurons wire into networks. The XOR network from nineteen sixty-nine is three taped-out neurons, joined by REF. It burned zero new transistors.",
+     "file": "audio/vo/compose_0.mp3",
+     "startFrame": 4584,
+     "durationFrames": 647,
+     "words": [
+      {
+       "word": "Neurons",
+       "start": 4584,
+       "end": 4613
+      },
+      {
+       "word": "wire",
+       "start": 4617,
+       "end": 4637
+      },
+      {
+       "word": "into",
+       "start": 4640,
+       "end": 4652
+      },
+      {
+       "word": "networks.",
+       "start": 4656,
+       "end": 4701
+      },
+      {
+       "word": "The",
+       "start": 4721,
+       "end": 4728
+      },
+      {
+       "word": "XOR",
+       "start": 4733,
+       "end": 4765
+      },
+      {
+       "word": "network",
+       "start": 4769,
+       "end": 4794
+      },
+      {
+       "word": "from",
+       "start": 4797,
+       "end": 4805
+      },
+      {
+       "word": "nineteen",
+       "start": 4809,
+       "end": 4831
+      },
+      {
+       "word": "sixty-nine",
+       "start": 4833,
+       "end": 4874
+      },
+      {
+       "word": "is",
+       "start": 4877,
+       "end": 4886
+      },
+      {
+       "word": "three",
+       "start": 4890,
+       "end": 4909
+      },
+      {
+       "word": "taped-out",
+       "start": 4912,
+       "end": 4942
+      },
+      {
+       "word": "neurons,",
+       "start": 4946,
+       "end": 4983
+      },
+      {
+       "word": "joined",
+       "start": 4996,
+       "end": 5017
+      },
+      {
+       "word": "by",
+       "start": 5020,
+       "end": 5027
+      },
+      {
+       "word": "REF.",
+       "start": 5034,
+       "end": 5064
+      },
+      {
+       "word": "It",
+       "start": 5083,
+       "end": 5094
+      },
+      {
+       "word": "burned",
+       "start": 5098,
+       "end": 5122
+      },
+      {
+       "word": "zero",
+       "start": 5125,
+       "end": 5147
+      },
+      {
+       "word": "new",
+       "start": 5152,
+       "end": 5162
+      },
+      {
+       "word": "transistors.",
+       "start": 5165,
+       "end": 5230
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "train",
+   "from": 5280,
+   "durationInFrames": 813,
+   "lines": [
+    {
+     "voice": "narrator",
+     "text": "You can train your own. Draw examples, and Cerebr searches for the network. When one neuron can't fit them, it proves it, and adds the hidden layer. Then it tapes it out.",
+     "file": "audio/vo/train_0.mp3",
+     "startFrame": 5304,
+     "durationFrames": 700,
+     "words": [
+      {
+       "word": "You",
+       "start": 5304,
+       "end": 5315
+      },
+      {
+       "word": "can",
+       "start": 5318,
+       "end": 5325
+      },
+      {
+       "word": "train",
+       "start": 5327,
+       "end": 5341
+      },
+      {
+       "word": "your",
+       "start": 5344,
+       "end": 5351
+      },
+      {
+       "word": "own.",
+       "start": 5356,
+       "end": 5379
+      },
+      {
+       "word": "Draw",
+       "start": 5405,
+       "end": 5420
+      },
+      {
+       "word": "examples,",
+       "start": 5424,
+       "end": 5464
+      },
+      {
+       "word": "and",
+       "start": 5466,
+       "end": 5473
+      },
+      {
+       "word": "Cerebr",
+       "start": 5477,
+       "end": 5501
+      },
+      {
+       "word": "searches",
+       "start": 5505,
+       "end": 5529
+      },
+      {
+       "word": "for",
+       "start": 5532,
+       "end": 5537
+      },
+      {
+       "word": "the",
+       "start": 5539,
+       "end": 5544
+      },
+      {
+       "word": "network.",
+       "start": 5546,
+       "end": 5585
+      },
+      {
+       "word": "When",
+       "start": 5604,
+       "end": 5616
+      },
+      {
+       "word": "one",
+       "start": 5621,
+       "end": 5631
+      },
+      {
+       "word": "neuron",
+       "start": 5634,
+       "end": 5656
+      },
+      {
+       "word": "can't",
+       "start": 5660,
+       "end": 5677
+      },
+      {
+       "word": "fit",
+       "start": 5681,
+       "end": 5692
+      },
+      {
+       "word": "them,",
+       "start": 5694,
+       "end": 5712
+      },
+      {
+       "word": "it",
+       "start": 5721,
+       "end": 5729
+      },
+      {
+       "word": "proves",
+       "start": 5732,
+       "end": 5753
+      },
+      {
+       "word": "it,",
+       "start": 5757,
+       "end": 5772
+      },
+      {
+       "word": "and",
+       "start": 5779,
+       "end": 5789
+      },
+      {
+       "word": "adds",
+       "start": 5796,
+       "end": 5815
+      },
+      {
+       "word": "the",
+       "start": 5818,
+       "end": 5823
+      },
+      {
+       "word": "hidden",
+       "start": 5827,
+       "end": 5843
+      },
+      {
+       "word": "layer.",
+       "start": 5847,
+       "end": 5875
+      },
+      {
+       "word": "Then",
+       "start": 5898,
+       "end": 5916
+      },
+      {
+       "word": "it",
+       "start": 5924,
+       "end": 5934
+      },
+      {
+       "word": "tapes",
+       "start": 5937,
+       "end": 5957
+      },
+      {
+       "word": "it",
+       "start": 5960,
+       "end": 5965
+      },
+      {
+       "word": "out.",
+       "start": 5967,
+       "end": 6003
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "arena",
+   "from": 6093,
+   "durationInFrames": 891,
+   "lines": [
+    {
+     "voice": "narrator",
+     "text": "Or play one. In the Arena, every bot move is an inference of a five-hundred-ninety-gate network, inside your own transaction. We checked every possible game. Humans never win.",
+     "file": "audio/vo/arena_0.mp3",
+     "startFrame": 6117,
+     "durationFrames": 742,
+     "words": [
+      {
+       "word": "Or",
+       "start": 6117,
+       "end": 6132
+      },
+      {
+       "word": "play",
+       "start": 6137,
+       "end": 6150
+      },
+      {
+       "word": "one.",
+       "start": 6155,
+       "end": 6175
+      },
+      {
+       "word": "In",
+       "start": 6194,
+       "end": 6204
+      },
+      {
+       "word": "the",
+       "start": 6207,
+       "end": 6211
+      },
+      {
+       "word": "Arena,",
+       "start": 6215,
+       "end": 6251
+      },
+      {
+       "word": "every",
+       "start": 6264,
+       "end": 6282
+      },
+      {
+       "word": "bot",
+       "start": 6285,
+       "end": 6297
+      },
+      {
+       "word": "move",
+       "start": 6301,
+       "end": 6320
+      },
+      {
+       "word": "is",
+       "start": 6324,
+       "end": 6332
+      },
+      {
+       "word": "an",
+       "start": 6334,
+       "end": 6339
+      },
+      {
+       "word": "inference",
+       "start": 6342,
+       "end": 6375
+      },
+      {
+       "word": "of",
+       "start": 6377,
+       "end": 6380
+      },
+      {
+       "word": "a",
+       "start": 6383,
+       "end": 6385
+      },
+      {
+       "word": "five-hundred-ninety-gate",
+       "start": 6389,
+       "end": 6458
+      },
+      {
+       "word": "network,",
+       "start": 6460,
+       "end": 6497
+      },
+      {
+       "word": "inside",
+       "start": 6510,
+       "end": 6538
+      },
+      {
+       "word": "your",
+       "start": 6540,
+       "end": 6547
+      },
+      {
+       "word": "own",
+       "start": 6550,
+       "end": 6557
+      },
+      {
+       "word": "transaction.",
+       "start": 6559,
+       "end": 6613
+      },
+      {
+       "word": "We",
+       "start": 6636,
+       "end": 6644
+      },
+      {
+       "word": "checked",
+       "start": 6647,
+       "end": 6664
+      },
+      {
+       "word": "every",
+       "start": 6668,
+       "end": 6687
+      },
+      {
+       "word": "possible",
+       "start": 6690,
+       "end": 6714
+      },
+      {
+       "word": "game.",
+       "start": 6716,
+       "end": 6747
+      },
+      {
+       "word": "Humans",
+       "start": 6773,
+       "end": 6802
+      },
+      {
+       "word": "never",
+       "start": 6805,
+       "end": 6817
+      },
+      {
+       "word": "win.",
+       "start": 6821,
+       "end": 6858
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "agent",
+   "from": 6984,
+   "durationInFrames": 960,
+   "lines": [
+    {
+     "voice": "narrator",
+     "text": "And one of them acts on its own. CerebrAgent's brain is a nineteen-gate neuron. Every ten minutes it reads the chain, asks the neuron, and records Go or No-Go. Anyone can replay every decision.",
+     "file": "audio/vo/agent_0.mp3",
+     "startFrame": 7008,
+     "durationFrames": 856,
+     "words": [
+      {
+       "word": "And",
+       "start": 7008,
+       "end": 7018
+      },
+      {
+       "word": "one",
+       "start": 7023,
+       "end": 7031
+      },
+      {
+       "word": "of",
+       "start": 7033,
+       "end": 7036
+      },
+      {
+       "word": "them",
+       "start": 7038,
+       "end": 7046
+      },
+      {
+       "word": "acts",
+       "start": 7050,
+       "end": 7066
+      },
+      {
+       "word": "on",
+       "start": 7069,
+       "end": 7073
+      },
+      {
+       "word": "its",
+       "start": 7076,
+       "end": 7084
+      },
+      {
+       "word": "own.",
+       "start": 7087,
+       "end": 7112
+      },
+      {
+       "word": "CerebrAgent's",
+       "start": 7154,
+       "end": 7206
+      },
+      {
+       "word": "brain",
+       "start": 7208,
+       "end": 7226
+      },
+      {
+       "word": "is",
+       "start": 7230,
+       "end": 7235
+      },
+      {
+       "word": "a",
+       "start": 7237,
+       "end": 7239
+      },
+      {
+       "word": "nineteen-gate",
+       "start": 7243,
+       "end": 7285
+      },
+      {
+       "word": "neuron.",
+       "start": 7289,
+       "end": 7326
+      },
+      {
+       "word": "Every",
+       "start": 7357,
+       "end": 7374
+      },
+      {
+       "word": "ten",
+       "start": 7377,
+       "end": 7388
+      },
+      {
+       "word": "minutes",
+       "start": 7392,
+       "end": 7410
+      },
+      {
+       "word": "it",
+       "start": 7413,
+       "end": 7417
+      },
+      {
+       "word": "reads",
+       "start": 7420,
+       "end": 7432
+      },
+      {
+       "word": "the",
+       "start": 7435,
+       "end": 7439
+      },
+      {
+       "word": "chain,",
+       "start": 7442,
+       "end": 7472
+      },
+      {
+       "word": "asks",
+       "start": 7484,
+       "end": 7508
+      },
+      {
+       "word": "the",
+       "start": 7512,
+       "end": 7516
+      },
+      {
+       "word": "neuron,",
+       "start": 7519,
+       "end": 7554
+      },
+      {
+       "word": "and",
+       "start": 7563,
+       "end": 7572
+      },
+      {
+       "word": "records",
+       "start": 7576,
+       "end": 7606
+      },
+      {
+       "word": "Go",
+       "start": 7610,
+       "end": 7627
+      },
+      {
+       "word": "or",
+       "start": 7636,
+       "end": 7642
+      },
+      {
+       "word": "No-Go.",
+       "start": 7647,
+       "end": 7685
+      },
+      {
+       "word": "Anyone",
+       "start": 7716,
+       "end": 7744
+      },
+      {
+       "word": "can",
+       "start": 7747,
+       "end": 7754
+      },
+      {
+       "word": "replay",
+       "start": 7758,
+       "end": 7785
+      },
+      {
+       "word": "every",
+       "start": 7792,
+       "end": 7811
+      },
+      {
+       "word": "decision.",
+       "start": 7814,
+       "end": 7863
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "market",
+   "from": 7944,
+   "durationInFrames": 512,
+   "lines": [
+    {
+     "voice": "narrator",
+     "text": "Every circuit is an NFT with its own brain wallet, and can be listed on TapeOut's marketplace.",
+     "file": "audio/vo/market_0.mp3",
+     "startFrame": 7968,
+     "durationFrames": 399,
+     "words": [
+      {
+       "word": "Every",
+       "start": 7968,
+       "end": 7989
+      },
+      {
+       "word": "circuit",
+       "start": 7993,
+       "end": 8022
+      },
+      {
+       "word": "is",
+       "start": 8027,
+       "end": 8036
+      },
+      {
+       "word": "an",
+       "start": 8038,
+       "end": 8043
+      },
+      {
+       "word": "NFT",
+       "start": 8048,
+       "end": 8089
+      },
+      {
+       "word": "with",
+       "start": 8115,
+       "end": 8125
+      },
+      {
+       "word": "its",
+       "start": 8128,
+       "end": 8135
+      },
+      {
+       "word": "own",
+       "start": 8139,
+       "end": 8149
+      },
+      {
+       "word": "brain",
+       "start": 8152,
+       "end": 8167
+      },
+      {
+       "word": "wallet,",
+       "start": 8170,
+       "end": 8196
+      },
+      {
+       "word": "and",
+       "start": 8207,
+       "end": 8216
+      },
+      {
+       "word": "can",
+       "start": 8219,
+       "end": 8226
+      },
+      {
+       "word": "be",
+       "start": 8229,
+       "end": 8233
+      },
+      {
+       "word": "listed",
+       "start": 8236,
+       "end": 8258
+      },
+      {
+       "word": "on",
+       "start": 8261,
+       "end": 8266
+      },
+      {
+       "word": "TapeOut's",
+       "start": 8270,
+       "end": 8301
+      },
+      {
+       "word": "marketplace.",
+       "start": 8304,
+       "end": 8366
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "unique",
+   "from": 8456,
+   "durationInFrames": 1144,
+   "lines": [
+    {
+     "voice": "narrator",
+     "text": "What makes Cerebr different?",
+     "file": "audio/vo/unique_0.mp3",
+     "startFrame": 8480,
+     "durationFrames": 101,
+     "words": [
+      {
+       "word": "What",
+       "start": 8480,
+       "end": 8493
+      },
+      {
+       "word": "makes",
+       "start": 8495,
+       "end": 8508
+      },
+      {
+       "word": "Cerebr",
+       "start": 8510,
+       "end": 8532
+      },
+      {
+       "word": "different?",
+       "start": 8535,
+       "end": 8580
+      }
+     ]
+    },
+    {
+     "voice": "narrator",
+     "text": "It's verifiable: every answer is an eval anyone can rerun. It's composable: every neuron is a building block other teams can REF for free. And it's live: three verified contracts, no admin, no funds held.",
+     "file": "audio/vo/unique_1.mp3",
+     "startFrame": 8612,
+     "durationFrames": 956,
+     "words": [
+      {
+       "word": "It's",
+       "start": 8612,
+       "end": 8625
+      },
+      {
+       "word": "verifiable:",
+       "start": 8628,
+       "end": 8677
+      },
+      {
+       "word": "every",
+       "start": 8697,
+       "end": 8716
+      },
+      {
+       "word": "answer",
+       "start": 8721,
+       "end": 8744
+      },
+      {
+       "word": "is",
+       "start": 8747,
+       "end": 8752
+      },
+      {
+       "word": "an",
+       "start": 8755,
+       "end": 8758
+      },
+      {
+       "word": "eval",
+       "start": 8763,
+       "end": 8788
+      },
+      {
+       "word": "anyone",
+       "start": 8793,
+       "end": 8822
+      },
+      {
+       "word": "can",
+       "start": 8824,
+       "end": 8834
+      },
+      {
+       "word": "rerun.",
+       "start": 8838,
+       "end": 8874
+      },
+      {
+       "word": "It's",
+       "start": 8893,
+       "end": 8905
+      },
+      {
+       "word": "composable:",
+       "start": 8908,
+       "end": 8955
+      },
+      {
+       "word": "every",
+       "start": 8974,
+       "end": 8994
+      },
+      {
+       "word": "neuron",
+       "start": 8999,
+       "end": 9019
+      },
+      {
+       "word": "is",
+       "start": 9022,
+       "end": 9026
+      },
+      {
+       "word": "a",
+       "start": 9029,
+       "end": 9031
+      },
+      {
+       "word": "building",
+       "start": 9034,
+       "end": 9054
+      },
+      {
+       "word": "block",
+       "start": 9056,
+       "end": 9072
+      },
+      {
+       "word": "other",
+       "start": 9079,
+       "end": 9094
+      },
+      {
+       "word": "teams",
+       "start": 9097,
+       "end": 9114
+      },
+      {
+       "word": "can",
+       "start": 9117,
+       "end": 9125
+      },
+      {
+       "word": "REF",
+       "start": 9129,
+       "end": 9140
+      },
+      {
+       "word": "for",
+       "start": 9143,
+       "end": 9151
+      },
+      {
+       "word": "free.",
+       "start": 9154,
+       "end": 9181
+      },
+      {
+       "word": "And",
+       "start": 9201,
+       "end": 9221
+      },
+      {
+       "word": "it's",
+       "start": 9226,
+       "end": 9237
+      },
+      {
+       "word": "live:",
+       "start": 9241,
+       "end": 9273
+      },
+      {
+       "word": "three",
+       "start": 9290,
+       "end": 9309
+      },
+      {
+       "word": "verified",
+       "start": 9313,
+       "end": 9345
+      },
+      {
+       "word": "contracts,",
+       "start": 9348,
+       "end": 9398
+      },
+      {
+       "word": "no",
+       "start": 9411,
+       "end": 9424
+      },
+      {
+       "word": "admin,",
+       "start": 9430,
+       "end": 9470
+      },
+      {
+       "word": "no",
+       "start": 9483,
+       "end": 9494
+      },
+      {
+       "word": "funds",
+       "start": 9499,
+       "end": 9519
+      },
+      {
+       "word": "held.",
+       "start": 9522,
+       "end": 9568
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "close",
+   "from": 9600,
+   "durationInFrames": 720,
+   "lines": [
+    {
+     "voice": "narrator",
+     "text": "Cerebr. Neurons, taped out onchain. Try it at cerebr dot x y z.",
+     "file": "audio/vo/close_0.mp3",
+     "startFrame": 9624,
+     "durationFrames": 396,
+     "words": [
+      {
+       "word": "Cerebr.",
+       "start": 9624,
+       "end": 9671
+      },
+      {
+       "word": "Neurons,",
+       "start": 9691,
+       "end": 9730
+      },
+      {
+       "word": "taped",
+       "start": 9732,
+       "end": 9755
+      },
+      {
+       "word": "out",
+       "start": 9758,
+       "end": 9771
+      },
+      {
+       "word": "onchain.",
+       "start": 9777,
+       "end": 9826
+      },
+      {
+       "word": "Try",
+       "start": 9846,
+       "end": 9862
+      },
+      {
+       "word": "it",
+       "start": 9866,
+       "end": 9870
+      },
+      {
+       "word": "at",
+       "start": 9873,
+       "end": 9878
+      },
+      {
+       "word": "cerebr",
+       "start": 9881,
+       "end": 9909
+      },
+      {
+       "word": "dot",
+       "start": 9914,
+       "end": 9927
+      },
+      {
+       "word": "x",
+       "start": 9937,
+       "end": 9949
+      },
+      {
+       "word": "y",
+       "start": 9958,
+       "end": 9972
+      },
+      {
+       "word": "z.",
+       "start": 9977,
+       "end": 10020
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

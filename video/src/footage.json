@@ -1,0 +1,484 @@
+{
+ "agent": {
+  "file": "footage/agent.mp4",
+  "width": 3200,
+  "height": 1800,
+  "fps": 60,
+  "durationFrames": 1068,
+  "marks": {
+   "pins": 298,
+   "feed": 444,
+   "replay": 586,
+   "verified": 771
+  },
+  "url": "/app#agent",
+  "build": "HEAD 4e42fe9 (vite build, vite preview :5210)",
+  "capturedAt": "2026-10-07T22:14:57.440Z",
+  "deviceScale": 2,
+  "viewport": {
+   "w": 1600,
+   "h": 900
+  },
+  "scrollY": 454,
+  "stats": "DECISIONS 194 0 via brain wallet GO 17 NO-GO 177 ABSTAIN 0 circuit not evaluated LAST DECISION 3 min ago #194 · No-Go NEXT ACT 86 blocks from block 72,642,324",
+  "observation": "LIVE OBSERVATION BLOCK 72,642,238 What the neuron would see if act() ran in the latest block: observeAt(baseFeePerGas), refreshed every 15 seconds. Nothing is sent. CALM e0 · bit 0 +1 basefee at or below the calm threshold 0.02 gwei vs max 0.05 gwei 1 ACTIVE e1 · bit 1 +1 UTC hour inside the active window hour 22 UTC, window 13:00 to 21:00 0 RESTED e2 · bit 2 +1 last Go at least the rest period ago, or never 7,465 blocks since Go, rest 43,200 0 SPIKE i0 · bit 3 -1 basefee above its moving average times the spike factor 0.02 gwei vs 1.5 x EMA 0.02 gwei 0 REFRACTORY i1 · bit 4 -1 last Go within the refractory period 7,465 blocks since Go, refractory 3,600 0 1 + 0 + 0 - 0 - 0 = 1 < θ 2 NO-GO Input byte 0x01 → eval → 0x00 act() allowed now no (rate limit) Next act block 72,642,324 (in 86 blocks) On X Layer an eth_call without a gas price sees a basefee of 0, so the page passes the latest blo",
+  "feed": {
+   "head": "DECISION FEED 64 OF 194",
+   "passed": "Replay all 64 / 64 VERIFIED",
+   "rows": 64,
+   "first": "#194 22:11 UTC 3 min ago NO-GO e0 e1 e2 i0 i1 0 0.02 gwei 0x09a0…902A Replay ✓ eval 0x00, inputs and netlist match"
+  },
+  "rects": {
+   "obs": {
+    "x": 76,
+    "y": 96,
+    "w": 823,
+    "h": 665
+   }
+  },
+  "rectsAt": {
+   "feed": {
+    "feed": {
+     "x": 76,
+     "y": 96,
+     "w": 1448,
+     "h": 3778
+    },
+    "actions": {
+     "x": 99,
+     "y": 222,
+     "w": 1402,
+     "h": 28
+    }
+   }
+  },
+  "notes": "Live observation card (five pins, weights, sum vs threshold) at rest (mark pins), eased scroll to the decision feed (mark feed), real click on Replay all (mark replay): every listed decision re-run with eval(8, input) (mark verified)."
+ },
+ "arena": {
+  "file": "footage/arena.mp4",
+  "width": 3200,
+  "height": 1800,
+  "fps": 60,
+  "durationFrames": 1198,
+  "marks": {
+   "preview": 177,
+   "cell": 296,
+   "answer": 388,
+   "answer2": 672,
+   "how": 972
+  },
+  "url": "/app#arena",
+  "build": "HEAD 4e42fe9 (vite build, vite preview :5210)",
+  "capturedAt": "2026-10-07T22:14:32.887Z",
+  "deviceScale": 2,
+  "viewport": {
+   "w": 1600,
+   "h": 900
+  },
+  "scrollY": 332,
+  "stats": "GAMES PLAYED 2 NETWORK WINS 0 DRAWS 0 HUMAN WINS 0 proven: never FALLBACK MOVES 0 circuit answers overridden YOUR GAMES - connect a wallet",
+  "preview": "If you play cell 4, the network answers cell 0. previewBotMove() runs the same eval() as play(), as a free view call. Nothing is sent.",
+  "rects": {
+   "stats": {
+    "x": 76,
+    "y": 96,
+    "w": 1448,
+    "h": 105
+   },
+   "play": {
+    "x": 76,
+    "y": 218,
+    "w": 716,
+    "h": 551
+   },
+   "board": {
+    "x": 99,
+    "y": 284,
+    "w": 290,
+    "h": 290
+   },
+   "pv": {
+    "x": 411,
+    "y": 415,
+    "w": 358,
+    "h": 89
+   }
+  },
+  "rectsAt": {
+   "how": {
+    "how": {
+     "x": 76,
+     "y": 148,
+     "w": 1448,
+     "h": 273
+    }
+   }
+  },
+  "notes": "No wallet. Real click on 'Preview the reply' (mark preview), then cell 0 (mark cell): previewBotMove() eth_call answers (mark answer); then cell 4 (mark answer2). Then an eased scroll to How it works (mark how). Nothing sent."
+ },
+ "compose": {
+  "file": "footage/compose.mp4",
+  "width": 3200,
+  "height": 1800,
+  "fps": 60,
+  "durationFrames": 708,
+  "marks": {
+   "ref": 160,
+   "cost": 448
+  },
+  "url": "/app#studio",
+  "build": "HEAD 4e42fe9 (vite build, vite preview :5210)",
+  "capturedAt": "2026-10-07T22:33:43.401Z",
+  "deviceScale": 2,
+  "viewport": {
+   "w": 1600,
+   "h": 900
+  },
+  "reading": {
+   "counts": "0 NAND 3 REF",
+   "text": "COMPILED NETLIST\nDirect\nBuffered\n0 NAND\n3 REF\nPins\n2 in → 1 out\nFlattened gates\n6\nNetlist size\n111 bytes\nREF dependencies\nOR Neuron\n#2 ONCHAIN\nInhibitory Neuron (NAND)\n#3 ONCHAIN\nAND Neuron\n#1 ONCHAIN\nTransistors burned\n0 NAND\nYou hold\nconnect a wallet\nTape-out fee × 1\n0.0013 OKB\nTotal (msg.value)\n0.0013 OKB\nNetwork gas (est.)\n~0.0000062 OKB · 310k gas\nThis exact netlist is already taped out as #5. You can still tape out your own copy.\nName, written onchain after the tape-out\n30/64 bytes · stored in CerebrScope with the pin names\nTape out (2 transactions)"
+  },
+  "rects": {
+   "design": {
+    "x": 76,
+    "y": 76,
+    "w": 666,
+    "h": 666
+   },
+   "compiled": {
+    "x": 758,
+    "y": 76,
+    "w": 766,
+    "h": 872
+   },
+   "deps": {
+    "x": 1149,
+    "y": 327,
+    "w": 352,
+    "h": 94
+   }
+  },
+  "notes": "Catalog tab; real click on 'The XOR Problem (REF-composed)' (mark ref): 3 REF to the taped-out OR, NAND and AND neurons. Then an eased scroll to the cost rows (mark cost)."
+ },
+ "drop": {
+  "file": "footage/drop.mp4",
+  "width": 3200,
+  "height": 1800,
+  "fps": 60,
+  "durationFrames": 697,
+  "marks": {
+   "stats": 462
+  },
+  "url": "/app#processor",
+  "build": "HEAD 4e42fe9 (vite build, vite preview :5210)",
+  "capturedAt": "2026-10-07T22:30:06.458Z",
+  "deviceScale": 2,
+  "viewport": {
+   "w": 1600,
+   "h": 900
+  },
+  "scrollY": 270,
+  "reading": "GENESIS DROP #1 LIVE Claim 16 NAND, tape out your first neuron. Free NAND transistors for early builders, paid out onchain by TapeOut’s ownerless drops contract. 16 NAND is exactly what a 4-input neuron burns, so your first circuit costs only the tape-out fee. You pay to claim 0 OKB + gas Network gas (est.) ~0.00000213 OKB Then, to tape out 0.0013 OKB fee + gas Claim 16 NAND Connect a wallet (top right) to claim. One claim per address. No fee and no allowlist: the drops contract sends 16 NAND straight to your wallet, and you pay only network gas. REMAINING 384 NAND in the drop CLAIMS LEFT 24 o",
+  "rects": {
+   "drop": {
+    "x": 76,
+    "y": 96,
+    "w": 1448,
+    "h": 446
+   }
+  },
+  "notes": "Genesis Drop #1 card at rest (live reads), then an eased scroll to the processor's live stats row (mark stats). rects at the starting scroll."
+ },
+ "gallery": {
+  "file": "footage/gallery.mp4",
+  "width": 3200,
+  "height": 1800,
+  "fps": 60,
+  "durationFrames": 709,
+  "marks": {
+   "scrolled": 570
+  },
+  "url": "/app#gallery",
+  "build": "HEAD 4e42fe9 (vite build, vite preview :5210)",
+  "capturedAt": "2026-10-07T22:32:04.026Z",
+  "deviceScale": 2,
+  "viewport": {
+   "w": 1600,
+   "h": 900
+  },
+  "scrollY": 262,
+  "cards": 16,
+  "notes": "Stepped 60 fps take: all circuits on the processor, each die shot drawn from its real netlist; a slow eased scroll (7 s, deterministic per frame) down through the grid (mark scrolled)."
+ },
+ "infer": {
+  "file": "footage/infer.mp4",
+  "width": 3200,
+  "height": 1800,
+  "fps": 60,
+  "durationFrames": 961,
+  "marks": {
+   "animate": 174,
+   "flip": 532,
+   "flipped": 661
+  },
+  "url": "/app#playground/5",
+  "build": "HEAD 4e42fe9 (vite build, vite preview :5210)",
+  "capturedAt": "2026-10-07T22:13:40.378Z",
+  "deviceScale": 2,
+  "viewport": {
+   "w": 1600,
+   "h": 900
+  },
+  "scrollY": 270,
+  "reading": "RESULT ✓ CHAIN = SIMULATOR Animate Y GATE TRACE 3 elements · 2 logic layers layer 2 / 2 Replay 1 1 0 Onchain result 0 matches the simulator, gate by gate. signal 1 signal 0 Onchain eval() · eth_call y 0 Local simulator y 0 Gas used by eval 180,937 Round trip 1223 ms Calldata → return eval(5, 0x03) → 0x00 A view call: free for the caller, and anyone can run it, including other contracts.",
+  "rects": {
+   "circuit": {
+    "x": 76,
+    "y": 96,
+    "w": 716,
+    "h": 338
+   },
+   "result": {
+    "x": 808,
+    "y": 96,
+    "w": 716,
+    "h": 629
+   },
+   "anim": {
+    "x": 844,
+    "y": 277,
+    "w": 644,
+    "h": 151
+   }
+  },
+  "notes": "Circuit #5 with x0=1, x1=0 (y=1). Real click on Animate (mark animate): the gate animation replays the onchain run. Then x1 toggled (mark flip): a fresh eval() (1,1) -> 0 lands (mark flipped) and replays. CHAIN = SIMULATOR throughout."
+ },
+ "landing": {
+  "file": "footage/landing.mp4",
+  "width": 3200,
+  "height": 1800,
+  "fps": 60,
+  "durationFrames": 1609,
+  "marks": {
+   "landingLive": 152,
+   "scroll": 553,
+   "revealed": 1396
+  },
+  "url": "/",
+  "build": "HEAD 4e42fe9 (vite build, vite preview :5210)",
+  "capturedAt": "2026-10-07T22:11:51.909Z",
+  "deviceScale": 2,
+  "viewport": {
+   "w": 1600,
+   "h": 900
+  },
+  "live": {
+   "circuits": "16",
+   "agent": "No-Go · just now",
+   "arena": "0",
+   "claimsLeft": "24"
+  },
+  "rects": {
+   "hero": {
+    "x": 0,
+    "y": 59,
+    "w": 1600,
+    "h": 793
+   },
+   "chip": {
+    "x": 857,
+    "y": 171,
+    "w": 633,
+    "h": 542
+   },
+   "spec": null,
+   "drop": null
+  },
+  "notes": "Fresh load of the landing page (HEAD build), recorded from first paint; the hero schematic lights its pins as onchain reads land (mark landingLive = spec row read). Holds on the hero, then a calm eased scroll (4.2 s, marks scroll/scrolled) into the live spec row and the start of the Electrical characteristics table, waits for the scroll reveals (mark revealed) and holds. Nothing clicked."
+ },
+ "market": {
+  "file": "footage/market.mp4",
+  "width": 3200,
+  "height": 1800,
+  "fps": 60,
+  "durationFrames": 385,
+  "marks": {
+   "onCard": 162
+  },
+  "url": "/app#gallery",
+  "build": "HEAD 4e42fe9 (vite build, vite preview :5210)",
+  "capturedAt": "2026-10-07T22:32:24.136Z",
+  "deviceScale": 2,
+  "viewport": {
+   "w": 1600,
+   "h": 900
+  },
+  "scrollY": 262,
+  "forSale": {
+   "note": "For sale filter not clicked in this take; at capture the live market listed nothing (the earlier take showed 'No circuit is listed for sale right now')."
+  },
+  "rects": {
+   "head": {
+    "x": 76,
+    "y": 92,
+    "w": 1448,
+    "h": 55
+   },
+   "firstCard": {
+    "x": 77,
+    "y": 165,
+    "w": 289,
+    "h": 594
+   }
+  },
+  "notes": "Stepped 60 fps take: gallery cards at rest, the pointer glides onto the first card’s brain wallet and market rows (mark onCard) and holds. No click."
+ },
+ "studio": {
+  "file": "footage/studio.mp4",
+  "width": 3200,
+  "height": 1800,
+  "fps": 60,
+  "durationFrames": 739,
+  "marks": {
+   "and": 131,
+   "five": 197,
+   "goNoGo": 438
+  },
+  "url": "/app#studio/neuron:1,1:2",
+  "build": "HEAD 4e42fe9 (vite build, vite preview :5210)",
+  "capturedAt": "2026-10-07T22:12:09.100Z",
+  "deviceScale": 2,
+  "viewport": {
+   "w": 1600,
+   "h": 900
+  },
+  "scrollY": 290,
+  "readings": {
+   "andNand": "2",
+   "goNoGoNand": "19",
+   "equation": "y = [ x0 + x1 + x2 − x3 − x4 ≥ 2 ]"
+  },
+  "rects": {
+   "design": {
+    "x": 76,
+    "y": 76,
+    "w": 666,
+    "h": 384
+   },
+   "compiled": {
+    "x": 758,
+    "y": 76,
+    "w": 766,
+    "h": 908
+   },
+   "editor": {
+    "x": 99,
+    "y": 156,
+    "w": 620,
+    "h": 281
+   },
+   "die": {
+    "x": 781,
+    "y": 156,
+    "w": 720,
+    "h": 352
+   },
+   "counts": {
+    "x": 1149,
+    "y": 156,
+    "w": 352,
+    "h": 38
+   }
+  },
+  "notes": "Neuron tab opened with the AND neuron y=[x0+x1>=2] (mark and). Real clicks: 5 inputs (mark five), then x3 and x4 to -1, giving y=[x0+x1+x2-x3-x4>=2], the Go/No-Go neuron (mark goNoGo). Compiled live in the browser."
+ },
+ "train": {
+  "file": "footage/train.mp4",
+  "width": 3200,
+  "height": 1800,
+  "fps": 60,
+  "durationFrames": 1189,
+  "marks": {
+   "drawn": 198,
+   "trained": 361,
+   "xor": 647,
+   "compile": 955
+  },
+  "url": "/app#train",
+  "build": "HEAD 4e42fe9 (vite build, vite preview :5210)",
+  "capturedAt": "2026-10-07T22:14:07.123Z",
+  "deviceScale": 2,
+  "viewport": {
+   "w": 1600,
+   "h": 900
+  },
+  "preset": "horizontal-vs-vertical",
+  "reading": {
+   "model": "MODEL prefer: robust Retrain EXACT SEARCH PROVEN OPTIMAL 2 LAYERS · 3 HIDDEN · OR Training accuracy 100% · 0 wrong Margin tolerates 1 stray pixel (2 px) Trained in 31 ms The XOR moment No single neuron fits these examples, and that is a proof: every ternary weight vector was checked. So the trainer added a hidden layer: each of the 3 hidden neurons fires on some Fires examples and on no Silent one, and the output fires when any of them does (OR). Weights +1 excites 0 ignored −1 inhibits h0 θ = 2 h1 θ = 2 h2 θ = 2 OR (h0, h1, h2) fires if any hidden neuron fires Outlined neurons fire on the drawing in Try it.",
+   "compile": "COMPILE & TAPE OUT 96 NAND VERIFIED ON ALL 2^9 = 512 INPUTS Pins 9 in → 1 out NAND per neuron 28 + 46 + 27 | 6 Netlist size 672 bytes Transistors burned 96 NAND You hold connect a wallet Mint 96 NAND 0.00162 OKB Tape-out fee × 1 0.0013 OKB Total (msg.value) 0.00292 OKB Network gas (est.) ~0.0000105 OKB · 528k gas Name, written onchain after the tape-out 22/64 bytes · stored in CerebrScope with the pin names Tape out (3 transactions)"
+  },
+  "rects": {
+   "examples": {
+    "x": 76,
+    "y": 96,
+    "w": 716,
+    "h": 513
+   },
+   "pad": {
+    "x": 99,
+    "y": 279,
+    "w": 182,
+    "h": 182
+   },
+   "model": {
+    "x": 808,
+    "y": 96,
+    "w": 716,
+    "h": 666
+   },
+   "go": {
+    "x": 831,
+    "y": 175,
+    "w": 670,
+    "h": 46
+   }
+  },
+  "rectsAt": {
+   "xor": {
+    "model": {
+     "x": 808,
+     "y": 34,
+     "w": 716,
+     "h": 666
+    },
+    "xor": {
+     "x": 831,
+     "y": 330,
+     "w": 670,
+     "h": 118
+    }
+   },
+   "compile": {
+    "compile": {
+     "x": 808,
+     "y": 96,
+     "w": 716,
+     "h": 813
+    },
+    "verify": {
+     "x": 1174,
+     "y": 212,
+     "w": 244,
+     "h": 26
+    },
+    "tryit": {
+     "x": 76,
+     "y": 96,
+     "w": 716,
+     "h": 427
+    }
+   }
+  },
+  "notes": "Preset Horizontal vs Vertical selected before the take. A real pointer drag draws the middle row on the pad (mark drawn; the app notes it is already a Fires example), then a real click on Train (mark trained). Eased scrolls to the XOR-moment card (mark xor) and the compile card, verified on every input (mark compile). Nothing taped out."
+ }
+}
