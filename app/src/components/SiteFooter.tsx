@@ -2,7 +2,6 @@ import { XLAYER } from '@cerebr/sdk/tapeout'
 import { EXPLORER, ISSUANCE } from '../landing/issuance.ts'
 import { XLAYER_CONTRACTS } from '../config/contracts.ts'
 import { useI18n, type Key } from '../i18n/index.tsx'
-import { shortAddr } from '../lib/format.ts'
 import { BuiltBy } from './BuiltBy.tsx'
 import { BrandLockup } from './BrandLockup.tsx'
 
@@ -82,9 +81,8 @@ export function SiteFooter() {
           <ul className="sf-links">
             {col.links.map((l) => (
               <li key={l.href}>
-                <a href={l.href} {...(l.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>
+                <a href={l.href} title={l.address} {...(l.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>
                   <span>{t(l.label)}</span>
-                  {l.address && <span className="sf-addr">{shortAddr(l.address)}</span>}
                 </a>
               </li>
             ))}

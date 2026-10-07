@@ -265,8 +265,6 @@ body:has(.shell) { overflow-x: clip; }
 .sf-links { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
 .site-footer .sf-links a { display: inline-flex; flex-direction: column; gap: 3px; color: var(--muted); font: 400 14px/1.35 var(--sans); transition: color 0.15s; }
 .site-footer .sf-links a:hover { color: var(--text); }
-.sf-addr { font: 400 11px/1.2 var(--mono); color: var(--faint); letter-spacing: 0.02em; }
-.site-footer .sf-links a:hover .sf-addr { color: var(--mint); }
 @media (max-width: 900px) {
   .site-footer { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 36px 32px; }
   .sf-brand { grid-column: 1 / -1; }
