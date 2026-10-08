@@ -136,7 +136,7 @@ Each write flow was tested end to end through the real UI on a local fork of X L
 - [x] The landing page's Electrical characteristics table shows the mainnet CPU, and the issuance values are the real ones.
 - [x] The demo video is uploaded and linked (public on YouTube).
 - [x] The deadline is confirmed: 2026-10-09 06:00 UTC+2.
-- [ ] Make the repo public.
+- [x] Make the repo public (public since 2026-10-08).
 - [x] dApp hosting URL filled in above: https://cerebr.xyz, live over HTTPS (Let's Encrypt), every view checked in a browser on 2026-10-06 with 0 errors.
 - [x] Contact filled in above.
 - [x] Demo transactions disclosed in ISSUANCE.md §6 (the 2026-10-06 Arena and market UI test; the demo film was recorded without a wallet and sent no transactions).
