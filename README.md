@@ -4,9 +4,11 @@
 
 Cerebr is a TapeOut processor on X Layer mainnet, plus a compiler that turns neurons into real NAND netlists. We tape those neurons out as circuits on our own processor. Anyone can run them onchain for free with `eval()`, wire them into deeper networks with `REF`, train and tape out their own from the browser, play a game against one, and watch an autonomous agent that uses one as its brain.
 
-[**Live app: cerebr.xyz**](https://cerebr.xyz) · [Processor on OKX Explorer](https://www.okx.com/web3/explorer/xlayer/address/0xB04EB79D1A5EECaabAAfF7B77d7c27578EE693FF) · [Submission](SUBMISSION.md) · [TapeOut integration spec](TAPEOUT.md) · [Agent](AGENT.md) · [Arena](ARENA.md) · [Internal review](AUDIT.md)
+[**Live app: cerebr.xyz**](https://cerebr.xyz) · [**Demo video (2:52)**](https://www.youtube.com/watch?v=6Az-4wL00uU) · [Processor on OKX Explorer](https://www.okx.com/web3/explorer/xlayer/address/0xB04EB79D1A5EECaabAAfF7B77d7c27578EE693FF) · [Submission](SUBMISSION.md) · [TapeOut integration spec](TAPEOUT.md) · [Agent](AGENT.md) · [Arena](ARENA.md) · [Internal review](AUDIT.md)
 
-![Cerebr landing page](media/landing.png)
+[![Watch the Cerebr demo film (2:52)](media/demo-thumbnail.png)](https://www.youtube.com/watch?v=6Az-4wL00uU)
+
+*Watch the 2:52 demo film on YouTube. Every clip is the live app reading X Layer mainnet; how it was made is in [video/README.md](video/README.md).*
 
 Built by NetLayer Labs for the IGNIX X Layer **TapeOut Genesis Transistor** hackathon.
 

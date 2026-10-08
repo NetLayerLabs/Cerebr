@@ -16,7 +16,7 @@ IGNIX X Layer "TapeOut Genesis Transistor" hackathon. Deadline: **2026-10-09 06:
 | Flagship brain wallet | Open: `xor-net-ref` (#5) native account [`0x9E1d3eC3B3D0fe84997df0E065a96a7c93c13166`](https://www.okx.com/web3/explorer/xlayer/address/0x9E1d3eC3B3D0fe84997df0E065a96a7c93c13166) (open tx [0x8781…dad3](https://www.okx.com/web3/explorer/xlayer/tx/0x8781ed8467f4cef1d10dce3ec48cf1da99cfea615b250da8a352eda7a538dad3), 0.08 OKB) |
 | CerebrScope | [`0x2640F8E89b2B107919568FFd42dFb46A1866e528`](https://www.okx.com/web3/explorer/xlayer/address/0x2640F8E89b2B107919568FFd42dFb46A1866e528) (deploy tx [0x17d0…9cfd](https://www.okx.com/web3/explorer/xlayer/tx/0x17d01f5dbdc49a9dc88d6fc2f7b347dd55bc903e17fa70cfd2d34ea036359cfd); source verified on [Sourcify](https://repo.sourcify.dev/contracts/full_match/196/0x2640F8E89b2B107919568FFd42dFb46A1866e528/), exact match) |
 | CerebrAgent | [`0x3d736c6419dCa667a351907578b68717Cd6e3340`](https://www.okx.com/web3/explorer/xlayer/address/0x3d736c6419dCa667a351907578b68717Cd6e3340) (deploy tx [0xa9aa…a31f](https://www.okx.com/web3/explorer/xlayer/tx/0xa9aaacef0f3af99dc0046a67d5e3132879c65301415fca4b10202d617e15a31f); source verified on Sourcify, exact match): an autonomous agent whose policy is circuit #8, acting every 10 minutes ([AGENT.md](AGENT.md)) |
-| Demo video | **TODO_USER** (2 minutes; script below) |
+| Demo video | https://www.youtube.com/watch?v=6Az-4wL00uU (2:52, 4K) |
 | dApp / landing page | https://cerebr.xyz (landing) and https://cerebr.xyz/app (dApp), self-hosted on our VPS over HTTPS |
 | Repository | https://github.com/NetLayerLabs/Cerebr (**currently private: make it public before submitting**) |
 | Contact | NetLayer Labs: [netlayerlabs@gmail.com](mailto:netlayerlabs@gmail.com), X [@NetLayerLabs](https://x.com/NetLayerLabs). Builder: Telegram [@mr_network001](https://t.me/mr_network001), X [@encrypt_wizard](https://x.com/encrypt_wizard), [mrnetwork0001@gmail.com](mailto:mrnetwork0001@gmail.com) |
@@ -92,7 +92,7 @@ Small, verifiable intelligence that lives entirely onchain. A game, a DAO or an 
 | **User growth potential** | A first neuron costs two transactions; the Genesis Drop pays the transistors. Every taped-out neuron is a public building block that any team on any TapeOut processor can `REF` for free. Circuits can be listed and bought on the TapeOut market. The Arena and Agent give non-builders a reason to visit. |
 | **Contract security and economic model** | No custody. Our three contracts have no admin and no payable functions, and their source is verified. Gas-capped inference with strict decoding, so a bad circuit can never block a game or the agent. The keeper is permissionless and holds only gas money. Internal review rounds, fuzzing and fork tests ([AUDIT.md](AUDIT.md), an internal review, not a third-party audit). |
 
-## Demo video script (2:00)
+## Original demo outline (the final 2:52 film is linked above; its script and sources are in video/)
 
 Record at 1440p in the dApp on X Layer mainnet, after launch, with OKX Wallet. Keep the wallet balance visible but blur the address if needed. Each shot lists the screen, then the voice-over.
 
@@ -134,7 +134,7 @@ Each write flow was tested end to end through the real UI on a local fork of X L
 - [x] CerebrScope is deployed (0x2640…e528, Sourcify-verified) and `scope` appears in `launch/out/196.json`.
 - [x] The processor address, deployment wallet and circuit tx links are filled in above and in README.md.
 - [x] The landing page's Electrical characteristics table shows the mainnet CPU, and the issuance values are the real ones.
-- [ ] The demo video is uploaded and linked.
+- [x] The demo video is uploaded and linked (public on YouTube).
 - [x] The deadline is confirmed: 2026-10-09 06:00 UTC+2.
 - [ ] Make the repo public.
 - [x] dApp hosting URL filled in above: https://cerebr.xyz, live over HTTPS (Let's Encrypt), every view checked in a browser on 2026-10-06 with 0 errors.
