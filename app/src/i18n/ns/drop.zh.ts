@@ -59,8 +59,8 @@ export const zh: Record<keyof typeof en, string> = {
   'drop.err.noDrop': '该空投不存在。',
   'drop.err.receiver': '该钱包是无法接收 ERC-1155 晶体管的合约。请使用普通钱包领取。',
 
-  'drop.l.tag': '创世空投',
-  'drop.l.text': '领取 {n} 个 NAND，流片你的第一个神经元',
+  'drop.l.tag': '新手套件',
+  'drop.l.text': '免费获得 {n} 个 NAND，流片你的第一个神经元',
   'drop.l.left': '剩余 {n} 份',
-  'drop.l.cta': '领取',
+  'drop.l.cta': '开始构建',
 }

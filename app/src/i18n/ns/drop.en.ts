@@ -68,8 +68,8 @@ export const en = {
   'drop.err.receiver': 'This wallet is a contract that cannot receive ERC-1155 transistors. Claim from a regular wallet.',
 
   // landing call-to-action
-  'drop.l.tag': 'Genesis Drop',
-  'drop.l.text': 'Claim {n} NAND, tape out your first neuron',
-  'drop.l.left': '{n} claims left',
-  'drop.l.cta': 'Claim',
+  'drop.l.tag': 'Starter kit',
+  'drop.l.text': 'Get {n} free NAND to tape out your first neuron',
+  'drop.l.left': '{n} kits left',
+  'drop.l.cta': 'Start building',
 }
