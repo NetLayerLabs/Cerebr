@@ -2,7 +2,7 @@ import { useI18n } from '../i18n/index.tsx'
 import { useTheme } from '../theme.ts'
 
 /**
- * "Built by NetLayer Labs" credit pill (plain text, not a link), shared by the landing and app
+ * "Built by NetLayer Labs" credit pill, linking to netlayerlabs.com, shared by the landing and app
  * footers. The mark is a real transparent PNG (public/brand): white on the dark theme, the ink
  * variant (netlayer-mark-ink-*.png) on the light theme.
  */
@@ -10,7 +10,7 @@ export function BuiltBy() {
   const { rich } = useI18n()
   const ink = useTheme() === 'light' ? '-ink' : ''
   return (
-    <span className="built-by">
+    <a className="built-by" href="https://www.netlayerlabs.com/" target="_blank" rel="noopener noreferrer">
       <img
         className="built-by-mark"
         src={`/brand/netlayer-mark${ink}-32.png`}
@@ -21,6 +21,6 @@ export function BuiltBy() {
         aria-hidden
       />
       <span>{rich('common.builtBy')}</span>
-    </span>
+    </a>
   )
 }

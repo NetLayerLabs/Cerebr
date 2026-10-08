@@ -276,6 +276,8 @@ body:has(.shell) { overflow-x: clip; }
 /* ---------- "Built by NetLayer Labs" credit (both footers) ---------- */
 .built-by { display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px 6px 8px; border: 1px solid var(--line-2); border-radius: 2px; color: var(--muted); font: 500 12px/1 var(--mono); letter-spacing: 0.02em; white-space: nowrap; }
 .built-by b { font-weight: 500; color: var(--text); }
+a.built-by { text-decoration: none; transition: border-color 0.15s, color 0.15s; }
+a.built-by:hover { border-color: var(--text); color: var(--text); }
 .built-by-mark { width: 16px; height: 16px; display: block; flex: none; }
 
 /* ---------- toasts ---------- */

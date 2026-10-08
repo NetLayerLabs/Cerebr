@@ -543,4 +543,4 @@ TapeOut's X Layer contracts are in a test phase: they are upgradeable and unaudi
 
 ## License
 
-[MIT](LICENSE) · Built by NetLayer Labs
+[MIT](LICENSE) · Built by [NetLayer Labs](https://www.netlayerlabs.com/)
