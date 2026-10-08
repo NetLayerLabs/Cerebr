@@ -161,7 +161,7 @@ A dated snapshot from round 3; the final audit's results are in [section 10](#10
 - **Fees are protocol-set.** Quotes are read live; the 0.08 OKB account-open fee dominates launch cost.
 - **Circuits are small by design.** `eval` is a view call; networks of tens to hundreds of gates are practical. Very large circuits may exceed RPC `eth_call` gas caps for `eval` or Scope rendering.
 - **Self-locking accounts.** TapeOut allows sending a circuit NFT into its own account. The dApp offers no transfers, but other tools can do it.
-- **Names of custom designs.** A circuit without a CerebrScope label shows its catalog name or "Circuit #N"; the Studio offers onchain naming right after tape-out. All 16 current circuits are labelled.
+- **Names of custom designs.** A circuit without a CerebrScope label shows its catalog name or "Circuit #N"; the Studio offers onchain naming right after tape-out. All 17 current circuits are labelled; #17 was named by its owner, a wallet outside the Cerebr team.
 - **This review is internal.** It is not a substitute for a professional audit of either Cerebr or TapeOut.
 
 ## 10. Final audit (2026-10-06)
